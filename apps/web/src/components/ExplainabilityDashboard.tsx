@@ -37,7 +37,9 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
     ?? buildFallbackCategories(signal);
 
   const patterns = signal.explainability?.detected_patterns ?? signal.detected_patterns ?? [];
+  const evidence = signal.explainability?.evidence ?? [];
   const deltas = signal.explainability?.score_deltas ?? signal.score_deltas ?? [];
+  const adjustments = signal.explainability?.adjustments ?? [];
   const warnings = signal.warnings ?? [];
 
   return (
@@ -72,6 +74,31 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
           ))}
         </div>
       </section>
+
+      {evidence.length > 0 && (
+        <section className="explain-section">
+          <h3>Evidence</h3>
+          <ul className="explain-detected">
+            {evidence.map((item) => (
+              <li key={item.label} className={item.passed ? "evidence-pass" : "evidence-fail"}>
+                <span className="check-icon" aria-hidden>{item.passed ? "✔" : "✗"}</span>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {adjustments.length > 0 && (
+        <section className="explain-section">
+          <h3>Confidence adjustments</h3>
+          <ul className="explain-deltas">
+            {adjustments.map((a, i) => (
+              <li key={i}>{a}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {patterns.length > 0 && (
         <section className="explain-section">

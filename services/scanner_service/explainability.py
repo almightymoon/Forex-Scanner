@@ -118,6 +118,39 @@ def build_score_deltas(
     return deltas
 
 
+def build_evidence_checklist(
+    outputs: list[dict],
+    smc_patterns: list[SMCPattern],
+    news: NewsContext,
+    session: str,
+    historical: dict | None = None,
+) -> list[dict]:
+    """Structured evidence items for the transparency dashboard."""
+    items: list[dict] = []
+    pattern_types = {p.pattern_type for p in smc_patterns}
+
+    def add(label: str, passed: bool, category: str = "technical") -> None:
+        items.append({"label": label, "passed": passed, "category": category})
+
+    add("BOS detected", "bos" in pattern_types)
+    add("CHoCH detected", "choch" in pattern_types)
+    add("Fresh Order Block", "order_block" in pattern_types)
+    add("Liquidity Sweep", "liquidity_sweep" in pattern_types)
+    add("Fair Value Gap", "fvg" in pattern_types)
+    add(f"{session.replace('_', ' ').title()} Session", session not in ("off_hours",))
+    add("No High Impact News", not news.has_high_impact_soon, "risk")
+
+    ms = next((o for o in outputs if o.get("name") == "Market Structure"), None)
+    if ms and ms.get("metadata", {}).get("best_quality", 0) >= 70:
+        add(f"Strong BOS quality ({ms['metadata']['best_quality']}/100)", True)
+
+    if historical and historical.get("sample_size", 0) >= 10:
+        wr = historical.get("win_rate", 0)
+        add(f"Historical win rate {wr}% ({historical['sample_size']} setups)", wr >= 50, "historical")
+
+    return items
+
+
 def build_explainability_summary(
     score: int,
     confidence: float,
@@ -125,6 +158,8 @@ def build_explainability_summary(
     detected_patterns: list[dict],
     score_deltas: list[dict],
     session: str,
+    evidence: list[dict] | None = None,
+    historical: dict | None = None,
 ) -> dict:
     if decision_factors and decision_factors[0].get("name"):
         categories = [
@@ -142,6 +177,8 @@ def build_explainability_summary(
         "categories": categories,
         "detected_patterns": detected_patterns,
         "score_deltas": score_deltas,
+        "evidence": evidence or [],
+        "historical": historical,
     }
 
 

@@ -5,6 +5,7 @@ from services.event_bus import EventTypes, get_event_bus
 from services.scanner_service.data_loader import ScanContext
 from services.scanner_service.decision_engine import DecisionEngine
 from services.strategy_engine import StrategyEngine
+from services.validation_engine import SignalValidator
 from shared.config import get_scanner_config
 from shared.types.models import ScannerSignal, to_dict
 
@@ -12,15 +13,16 @@ from shared.types.models import ScannerSignal, to_dict
 class SignalBuilder:
     """Runs the decision engine, strategies, events, and optional AI explanation."""
 
-    def __init__(self, decision_engine=None, ai_explainer=None, strategy_engine=None):
+    def __init__(self, decision_engine=None, ai_explainer=None, strategy_engine=None, validator=None):
         self.decision_engine = decision_engine or DecisionEngine()
         self.ai_explainer = ai_explainer or AIExplainer()
         self.strategy_engine = strategy_engine or StrategyEngine()
+        self.validator = validator or SignalValidator()
         self._bus = get_event_bus()
         self._stream = get_scanner_config().event_stream
 
     def build(self, ctx: ScanContext) -> ScannerSignal:
-        return self.decision_engine.evaluate(
+        signal = self.decision_engine.evaluate(
             symbol=ctx.symbol,
             timeframe=ctx.timeframe,
             candles=ctx.candles,
@@ -29,6 +31,10 @@ class SignalBuilder:
             mtf_trends=ctx.mtf_trends,
             news=ctx.news,
         )
+        if signal.score >= get_scanner_config().scoring.min_alert_score:
+            self.validator.register(signal)
+            self.validator.evaluate_open_signals(ctx.symbol, ctx.candles)
+        return signal
 
     async def build_with_ai(self, ctx: ScanContext) -> ScannerSignal:
         signal = self.build(ctx)

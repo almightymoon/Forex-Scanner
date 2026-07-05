@@ -39,6 +39,14 @@ export interface Explainability {
   detected_patterns: DetectedPattern[];
   score_deltas: ScoreDelta[];
   historical?: HistoricalEvidence;
+  evidence?: EvidenceItem[];
+  adjustments?: string[];
+}
+
+export interface EvidenceItem {
+  label: string;
+  passed: boolean;
+  category: string;
 }
 
 export interface EngineOutput {

@@ -47,6 +47,8 @@ class HistoricalEvidence:
     similar_setups: list[str] = field(default_factory=list)
     best_session: str | None = None
     worst_session: str | None = None
+    confidence_multiplier: float = 1.0
+    confidence_adjustment: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -58,7 +60,25 @@ class HistoricalEvidence:
             "similar_setups": self.similar_setups,
             "best_session": self.best_session,
             "worst_session": self.worst_session,
+            "confidence_multiplier": round(self.confidence_multiplier, 3),
+            "confidence_adjustment": self.confidence_adjustment,
         }
+
+
+def historical_confidence_multiplier(evidence: HistoricalEvidence) -> tuple[float, str | None]:
+    """Adjust confidence based on historical win rate and sample size."""
+    if evidence.sample_size < 10:
+        return 1.0, None
+
+    if evidence.win_rate >= 70:
+        mult = 1.0 + min(0.12, (evidence.win_rate - 50) / 250)
+        return mult, f"Historical win rate {evidence.win_rate:.0f}% ({evidence.sample_size} setups) — confidence boosted"
+    if evidence.win_rate >= 55:
+        return 1.0, f"Historical win rate {evidence.win_rate:.0f}% — neutral adjustment"
+    if evidence.win_rate < 45:
+        mult = max(0.78, evidence.win_rate / 58)
+        return mult, f"Historical win rate {evidence.win_rate:.0f}% ({evidence.sample_size} setups) — confidence reduced"
+    return 1.0, None
 
 
 class HistoricalSetupAnalyzer:
@@ -147,6 +167,10 @@ class HistoricalSetupAnalyzer:
             if rates:
                 evidence.best_session = max(rates, key=rates.get)
                 evidence.worst_session = min(rates, key=rates.get)
+
+        mult, adj = historical_confidence_multiplier(evidence)
+        evidence.confidence_multiplier = mult
+        evidence.confidence_adjustment = adj
 
         return evidence
 

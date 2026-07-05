@@ -25,7 +25,12 @@ from shared.types.models import (
 from services.feature_engine import FeatureExtractor, MarketFeatures
 from services.setup_intelligence import HistoricalSetupAnalyzer, SetupFingerprint
 from .engine_output import EngineOutput
-from .explainability import build_detected_patterns, build_explainability_summary, build_score_deltas
+from .explainability import (
+    build_detected_patterns,
+    build_evidence_checklist,
+    build_explainability_summary,
+    build_score_deltas,
+)
 from .fair_value_gap_engine import FairValueGapEngine
 from .liquidity_engine import LiquidityEngine
 from .market_structure_engine import MarketStructureEngine
@@ -107,6 +112,15 @@ class DecisionEngine:
         legacy_breakdown = self._legacy_breakdown(outputs)
         mtf_alignment = self._mtf_model(mtf_out, mtf_map)
 
+        fingerprint = SetupFingerprint.from_signal(
+            direction, primary_trend, smc_patterns, total,
+        )
+        historical = self._historical.analyze(
+            symbol, timeframe, candles, fingerprint,
+        )
+        if historical.sample_size > 0 and historical.confidence_multiplier != 1.0:
+            confidence = round(min(max(confidence * historical.confidence_multiplier, 0.0), 1.0), 3)
+
         entry, sl, tp1, tp2, tp3, rr = self.risk_engine.calculate_levels(
             candles, indicators, direction
         )
@@ -129,18 +143,14 @@ class DecisionEngine:
             news_ctx, smc_patterns,
         )
         factors = [o.to_dict() for o in outputs]
+        hist_dict = historical.to_dict() if historical.sample_size > 0 else None
+        evidence = build_evidence_checklist(factors, smc_patterns, news_ctx, session, hist_dict)
         explainability = build_explainability_summary(
             total, confidence, factors, detected, deltas, session,
+            evidence=evidence, historical=hist_dict,
         )
-
-        fingerprint = SetupFingerprint.from_signal(
-            direction, primary_trend, smc_patterns, total,
-        )
-        historical = self._historical.analyze(
-            symbol, timeframe, candles, fingerprint,
-        )
-        if historical.sample_size > 0:
-            explainability["historical"] = historical.to_dict()
+        if historical.confidence_adjustment:
+            explainability.setdefault("adjustments", []).append(historical.confidence_adjustment)
 
         explanation = self._build_explanation(
             symbol, direction, total, confidence, session, outputs, warnings, historical,

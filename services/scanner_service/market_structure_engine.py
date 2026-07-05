@@ -1,4 +1,4 @@
-"""Market Structure engine — BOS, CHOCH, swing structure."""
+"""Market Structure engine — BOS, CHOCH with quality scoring."""
 
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, SMCPattern, SignalDirection
@@ -7,6 +7,7 @@ from services.feature_engine.features import MarketFeatures
 
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .pattern_scoring import filter_patterns
+from .structure_scoring import quality_label, score_structure_event
 from .swing_analysis import classify_bos, find_swings
 
 _STRUCTURE_TYPES = {"bos", "choch"}
@@ -31,10 +32,11 @@ class MarketStructureEngine:
         reasons: list[str] = []
         buy_pts = sell_pts = 0
         high_strength: list[str] = []
+        qualities: list[dict] = []
         bos_kind = "external"
+        atr = features.atr if features else 0.0
 
         price = candles[-1].close if candles else 0
-        bos_kind = features.bos_kind if features else "external"
         swing_highs, swing_lows = [], []
         if features and features.structure:
             swing_highs = features.structure.swing_highs
@@ -46,19 +48,21 @@ class MarketStructureEngine:
                 bos_kind = classify_bos(swing_highs, swing_lows, price)
 
         for p in filtered:
-            pts = rules.get(p.pattern_type, 6)
+            quality = score_structure_event(p, candles or [], atr)
+            qualities.append({"type": p.pattern_type, **quality.to_dict()})
+
+            base = rules.get(p.pattern_type, 6)
             if p.pattern_type == "bos":
-                pts = rules.get(f"{bos_kind}_bos", pts)
-            strength_bonus = min(3, int(p.strength / 30))
-            pts += strength_bonus
+                base = rules.get(f"{bos_kind}_bos", base)
+
+            quality_factor = quality.overall / 100
+            pts = int(base * (0.5 + quality_factor * 0.5))
+            pts = max(2, min(base + 3, pts))
             score += pts
 
-            label = p.pattern_type.upper()
-            if p.pattern_type == "bos":
-                label = f"{bos_kind.title()} BOS"
-            reasons.append(f"{label} (strength {p.strength})")
+            reasons.append(quality_label(p, quality, bos_kind))
 
-            if p.strength >= 70:
+            if quality.overall >= 70:
                 high_strength.append(p.pattern_type)
             if p.direction == SignalDirection.BUY:
                 buy_pts += pts
@@ -67,6 +71,7 @@ class MarketStructureEngine:
 
         score = clamp_score(score, weights.market_structure)
         direction = "BUY" if buy_pts > sell_pts else "SELL" if sell_pts > buy_pts else "NEUTRAL"
+        best_quality = max((q["overall"] for q in qualities), default=0)
         return EngineOutput(
             name="Market Structure",
             score=score,
@@ -80,5 +85,7 @@ class MarketStructureEngine:
                 "swing_count": features.swing_count if features else len(swing_highs) + len(swing_lows),
                 "continuation": features.structure_continuation if features else True,
                 "last_event": features.last_structure_event if features else None,
+                "qualities": qualities,
+                "best_quality": best_quality,
             },
         )

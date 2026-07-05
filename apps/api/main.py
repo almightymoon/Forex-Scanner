@@ -265,6 +265,12 @@ async def run_backtest(
     return result
 
 
+@app.get("/api/v1/validation")
+async def validation_report(symbol: str | None = Query(None)):
+    from services.validation_engine import SignalValidator
+    return SignalValidator().report(symbol)
+
+
 @app.get("/api/v1/scanner/{symbol}")
 async def scanner_symbol(
     pipeline: PipelineDep,
