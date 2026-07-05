@@ -22,6 +22,7 @@ from shared.types.models import (
     rating_from_score,
 )
 
+from services.setup_intelligence import HistoricalSetupAnalyzer, SetupFingerprint
 from .engine_output import EngineOutput
 from .explainability import build_detected_patterns, build_explainability_summary, build_score_deltas
 from .fair_value_gap_engine import FairValueGapEngine
@@ -54,6 +55,7 @@ class DecisionEngine:
         self.risk_engine = RiskEngine(cfg)
         self.news_engine = NewsEngine(cfg)
         self.mtf_engine = MultiTimeframeEngine(cfg)
+        self._historical = HistoricalSetupAnalyzer()
 
     def evaluate(
         self,
@@ -70,10 +72,10 @@ class DecisionEngine:
 
         outputs: list[EngineOutput] = [
             self.trend_engine.run(candles, indicators),
-            self.market_structure_engine.run(smc_patterns),
-            self.liquidity_engine.run(smc_patterns),
-            self.order_block_engine.run(smc_patterns),
-            self.fvg_engine.run(smc_patterns),
+            self.market_structure_engine.run(smc_patterns, candles),
+            self.liquidity_engine.run(smc_patterns, candles),
+            self.order_block_engine.run(smc_patterns, candles),
+            self.fvg_engine.run(smc_patterns, candles),
             self.momentum_engine.run(len(candles), indicators),
             self.volatility_engine.run(candles, indicators),
             self.news_engine.run(news_ctx),
@@ -128,7 +130,18 @@ class DecisionEngine:
             total, confidence, factors, detected, deltas, session,
         )
 
-        explanation = self._build_explanation(symbol, direction, total, confidence, session, outputs, warnings)
+        fingerprint = SetupFingerprint.from_signal(
+            direction, primary_trend, smc_patterns, total,
+        )
+        historical = self._historical.analyze(
+            symbol, timeframe, candles, fingerprint,
+        )
+        if historical.sample_size > 0:
+            explainability["historical"] = historical.to_dict()
+
+        explanation = self._build_explanation(
+            symbol, direction, total, confidence, session, outputs, warnings, historical,
+        )
 
         return ScannerSignal(
             symbol=symbol,
@@ -161,7 +174,8 @@ class DecisionEngine:
             score_breakdown_v2=score_v2,
             warnings=warnings,
             trade_type=self._trade_type(direction, outputs),
-            expected_duration=self._expected_duration(session),
+            expected_duration=self._expected_duration(session, historical),
+            historical_evidence=historical.to_dict() if historical.sample_size > 0 else None,
         )
 
     def _resolve_direction(
@@ -233,7 +247,10 @@ class DecisionEngine:
             return f"SMC {direction.value.upper()}"
         return f"Trend {direction.value.upper()}"
 
-    def _expected_duration(self, session: str) -> str:
+    def _expected_duration(self, session: str, historical=None) -> str:
+        if historical and historical.sample_size > 0 and historical.avg_duration_bars:
+            hours = historical.avg_duration_bars
+            return f"~{hours} hours (historical avg)"
         durations = {
             "london_ny_overlap": "2-6 hours",
             "london": "4-12 hours",
@@ -251,6 +268,7 @@ class DecisionEngine:
         session: str,
         outputs: list[EngineOutput],
         warnings: list[str],
+        historical=None,
     ) -> str:
         lines = [
             f"{symbol} — {direction.value.upper()} — {score}/100",
@@ -260,6 +278,12 @@ class DecisionEngine:
         for o in outputs:
             if o.reasons:
                 lines.append(f"{o.name}: {o.reasons[0]}")
+        if historical and historical.sample_size > 0:
+            lines.append("")
+            lines.append(
+                f"Historical: {historical.sample_size} similar setups — "
+                f"{historical.win_rate:.0f}% win rate, avg R:R {historical.avg_rr:.1f}"
+            )
         if warnings:
             lines.append("")
             lines.append("Warnings:")

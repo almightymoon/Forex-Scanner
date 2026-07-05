@@ -5,6 +5,7 @@ from shared.types.models import Candle, IndicatorValues, TrendDirection
 
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .models import TrendAnalysis
+from .swing_analysis import analyze_trend_context
 
 
 class TrendEngine:
@@ -30,7 +31,11 @@ class TrendEngine:
             metadata={
                 "ema_aligned": analysis.ema_aligned,
                 "adx_strong": analysis.adx_strong,
-                "trend_strength": analysis.score / max_score if max_score else 0,
+                "trend_strength": analysis.trend_strength,
+                "maturity": analysis.maturity,
+                "compression": analysis.compression,
+                "expansion": analysis.expansion,
+                "pullback": analysis.pullback,
             },
         )
 
@@ -99,6 +104,30 @@ class TrendEngine:
         elif indicators.vwap and price < indicators.vwap:
             score += rules.get("price_above_vwap", 2)
             result.reasons.append("Price below VWAP")
+
+        ctx = analyze_trend_context(
+            candles,
+            indicators.ema_20,
+            indicators.ema_50,
+        )
+        if ctx.direction != TrendDirection.RANGING and result.direction == TrendDirection.RANGING:
+            result.direction = ctx.direction
+        if ctx.strength > 0.5:
+            score += rules.get("swing_structure", 4)
+        if ctx.compression:
+            score += rules.get("compression", 2)
+            result.compression = True
+        if ctx.expansion:
+            score += rules.get("expansion", 2)
+            result.expansion = True
+        if ctx.pullback:
+            score += rules.get("pullback", 3)
+            result.pullback = True
+        result.maturity = ctx.maturity
+        result.trend_strength = ctx.strength
+        for reason in ctx.reasons:
+            if reason not in result.reasons:
+                result.reasons.append(reason)
 
         result.score = clamp_score(score, max_score)
         return result

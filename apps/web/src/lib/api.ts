@@ -38,6 +38,7 @@ export interface Explainability {
   categories: Array<{ label: string; score: number; max_score: number }>;
   detected_patterns: DetectedPattern[];
   score_deltas: ScoreDelta[];
+  historical?: HistoricalEvidence;
 }
 
 export interface EngineOutput {
@@ -49,6 +50,15 @@ export interface EngineOutput {
   reasons: string[];
   metadata?: Record<string, unknown>;
   warnings?: string[];
+}
+
+export interface HistoricalEvidence {
+  sample_size: number;
+  win_rate: number;
+  avg_rr: number;
+  avg_duration_bars: number;
+  avg_duration_hours?: number;
+  similar_setups?: string[];
 }
 
 export interface ScannerSignal {
@@ -73,6 +83,7 @@ export interface ScannerSignal {
   warnings?: string[];
   trade_type?: string;
   expected_duration?: string;
+  historical_evidence?: HistoricalEvidence;
   entry_zone_low?: number;
   entry_zone_high?: number;
   stop_loss?: number;

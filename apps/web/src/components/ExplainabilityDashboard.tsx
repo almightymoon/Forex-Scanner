@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import type { BacktestResult, ScannerSignal } from "@/lib/api";
+import type { BacktestResult, HistoricalEvidence, ScannerSignal } from "@/lib/api";
 
 const RATING_COLORS: Record<string, string> = {
   elite: "#34d399",
@@ -89,7 +89,10 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
 
       <section className="explain-section">
         <h3>Historical performance</h3>
-        <HistoricalStats backtest={backtest} />
+        <HistoricalStats
+          backtest={backtest}
+          evidence={signal.historical_evidence ?? signal.explainability?.historical}
+        />
       </section>
 
       {deltas.length > 0 && (
@@ -139,7 +142,39 @@ function CategoryBar({ category, color }: { category: CategoryRow; color: string
   );
 }
 
-function HistoricalStats({ backtest }: { backtest: BacktestResult | null }) {
+function HistoricalStats({
+  backtest,
+  evidence,
+}: {
+  backtest: BacktestResult | null;
+  evidence?: HistoricalEvidence | null;
+}) {
+  if (evidence && evidence.sample_size > 0) {
+    const winClass = evidence.win_rate >= 60 ? "win-good" : evidence.win_rate >= 50 ? "win-ok" : "win-low";
+    const hours = evidence.avg_duration_hours ?? evidence.avg_duration_bars;
+    return (
+      <>
+        <p className="explain-hist-searching">
+          {evidence.sample_size} similar setups found in history
+        </p>
+        <div className="explain-hist-grid">
+          <div className="explain-hist-stat">
+            <span className="explain-hist-label">Win rate</span>
+            <span className={`explain-hist-value ${winClass}`}>{evidence.win_rate}%</span>
+          </div>
+          <div className="explain-hist-stat">
+            <span className="explain-hist-label">Average R:R</span>
+            <span className="explain-hist-value">{evidence.avg_rr}</span>
+          </div>
+          <div className="explain-hist-stat">
+            <span className="explain-hist-label">Avg duration</span>
+            <span className="explain-hist-value">{hours}h</span>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (!backtest || backtest.total_trades === 0) {
     return (
       <p className="explain-hist-empty">

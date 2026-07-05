@@ -33,7 +33,7 @@ class TestV2Engines(unittest.TestCase):
 
     def test_market_structure_from_patterns(self):
         patterns = [SMCPattern(pattern_type="bos", direction=SignalDirection.BUY, strength=70)]
-        out = MarketStructureEngine().run(patterns)
+        out = MarketStructureEngine().run(patterns, candles([1.10 + i * 0.001 for i in range(30)]))
         self.assertGreater(out.score, 0)
         self.assertEqual(out.direction, "BUY")
 

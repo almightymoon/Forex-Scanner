@@ -201,6 +201,7 @@ class ScannerSignal:
     warnings: list[str] = field(default_factory=list)
     trade_type: Optional[str] = None
     expected_duration: Optional[str] = None
+    historical_evidence: Optional[dict] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 

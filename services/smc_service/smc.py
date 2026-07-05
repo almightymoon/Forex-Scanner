@@ -88,7 +88,7 @@ class SMCEngine:
                         price_low=c.low,
                         price_high=c.high,
                         strength=75,
-                        metadata={"index": i},
+                        metadata={"index": i, "impulse_ratio": next_body / max(body, 1e-8)},
                     )
                 )
             elif c.close > c.open and next_c.close < next_c.open and next_body > body * 1.5:
@@ -99,7 +99,7 @@ class SMCEngine:
                         price_low=c.low,
                         price_high=c.high,
                         strength=75,
-                        metadata={"index": i},
+                        metadata={"index": i, "impulse_ratio": next_body / max(body, 1e-8)},
                     )
                 )
 
@@ -128,6 +128,7 @@ class SMCEngine:
                         price_low=c3.high,
                         price_high=c1.low,
                         strength=65,
+                        metadata={"gap_size": c1.low - c3.high},
                     )
                 )
         return patterns[-3:]

@@ -20,6 +20,10 @@ rules:
     lower_highs: 2
     lower_lows: 2
     price_above_vwap: 2
+    swing_structure: 4
+    compression: 2
+    expansion: 2
+    pullback: 3
   market_structure:
     bos: 8
     choch: 6
