@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: fxnav_postgres
+    environment:
+      POSTGRES_USER: fxnav
+      POSTGRES_PASSWORD: fxnav_dev
+      POSTGRES_DB: fxnavigators
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fxnav -d fxnavigators"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: fxnav_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+# Optional: run API with PostgreSQL
+# docker compose --profile full up -d

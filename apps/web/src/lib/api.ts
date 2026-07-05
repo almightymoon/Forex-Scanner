@@ -1,0 +1,172 @@
+import { searchCatalogLocal } from "./symbolCatalog";
+
+export interface ScoreBreakdown {
+  trend: number;
+  smc: number;
+  momentum: number;
+  support_resistance: number;
+  volume_volatility: number;
+  mtf_alignment: number;
+  news_risk: number;
+}
+
+export interface ScannerSignal {
+  symbol: string;
+  timeframe: string;
+  direction: "buy" | "sell" | "neutral";
+  score: number;
+  rating: "ignore" | "moderate" | "good" | "strong" | "elite";
+  trend: "bullish" | "bearish" | "ranging";
+  risk_level: "low" | "medium" | "high" | "extreme";
+  score_breakdown: ScoreBreakdown;
+  technical_reasons: string[];
+  smc_reasons: string[];
+  entry_zone_low?: number;
+  entry_zone_high?: number;
+  stop_loss?: number;
+  take_profit_1?: number;
+  take_profit_2?: number;
+  take_profit_3?: number;
+  risk_reward?: number;
+  ai_explanation?: string;
+  created_at: string;
+}
+
+export interface SymbolInfo {
+  symbol: string;
+  name: string;
+  short: string;
+  price: number;
+  category: string;
+  live?: boolean;
+  in_default?: boolean;
+  base?: string;
+  quote?: string;
+}
+
+export interface SymbolSearchResult {
+  symbol: string;
+  name: string;
+  short: string;
+  category: string;
+  in_default: boolean;
+  price?: number;
+  live?: boolean;
+}
+
+// Browser: use same-origin proxy (/api → backend). Server: can use explicit URL.
+const API_BASE =
+  typeof window !== "undefined"
+    ? ""
+    : process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
+
+async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const url = `${API_BASE}${path}`;
+  try {
+    return await fetch(url, init);
+  } catch (err) {
+    throw new Error(
+      `Cannot reach API at ${path}. Start it with: ./scripts/run-api.sh`,
+      { cause: err },
+    );
+  }
+}
+
+export interface BacktestResult {
+  symbol: string;
+  timeframe: string;
+  total_trades: number;
+  wins: number;
+  losses: number;
+  win_rate: number;
+  avg_rr: number;
+  max_drawdown: number;
+  avg_score: number;
+}
+
+export async function fetchLiveScanner(minScore = 60, extraSymbols: string[] = []): Promise<ScannerSignal[]> {
+  const params = new URLSearchParams({ min_score: String(minScore) });
+  if (extraSymbols.length > 0) {
+    params.set("symbols", extraSymbols.join(","));
+  }
+  const res = await apiFetch(`/api/v1/scanner/live?${params}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch scanner data");
+  const data = await res.json();
+  return data.signals;
+}
+
+export async function searchSymbols(query: string, limit = 12): Promise<SymbolSearchResult[]> {
+  try {
+    const params = new URLSearchParams({ q: query, limit: String(limit) });
+    const res = await apiFetch(`/api/v1/symbols/search?${params}`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.results?.length) return data.results;
+    }
+  } catch {
+    // fall through to local search
+  }
+
+  return searchCatalogLocal(query, limit).map((e) => ({
+    symbol: e.symbol,
+    name: e.name,
+    short: e.short,
+    category: e.category,
+    in_default: e.in_default,
+  }));
+}
+
+export async function fetchSymbols(): Promise<SymbolInfo[]> {
+  const res = await apiFetch(`/api/v1/symbols`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error("Failed to fetch symbols");
+  return res.json();
+}
+
+export async function fetchLivePrices(): Promise<Record<string, number>> {
+  const res = await apiFetch(`/api/v1/market/live`, { next: { revalidate: 60 } });
+  if (!res.ok) return {};
+  const data = await res.json();
+  return data.prices || {};
+}
+
+export async function fetchCalendar(): Promise<{ events: Array<{ currency: string; title: string; impact: string; event_time: string }> }> {
+  const res = await apiFetch(`/api/v1/calendar`, { next: { revalidate: 300 } });
+  if (!res.ok) throw new Error("Failed to fetch calendar");
+  return res.json();
+}
+
+export async function fetchStats(): Promise<{ total_scans: number; elite_setups: number; scans_today: number }> {
+  const res = await apiFetch(`/health`, { next: { revalidate: 30 } });
+  if (!res.ok) return { total_scans: 0, elite_setups: 0, scans_today: 0 };
+  const data = await res.json();
+  return data.stats || { total_scans: 0, elite_setups: 0, scans_today: 0 };
+}
+
+export async function fetchCandles(symbol: string, timeframe = "H1"): Promise<Array<{ timestamp: string; open: number; high: number; low: number; close: number }>> {
+  const res = await apiFetch(`/api/v1/market/${symbol}/candles?timeframe=${timeframe}&count=100`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.candles || [];
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  price_monthly: number;
+  features: string[];
+}
+
+export async function fetchBacktest(symbol: string, timeframe = "H1"): Promise<BacktestResult | null> {
+  const res = await apiFetch(`/api/v1/backtest/${symbol}?timeframe=${timeframe}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function fetchPlans(): Promise<Plan[]> {
+  const res = await apiFetch(`/api/v1/billing/plans`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.plans || [];
+}
