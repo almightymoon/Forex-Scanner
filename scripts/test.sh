@@ -3,6 +3,9 @@
 set -e
 cd "$(dirname "$0")/.."
 export PYTHONPATH=.
+export ENVIRONMENT=development
+export ENABLE_SIMULATED_DATA=true
+export MARKET_DATA_PROVIDER=simulated
 
 if [ -d .venv ]; then source .venv/bin/activate; fi
 
@@ -113,10 +116,8 @@ python3.11 -m unittest discover -s tests -p 'test_*.py' -q
 echo ""
 if curl -sf http://localhost:8001/health > /dev/null 2>&1; then
     echo "8. API Endpoints..."
-    curl -sf http://localhost:8001/health | python3.11 -m json.tool | head -8
-    echo ""
-    curl -sf "http://localhost:8001/api/v1/dashboard?min_score=70&limit=2" | python3.11 -m json.tool | head -25
-    echo "   PASS: API responding"
+    curl -sf http://localhost:8001/health | python3.11 -m json.tool | head -12
+    echo "   PASS: API health responding (dashboard requires JWT auth)"
 else
     echo "8. API Endpoints... SKIPPED (start with: ./scripts/run-api.sh)"
 fi

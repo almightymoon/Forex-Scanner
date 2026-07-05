@@ -1,18 +1,21 @@
-"""Frankfurter (ECB) live rates + Swissquote metals — default production provider."""
+"""Frankfurter live spot rates — synthetic OHLC only in simulated/development mode."""
 
 import asyncio
-import json
+import logging
 import random
-import urllib.request
 from datetime import datetime, timezone
 from typing import AsyncGenerator, Optional
 
+from shared.config.market import is_simulated_mode
 from shared.types.models import Candle, Tick, Timeframe
 
 from .candle_builder import generate_candles, update_last_candle
 from .catalog import CATALOG
+from .exceptions import MarketDataProviderError
+from .http_client import http_get_json
 from .provider import BASE_PRICES, MarketDataProvider
-from .simulated_provider import SimulatedProvider
+
+logger = logging.getLogger("fxnav.market_data")
 
 PAIR_CURRENCIES: dict[str, tuple[str, str]] = {
     sym: (e.base, e.quote) for sym, e in CATALOG.items()
@@ -20,13 +23,12 @@ PAIR_CURRENCIES: dict[str, tuple[str, str]] = {
 
 
 class FrankfurterProvider(MarketDataProvider):
-    """Fetches live spot rates from Frankfurter API; metals from Swissquote."""
+    """Live ECB spot rates; OHLC candles only when simulated mode is enabled."""
 
     name = "frankfurter"
     FRANKFURTER_URL = "https://api.frankfurter.app/latest"
 
     def __init__(self):
-        self._fallback = SimulatedProvider()
         self._live_rates: dict[str, float] = {}
         self._last_fetch: Optional[datetime] = None
         self._candle_cache: dict[str, list[Candle]] = {}
@@ -62,19 +64,27 @@ class FrankfurterProvider(MarketDataProvider):
                 self._last_fetch = datetime.now(timezone.utc)
 
             await self._fetch_metals_prices()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Frankfurter live rate fetch failed | reason=%s",
+                exc,
+                exc_info=True,
+            )
 
         return self._live_rates
 
     async def _fetch_metals_prices(self) -> None:
+        import json
+        import urllib.request
+
         for metal, path in (("XAUUSD", "XAU/USD"), ("XAGUSD", "XAG/USD")):
             try:
+                url = f"https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/{path}"
+                req = urllib.request.Request(url, headers={"User-Agent": "FXNavigators/1.0"})
                 loop = asyncio.get_event_loop()
                 raw = await loop.run_in_executor(
                     None,
-                    self._http_get_raw,
-                    f"https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/{path}",
+                    lambda u=url, r=req: urllib.request.urlopen(r, timeout=10).read().decode(),
                 )
                 quotes = json.loads(raw)
                 if quotes and quotes[0].get("spreadProfilePrices"):
@@ -82,20 +92,16 @@ class FrankfurterProvider(MarketDataProvider):
                     bid, ask = mid.get("bid"), mid.get("ask")
                     if bid and ask:
                         self._live_rates[metal] = round((bid + ask) / 2, 2 if metal == "XAUUSD" else 3)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Metals price fetch failed | symbol=%s reason=%s",
+                    metal,
+                    exc,
+                    exc_info=True,
+                )
 
-    @staticmethod
-    def _http_get_raw(url: str) -> str:
-        req = urllib.request.Request(url, headers={"User-Agent": "FXNavigators/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return resp.read().decode()
-
-    @staticmethod
-    def _http_get(url: str) -> dict:
-        req = urllib.request.Request(url, headers={"User-Agent": "FXNavigators/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read())
+    def _http_get(self, url: str) -> dict:
+        return http_get_json(url, self.name)
 
     def _anchor_price(self, symbol: str) -> float:
         return self._live_rates.get(symbol) or BASE_PRICES.get(symbol, 1.0)
@@ -103,6 +109,15 @@ class FrankfurterProvider(MarketDataProvider):
     async def get_candles(
         self, symbol: str, timeframe: Timeframe, count: int = 200
     ) -> list[Candle]:
+        if not is_simulated_mode():
+            raise MarketDataProviderError(
+                self.name,
+                "Frankfurter does not provide real historical OHLC — configure TWELVE_DATA_API_KEY "
+                "or set ENABLE_SIMULATED_DATA=true for development",
+                symbol=symbol,
+                timeframe=timeframe.value,
+            )
+
         await self._fetch_live_rates()
         cache_key = f"{symbol}_{timeframe.value}"
         live_price = self._anchor_price(symbol)
@@ -116,6 +131,7 @@ class FrankfurterProvider(MarketDataProvider):
             candles = self._candle_cache[cache_key]
             candles[-1] = update_last_candle(candles[-1], live_price)
 
+        logger.debug("Frankfurter synthetic candles | symbol=%s simulated=true", symbol)
         return self._candle_cache[cache_key]
 
     async def get_historical_candles(
@@ -125,7 +141,6 @@ class FrankfurterProvider(MarketDataProvider):
         start: datetime,
         end: datetime,
     ) -> list[Candle]:
-        """Replay-oriented history — uses anchored synthetic bars until TimescaleDB ingestion."""
         count = max(50, int((end - start).total_seconds() / 3600))
         candles = await self.get_candles(symbol, timeframe, min(count, 500))
         return [c for c in candles if start <= c.timestamp <= end]

@@ -13,6 +13,14 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from apps.api.auth import (
+    CurrentUserDep,
+    authenticate_user,
+    create_access_token,
+    create_refresh_token,
+    refresh_access_token,
+    register_user,
+)
 from apps.api.deps import (
     BillingDep,
     DashboardDep,
@@ -23,10 +31,19 @@ from apps.api.deps import (
     StrategyDep,
     get_pipeline,
 )
+from shared.config.market import is_simulated_mode
 from shared.configs.settings import get_settings
 from shared.types.models import Timeframe, to_dict
 
+from services.market_data_service.exceptions import MarketDataProviderError
+
 settings = get_settings()
+
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
 
 _connected_ws: list[WebSocket] = []
 _daemon_task = None
@@ -79,7 +96,12 @@ class UserLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str | None = None
     token_type: str = "bearer"
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class AlertCreate(BaseModel):
@@ -119,32 +141,59 @@ def _parse_symbols_param(symbols: Optional[str]) -> list[str] | None:
     return merge_scan_symbols(FOREX_PAIRS, extra) if extra else None
 
 
-# --- In-memory stores (replace with DB in production) ---
+# --- In-memory stores (alerts/watchlists — user-scoped in production DB) ---
 
-_users_db: dict[str, dict] = {}
-_alerts_db: list[dict] = []
+_alerts_db: dict[str, list[dict]] = {}
 _watchlists_db: dict[str, list[str]] = {}
 
 
-def create_token(data: dict) -> str:
-    import hashlib, json
-    payload = json.dumps({**data, "ts": datetime.now(timezone.utc).isoformat()})
-    return hashlib.sha256(f"{payload}:{settings.JWT_SECRET}".encode()).hexdigest()
+@app.exception_handler(MarketDataProviderError)
+async def market_data_error_handler(request, exc: MarketDataProviderError):
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=503,
+        content={
+            "error": "market_data_unavailable",
+            "provider": exc.provider,
+            "status": exc.status.value,
+            "message": str(exc),
+            "symbol": exc.symbol,
+            "timeframe": exc.timeframe,
+            "fallback_used": exc.fallback_used,
+        },
+    )
 
 
 # --- Routes ---
 
 @app.get("/health")
-async def health(pipeline: PipelineDep):
+async def health(market_data: MarketDataDep, pipeline: PipelineDep):
     stats = pipeline.db.get_stats()
-    provider = getattr(pipeline.market_data, "name", "unknown")
-    return {
-        "status": "ok",
+    provider_name = getattr(market_data, "underlying_provider", getattr(market_data, "name", "unknown"))
+    health_info = market_data.health_snapshot() if hasattr(market_data, "health_snapshot") else {}
+    simulated = market_data.is_simulated() if hasattr(market_data, "is_simulated") else is_simulated_mode()
+
+    status_label = "healthy"
+    if health_info.get("provider_status") not in (None, "healthy"):
+        status_label = "degraded"
+    if simulated:
+        status_label = "warning"
+
+    payload = {
+        "status": status_label,
         "service": "fx-navigators-api",
         "version": "1.0.0",
+        "provider": provider_name.replace("service:", ""),
+        "provider_status": health_info.get("provider_status", "unknown"),
+        "latency_ms": health_info.get("latency_ms"),
+        "last_success": health_info.get("last_success"),
+        "last_failure": health_info.get("last_failure"),
+        "simulated_data": simulated,
         "stats": stats,
-        "market_data_provider": provider,
     }
+    if simulated:
+        payload["warning"] = "Running with simulated market data"
+    return payload
 
 
 @app.get("/api/v1/market/live")
@@ -167,24 +216,29 @@ async def scanner_history(
 
 @app.post("/api/v1/auth/register", response_model=TokenResponse)
 async def register(user: UserRegister):
-    if user.email in _users_db:
-        raise HTTPException(400, "Email already registered")
-    _users_db[user.email] = {
-        "name": user.name,
-        "email": user.email,
-        "password": user.password,
-        "plan": "free",
-    }
-    token = create_token({"sub": user.email})
-    return TokenResponse(access_token=token)
+    register_user(user.name, user.email, user.password)
+    access = create_access_token(user.email)
+    refresh = create_refresh_token(user.email)
+    return TokenResponse(access_token=access, refresh_token=refresh)
 
 
 @app.post("/api/v1/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    user = _users_db.get(credentials.email)
-    if not user or user["password"] != credentials.password:
-        raise HTTPException(401, "Invalid credentials")
-    return TokenResponse(access_token=create_token({"sub": credentials.email}))
+    user = authenticate_user(credentials.email, credentials.password)
+    access = create_access_token(user["email"])
+    refresh = create_refresh_token(user["email"])
+    return TokenResponse(access_token=access, refresh_token=refresh)
+
+
+@app.post("/api/v1/auth/refresh", response_model=TokenResponse)
+async def refresh_token(body: RefreshRequest):
+    access = refresh_access_token(body.refresh_token)
+    return TokenResponse(access_token=access, refresh_token=body.refresh_token)
+
+
+@app.get("/api/v1/auth/me")
+async def auth_me(user: CurrentUserDep):
+    return {"email": user["email"], "name": user["name"], "plan": user.get("plan", "free")}
 
 
 @app.get("/api/v1/symbols/search")
@@ -215,6 +269,7 @@ async def get_symbols(market_data: MarketDataDep):
 @app.get("/api/v1/dashboard")
 async def get_dashboard(
     dashboard: DashboardDep,
+    user: CurrentUserDep,
     min_score: int = Query(60, ge=0, le=100),
     timeframe: Timeframe = Timeframe.H1,
     symbols: Optional[str] = Query(None, description="Comma-separated extra symbols to scan"),
@@ -307,37 +362,37 @@ async def economic_calendar(scanner: ScannerDep):
 
 
 @app.get("/api/v1/alerts")
-async def get_alerts():
-    return {"alerts": _alerts_db}
+async def get_alerts(user: CurrentUserDep):
+    return {"alerts": _alerts_db.get(user["email"], [])}
 
 
 @app.post("/api/v1/alerts")
-async def create_alert(alert: AlertCreate):
-    entry = {"id": len(_alerts_db) + 1, **alert.__dict__, "active": True}
-    _alerts_db.append(entry)
+async def create_alert(alert: AlertCreate, user: CurrentUserDep):
+    entry = {"id": len(_alerts_db.get(user["email"], [])) + 1, **alert.model_dump(), "active": True}
+    _alerts_db.setdefault(user["email"], []).append(entry)
     return entry
 
 
 @app.delete("/api/v1/alerts/{alert_id}")
-async def delete_alert(alert_id: int):
-    global _alerts_db
-    _alerts_db = [a for a in _alerts_db if a.get("id") != alert_id]
+async def delete_alert(alert_id: int, user: CurrentUserDep):
+    user_alerts = _alerts_db.get(user["email"], [])
+    _alerts_db[user["email"]] = [a for a in user_alerts if a.get("id") != alert_id]
     return {"deleted": alert_id}
 
 
 @app.get("/api/v1/watchlist")
-async def get_watchlist():
+async def get_watchlist(user: CurrentUserDep):
     from services.market_data_service.provider import FOREX_PAIRS
-    custom = _watchlists_db.get("default", [])
+    custom = _watchlists_db.get(user["email"], [])
     return {"default": FOREX_PAIRS, "custom": custom, "symbols": merge_watchlist(FOREX_PAIRS, custom)}
 
 
 @app.post("/api/v1/watchlist")
-async def update_watchlist(body: WatchlistUpdate):
+async def update_watchlist(body: WatchlistUpdate, user: CurrentUserDep):
     from services.market_data_service.catalog import CATALOG
 
     valid = [s.upper() for s in body.symbols if s.upper() in CATALOG]
-    _watchlists_db["default"] = valid
+    _watchlists_db[user["email"]] = valid
     return {"symbols": valid}
 
 

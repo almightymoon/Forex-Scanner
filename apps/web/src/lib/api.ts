@@ -136,13 +136,36 @@ const API_BASE =
 
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const url = `${API_BASE}${path}`;
+  const headers = new Headers(init?.headers);
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("fxnav_token");
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
   try {
-    return await fetch(url, init);
+    return await fetch(url, { ...init, headers });
   } catch (err) {
     throw new Error(
       `Cannot reach API at ${path}. Start it with: ./scripts/run-api.sh`,
       { cause: err },
     );
+  }
+}
+
+export async function login(email: string, password: string): Promise<void> {
+  const res = await apiFetch("/api/v1/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error("Login failed");
+  const data = await res.json();
+  if (typeof window !== "undefined") {
+    localStorage.setItem("fxnav_token", data.access_token);
+    if (data.refresh_token) {
+      localStorage.setItem("fxnav_refresh_token", data.refresh_token);
+    }
   }
 }
 

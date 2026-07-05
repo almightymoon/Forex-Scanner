@@ -1,21 +1,25 @@
-"""Composed market data service — cache, validation, storage on top of any provider."""
+"""Composed market data service — cache, validation, storage, health passthrough."""
 
+import logging
+import time
 from datetime import datetime
 from typing import AsyncGenerator, Optional
 
+from shared.config.market import is_simulated_mode
 from shared.types.models import Candle, Tick, Timeframe
 
 from .cache import MarketDataCache
+from .exceptions import MarketDataProviderError
 from .provider import MarketDataProvider
+from .provider_health import ProviderHealthTracker
 from .storage import CandleStorage
 from .validator import DataValidator
 
+logger = logging.getLogger("fxnav.market_data")
+
 
 class MarketDataService(MarketDataProvider):
-    """
-    Production facade used by the scanner.
-    Wraps a swappable provider with caching, validation, and storage.
-    """
+    """Production facade used by the scanner."""
 
     name = "service"
 
@@ -32,6 +36,16 @@ class MarketDataService(MarketDataProvider):
         self.validator = validator or DataValidator()
         self.name = f"service:{provider.name}"
 
+    @property
+    def underlying_provider(self) -> str:
+        return self.provider.name
+
+    def health_snapshot(self) -> dict:
+        return ProviderHealthTracker.snapshot(self.provider.name)
+
+    def is_simulated(self) -> bool:
+        return is_simulated_mode() or self.provider.name == "simulated"
+
     async def get_candles(
         self, symbol: str, timeframe: Timeframe, count: int = 200
     ) -> list[Candle]:
@@ -40,7 +54,34 @@ class MarketDataService(MarketDataProvider):
         if cached:
             return cached
 
-        candles = await self.provider.get_candles(symbol, timeframe, count)
+        start = time.perf_counter()
+        try:
+            candles = await self.provider.get_candles(symbol, timeframe, count)
+        except MarketDataProviderError:
+            raise
+        except Exception as exc:
+            logger.exception(
+                "MarketDataService candle fetch failed | provider=%s symbol=%s timeframe=%s",
+                self.provider.name,
+                symbol,
+                timeframe.value,
+            )
+            raise MarketDataProviderError(
+                self.provider.name,
+                str(exc),
+                symbol=symbol,
+                timeframe=timeframe.value,
+            ) from exc
+
+        latency_ms = (time.perf_counter() - start) * 1000
+        logger.debug(
+            "Candles fetched | provider=%s symbol=%s count=%d latency_ms=%.1f",
+            self.provider.name,
+            symbol,
+            len(candles),
+            latency_ms,
+        )
+
         candles = self.validator.validate_candles(candles)
         if candles:
             self.storage.save(symbol, timeframe, candles)

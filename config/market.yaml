@@ -1,0 +1,13 @@
+provider:
+  default: twelvedata
+  simulated_enabled: false
+  fallback_enabled: false
+  retry_count: 3
+
+timeout: 10
+
+real_ohlc_providers:
+  - twelvedata
+  - polygon
+  - oanda
+  - mt5

@@ -1,14 +1,13 @@
-"""Polygon.io provider stub — swap in when POLYGON_API_KEY is set."""
+"""Polygon.io provider — real aggregate OHLCV."""
 
-import json
-import urllib.request
-from datetime import datetime, timezone
-from typing import AsyncGenerator
+import asyncio
+from datetime import datetime, timedelta, timezone
 
 from shared.configs.settings import get_settings
-from shared.types.models import Candle, Tick, Timeframe
+from shared.types.models import Candle, Timeframe
 
-from .frankfurter_provider import FrankfurterProvider
+from .exceptions import MarketDataProviderError, ProviderAuthError
+from .http_client import http_get_json
 from .provider import MarketDataProvider
 
 settings = get_settings()
@@ -19,45 +18,41 @@ class PolygonProvider(MarketDataProvider):
 
     def __init__(self):
         self._api_key = settings.POLYGON_API_KEY
-        self._fallback = FrankfurterProvider()
+        if not self._api_key:
+            raise ProviderAuthError("polygon", "POLYGON_API_KEY is not configured")
 
     async def get_candles(
         self, symbol: str, timeframe: Timeframe, count: int = 200
     ) -> list[Candle]:
-        if not self._api_key:
-            return await self._fallback.get_candles(symbol, timeframe, count)
-
-        try:
-            candles = await self._fetch_aggregates(symbol, timeframe, count)
-            if candles:
-                return candles
-        except Exception:
-            pass
-
-        return await self._fallback.get_candles(symbol, timeframe, count)
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._fetch_aggregates_sync, symbol, timeframe, count)
 
     async def get_live_prices(self) -> dict[str, float]:
-        return await self._fallback.get_live_prices()
+        from .frankfurter_provider import FrankfurterProvider
+        return await FrankfurterProvider().get_live_prices()
 
-    async def stream_ticks(self, symbols: list[str]) -> AsyncGenerator[Tick, None]:
-        async for tick in self._fallback.stream_ticks(symbols):
-            yield tick
-
-    async def _fetch_aggregates(
+    def _fetch_aggregates_sync(
         self, symbol: str, timeframe: Timeframe, count: int
     ) -> list[Candle]:
         ticker = f"C:{symbol}"
         multiplier, span = _polygon_tf(timeframe)
+        end = datetime.now(timezone.utc).date()
+        start = end - timedelta(days=365)
         url = (
             f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/"
-            f"{multiplier}/{span}/2024-01-01/2025-12-31"
+            f"{multiplier}/{span}/{start}/{end}"
             f"?adjusted=true&sort=asc&limit={min(count, 500)}&apiKey={self._api_key}"
         )
-        import asyncio
-        loop = asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, _http_get, url)
-
+        data = http_get_json(url, self.name, symbol=symbol, timeframe=timeframe.value)
         results = data.get("results", [])
+        if not results:
+            raise MarketDataProviderError(
+                self.name,
+                "Empty candle response from Polygon",
+                symbol=symbol,
+                timeframe=timeframe.value,
+            )
+
         candles: list[Candle] = []
         for bar in results:
             ts = datetime.fromtimestamp(bar["t"] / 1000, tz=timezone.utc)
@@ -86,9 +81,3 @@ def _polygon_tf(timeframe: Timeframe) -> tuple[int, str]:
         Timeframe.D1: (1, "day"),
     }
     return mapping.get(timeframe, (1, "hour"))
-
-
-def _http_get(url: str) -> dict:
-    req = urllib.request.Request(url, headers={"User-Agent": "FXNavigators/1.0"})
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        return json.loads(resp.read())
