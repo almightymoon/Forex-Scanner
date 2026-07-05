@@ -11,6 +11,7 @@ from services.market_data_service.service import MarketDataService
 from services.replay_engine.replay import ReplayEngine
 from services.scanner_service.pipeline import ScannerPipeline
 from services.scanner_service.scanner_service import ScannerService
+from services.strategy_engine import StrategyEngine
 
 _pipeline: ScannerPipeline | None = None
 _scanner: ScannerService | None = None
@@ -18,6 +19,7 @@ _dashboard: DashboardService | None = None
 _billing: BillingService | None = None
 _replay: ReplayEngine | None = None
 _market_data: MarketDataService | None = None
+_strategy: StrategyEngine | None = None
 
 
 def get_market_data() -> MarketDataService:
@@ -60,6 +62,13 @@ def get_replay_engine(
     return ReplayEngine(market_data=market_data)
 
 
+def get_strategy_engine() -> StrategyEngine:
+    global _strategy
+    if _strategy is None:
+        _strategy = StrategyEngine()
+    return _strategy
+
+
 # Typed aliases for route injection
 PipelineDep = Annotated[ScannerPipeline, Depends(get_pipeline)]
 ScannerDep = Annotated[ScannerService, Depends(get_scanner_service)]
@@ -67,3 +76,4 @@ DashboardDep = Annotated[DashboardService, Depends(get_dashboard_service)]
 BillingDep = Annotated[BillingService, Depends(get_billing_service)]
 ReplayDep = Annotated[ReplayEngine, Depends(get_replay_engine)]
 MarketDataDep = Annotated[MarketDataService, Depends(get_market_data)]
+StrategyDep = Annotated[StrategyEngine, Depends(get_strategy_engine)]

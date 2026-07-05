@@ -1,5 +1,5 @@
 """
-Decision engine — orchestrates independent scoring engines.
+Decision engine v2 — orchestrates config-driven scoring engines.
 
 The engine DECIDES trades. AI only explains (see ai_service).
 """
@@ -17,10 +17,12 @@ from shared.types.models import (
     rating_from_score,
 )
 
+from .confidence import build_decision_factors, compute_confidence
 from .momentum_engine import MomentumEngine
 from .news_engine import NewsEngine
 from .risk_engine import RiskEngine
 from .score_engine import ScoreEngine
+from .session import current_session
 from .smc_engine import SMCScoreEngine
 from .trend_engine import TrendEngine
 
@@ -67,9 +69,19 @@ class DecisionEngine:
             candles, indicators, direction
         )
 
+        session = current_session()
+        confidence = compute_confidence(total, mtf, volume.spread_normal, news_ctx, session)
+        factors = build_decision_factors(
+            trend.score, smc_score, momentum.score,
+            sr.score, volume.score, mtf.score, news_score,
+            trend.reasons, smc_reasons, momentum.reasons,
+            sr.reasons, volume.reasons, mtf, news_ctx,
+        )
+
         technical_reasons = trend.reasons + momentum.reasons + sr.reasons + volume.reasons
         explanation = self.score_engine.generate_explanation(
-            symbol, direction, total, trend, smc_reasons, momentum, news_ctx, mtf
+            symbol, direction, total, trend, smc_reasons, momentum, news_ctx, mtf,
+            confidence=confidence, session=session,
         )
 
         return ScannerSignal(
@@ -93,4 +105,7 @@ class DecisionEngine:
             take_profit_3=tp3,
             risk_reward=rr,
             ai_explanation=explanation,
+            confidence=confidence,
+            session=session,
+            decision_factors=factors,
         )

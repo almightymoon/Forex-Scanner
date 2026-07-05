@@ -190,6 +190,9 @@ class ScannerSignal:
     take_profit_3: Optional[float] = None
     risk_reward: Optional[float] = None
     ai_explanation: Optional[str] = None
+    confidence: float = 0.0
+    session: Optional[str] = None
+    decision_factors: list[dict] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 

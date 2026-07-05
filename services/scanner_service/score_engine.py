@@ -1,5 +1,6 @@
-"""Score engine — MTF alignment, news scoring, direction, breakdown assembly."""
+"""Score engine — MTF, news, direction; config-driven thresholds."""
 
+from shared.config.scanner import ScoringConfig, get_scanner_config
 from shared.types.models import (
     MTFAlignment,
     NewsContext,
@@ -12,14 +13,15 @@ from shared.types.models import (
 
 from .models import MomentumAnalysis, TrendAnalysis
 
-MAX_MTF = 10
-MAX_NEWS = 10
-
 
 class ScoreEngine:
+    def __init__(self, config: ScoringConfig | None = None):
+        self.config = config or get_scanner_config().scoring
+
     def analyze_mtf(
         self, trends: dict[str, TrendDirection], primary_trend: TrendDirection
     ) -> MTFAlignment:
+        cfg = self.config
         mtf = MTFAlignment(
             M15=trends.get("M15"),
             H1=trends.get("H1"),
@@ -36,22 +38,24 @@ class ScoreEngine:
                 if t == primary_trend:
                     aligned_count += 1
 
+        max_mtf = cfg.mtf.max_points
         if total_checked > 0:
             mtf.aligned = aligned_count == total_checked
-            mtf.score = int((aligned_count / total_checked) * MAX_MTF)
+            mtf.score = int((aligned_count / total_checked) * max_mtf)
         else:
-            mtf.score = 5
+            mtf.score = cfg.mtf.rules["partial_default"].points
 
         return mtf
 
     def score_news(self, news: NewsContext) -> int:
+        rules = self.config.news.rules
         if news.has_high_impact_soon:
             if news.minutes_until_event and news.minutes_until_event <= 30:
-                return 0
-            return 3
+                return rules["high_impact_imminent"].points
+            return rules["high_impact_soon"].points
         if news.impact == NewsImpact.MEDIUM:
-            return 5
-        return MAX_NEWS
+            return rules["medium_impact"].points
+        return rules["clear"].points
 
     def determine_direction(
         self,
@@ -98,8 +102,14 @@ class ScoreEngine:
         momentum: MomentumAnalysis,
         news: NewsContext,
         mtf: MTFAlignment,
+        confidence: float = 0.0,
+        session: str = "",
     ) -> str:
-        parts = [f"{symbol} — {direction.value.upper()} — {score}/100", ""]
+        parts = [
+            f"{symbol} — {direction.value.upper()} — {score}/100",
+            f"Confidence: {confidence * 100:.0f}% · Session: {session or 'n/a'}",
+            "",
+        ]
 
         if trend.reasons:
             parts.append(f"Trend: {trend.reasons[0]}")

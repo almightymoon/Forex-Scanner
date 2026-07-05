@@ -20,6 +20,7 @@ from apps.api.deps import (
     PipelineDep,
     ReplayDep,
     ScannerDep,
+    StrategyDep,
     get_pipeline,
 )
 from shared.configs.settings import get_settings
@@ -90,6 +91,22 @@ class AlertCreate(BaseModel):
 
 class WatchlistUpdate(BaseModel):
     symbols: list[str]
+
+
+class StrategyRuleCreate(BaseModel):
+    field: str
+    operator: str
+    value: Optional[str | float] = None
+    label: str = ""
+
+
+class StrategyCreate(BaseModel):
+    name: str
+    rules: list[StrategyRuleCreate]
+    combinator: str = "AND"
+    action: str = "buy"
+    symbols: list[str] = []
+    min_score: int = 0
 
 
 def _parse_symbols_param(symbols: Optional[str]) -> list[str] | None:
@@ -342,6 +359,38 @@ async def create_checkout(req: CheckoutRequest, billing: BillingDep):
         cancel_url="http://localhost:3000?cancelled=true",
     )
     return result
+
+
+@app.get("/api/v1/strategies")
+async def list_strategies(strategies: StrategyDep):
+    return {"strategies": strategies.list_strategies()}
+
+
+@app.post("/api/v1/strategies")
+async def create_strategy(body: StrategyCreate, strategies: StrategyDep):
+    from services.strategy_engine import Combinator, RuleOperator, Strategy, StrategyRule
+
+    rules = [
+        StrategyRule(
+            field=r.field,
+            operator=RuleOperator(r.operator),
+            value=r.value,
+            label=r.label,
+        )
+        for r in body.rules
+    ]
+    strategy = Strategy.create(body.name, rules, action=body.action)
+    strategy.combinator = Combinator(body.combinator)
+    strategy.symbols = [s.upper() for s in body.symbols]
+    strategy.min_score = body.min_score
+    return strategies.create_strategy(strategy)
+
+
+@app.delete("/api/v1/strategies/{strategy_id}")
+async def delete_strategy(strategy_id: str, strategies: StrategyDep):
+    if not strategies.storage.delete(strategy_id):
+        raise HTTPException(404, "Strategy not found")
+    return {"deleted": strategy_id}
 
 
 @app.get("/api/v1/replay/{symbol}")

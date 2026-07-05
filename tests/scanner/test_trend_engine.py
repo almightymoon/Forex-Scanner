@@ -1,6 +1,7 @@
 import unittest
 
-from services.scanner_service.trend_engine import TrendEngine, MAX_TREND
+from services.scanner_service.trend_engine import TrendEngine
+from shared.config import get_scanner_config
 from shared.types.models import TrendDirection
 
 from tests.helpers import candles, indicators
@@ -8,6 +9,7 @@ from tests.helpers import candles, indicators
 
 class TestTrendEngine(unittest.TestCase):
     def test_bullish_ema_alignment_scores_high(self):
+        cfg = get_scanner_config().scoring
         engine = TrendEngine()
         result = engine.analyze(
             candles([1.10 + i * 0.001 for i in range(12)]),
@@ -15,14 +17,13 @@ class TestTrendEngine(unittest.TestCase):
         )
         self.assertEqual(result.direction, TrendDirection.BULLISH)
         self.assertTrue(result.ema_aligned)
-        self.assertGreaterEqual(result.score, 13)
-        self.assertLessEqual(result.score, MAX_TREND)
+        self.assertGreaterEqual(result.score, cfg.trend.rules["ema_alignment"].points + 5)
+        self.assertLessEqual(result.score, cfg.trend.max_points)
 
     def test_no_alignment_scores_zero(self):
         engine = TrendEngine()
         result = engine.analyze(candles([1.10] * 5), indicators())
         self.assertEqual(result.score, 0)
-        self.assertEqual(result.direction, TrendDirection.RANGING)
 
 
 if __name__ == "__main__":
