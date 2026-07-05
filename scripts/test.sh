@@ -107,14 +107,18 @@ asyncio.run(test())
 "
 
 echo ""
+echo "7. Scoring engine unit tests..."
+python3.11 -m unittest tests.test_engines -q
+
+echo ""
 if curl -sf http://localhost:8001/health > /dev/null 2>&1; then
-    echo "7. API Endpoints..."
+    echo "8. API Endpoints..."
     curl -sf http://localhost:8001/health | python3.11 -m json.tool | head -8
     echo ""
-    curl -sf "http://localhost:8001/api/v1/scanner/live?min_score=70&limit=2" | python3.11 -m json.tool | head -20
+    curl -sf "http://localhost:8001/api/v1/dashboard?min_score=70&limit=2" | python3.11 -m json.tool | head -25
     echo "   PASS: API responding"
 else
-    echo "4. API Endpoints... SKIPPED (start with: ./scripts/run-api.sh)"
+    echo "8. API Endpoints... SKIPPED (start with: ./scripts/run-api.sh)"
 fi
 
 echo ""

@@ -5,6 +5,7 @@ import type { ScannerSignal, BacktestResult } from "@/lib/api";
 import { getSymbolName, getSymbolShort, getSymbol, getCategoryLabel } from "@/lib/symbols";
 import { PriceChart } from "./PriceChart";
 import { BacktestPanel } from "./BacktestPanel";
+import { ScoreBreakdownPanel } from "./ScoreBreakdownPanel";
 
 interface Candle {
   timestamp: string;
@@ -75,6 +76,12 @@ export function DetailPanel({ signal, candles, backtest, onClose }: DetailPanelP
           <span className="big-score">{signal.score}</span>
           <span className="score-meta">/ 100 · {signal.rating}</span>
         </div>
+      </div>
+
+      <div className="detail-section">
+        <h3>Score breakdown</h3>
+        <p className="section-hint">Click a category to see why points were awarded</p>
+        <ScoreBreakdownPanel signal={signal} />
       </div>
 
       <PriceChart

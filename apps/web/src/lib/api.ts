@@ -84,6 +84,33 @@ export interface BacktestResult {
   avg_score: number;
 }
 
+export interface DashboardData {
+  stats: { total_scans: number; elite_setups: number; scans_today: number };
+  signals: ScannerSignal[];
+  calendar: Array<{ currency: string; title: string; impact: string; event_time: string }>;
+  heatmap: Array<{ symbol: string; score: number; direction: string; trend: string }>;
+  market_status: { live: boolean; pairs_with_prices: number; source: string };
+  count: number;
+  scanned_at: string;
+}
+
+export async function fetchDashboard(
+  minScore = 60,
+  extraSymbols: string[] = [],
+  limit = 30,
+): Promise<DashboardData> {
+  const params = new URLSearchParams({
+    min_score: String(minScore),
+    limit: String(limit),
+  });
+  if (extraSymbols.length > 0) {
+    params.set("symbols", extraSymbols.join(","));
+  }
+  const res = await apiFetch(`/api/v1/dashboard?${params}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch dashboard");
+  return res.json();
+}
+
 export async function fetchLiveScanner(minScore = 60, extraSymbols: string[] = []): Promise<ScannerSignal[]> {
   const params = new URLSearchParams({ min_score: String(minScore) });
   if (extraSymbols.length > 0) {

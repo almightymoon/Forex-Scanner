@@ -13,15 +13,16 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from services.billing_service.stripe_billing import BillingService
-from services.scanner_service.pipeline import ScannerPipeline
+from apps.api.deps import get_billing_service, get_dashboard_service, get_pipeline, get_scanner_service
 from shared.configs.settings import get_settings
-from shared.types.models import ScannerSignal, Timeframe, to_dict
+from shared.types.models import Timeframe, to_dict
 
 settings = get_settings()
 
-pipeline = ScannerPipeline()
-billing = BillingService()
+pipeline = get_pipeline()
+billing = get_billing_service()
+scanner_service = get_scanner_service()
+dashboard_service = get_dashboard_service()
 _connected_ws: list[WebSocket] = []
 _daemon_task = None
 
@@ -184,6 +185,22 @@ async def get_symbols():
     ]
 
 
+@app.get("/api/v1/dashboard")
+async def get_dashboard(
+    min_score: int = Query(60, ge=0, le=100),
+    timeframe: Timeframe = Timeframe.H1,
+    symbols: Optional[str] = Query(None, description="Comma-separated extra symbols to scan"),
+    limit: int = Query(30, ge=1, le=100),
+):
+    scan_list = _parse_symbols_param(symbols)
+    return await dashboard_service.get_dashboard(
+        min_score=min_score,
+        timeframe=timeframe,
+        symbols=scan_list,
+        signal_limit=limit,
+    )
+
+
 @app.get("/api/v1/scanner/live")
 async def scanner_live(
     min_score: int = Query(60, ge=0, le=100),
@@ -192,14 +209,9 @@ async def scanner_live(
     symbols: Optional[str] = Query(None, description="Comma-separated extra symbols to scan"),
 ):
     scan_list = _parse_symbols_param(symbols)
-    signals = await pipeline.scan_all(symbols=scan_list, timeframe=timeframe, min_score=min_score)
-    scanned = len(scan_list) if scan_list else None
-    return {
-        "signals": [to_dict(s) for s in signals[:limit]],
-        "count": len(signals),
-        "scanned_pairs": scanned,
-        "scanned_at": datetime.now(timezone.utc).isoformat(),
-    }
+    return await scanner_service.scan_live(
+        min_score=min_score, timeframe=timeframe, symbols=scan_list, limit=limit
+    )
 
 
 @app.get("/api/v1/scanner/heatmap")
@@ -208,16 +220,8 @@ async def scanner_heatmap(
     symbols: Optional[str] = Query(None, description="Comma-separated extra symbols to scan"),
 ):
     scan_list = _parse_symbols_param(symbols)
-    signals = await pipeline.scan_all(
-        symbols=scan_list, timeframe=timeframe, min_score=0, save=False, alert_threshold=100
-    )
-    return {
-        "heatmap": [
-            {"symbol": s.symbol, "score": s.score, "direction": s.direction.value, "trend": s.trend.value}
-            for s in signals
-        ],
-        "count": len(signals),
-    }
+    heatmap = await scanner_service.get_heatmap(timeframe=timeframe, symbols=scan_list)
+    return {"heatmap": heatmap, "count": len(heatmap)}
 
 
 @app.get("/api/v1/backtest/{symbol}")
@@ -259,8 +263,7 @@ async def get_candles(
 
 @app.get("/api/v1/calendar")
 async def economic_calendar():
-    events = await pipeline.news_service.get_events()
-    pipeline.db.save_economic_events(events)
+    events = await scanner_service.get_calendar()
     return {"events": events, "count": len(events)}
 
 

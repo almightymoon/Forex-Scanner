@@ -5,7 +5,7 @@ import { SignalCard } from "@/components/SignalCard";
 import { EconomicCalendar } from "@/components/EconomicCalendar";
 import { Heatmap } from "@/components/Heatmap";
 import type { ScannerSignal, BacktestResult } from "@/lib/api";
-import { fetchLiveScanner, fetchStats, fetchCalendar, fetchCandles, fetchBacktest } from "@/lib/api";
+import { fetchDashboard, fetchCandles, fetchBacktest } from "@/lib/api";
 import { DetailPanel } from "@/components/DetailPanel";
 import { PairSearch } from "@/components/PairSearch";
 import { loadCustomPairs, addCustomPair, removeCustomPair } from "@/lib/watchlist";
@@ -33,15 +33,15 @@ export default function Dashboard() {
   const loadSignals = async () => {
     setLoading(true);
     try {
-      const [data, s, cal] = await Promise.all([
-        fetchLiveScanner(minScore, customPairs),
-        fetchStats(),
-        fetchCalendar(),
-      ]);
-      setSignals(data);
-      setStats(s);
-      setEvents(cal.events || []);
-      setLastScan(new Date().toLocaleTimeString());
+      const dashboard = await fetchDashboard(minScore, customPairs);
+      setSignals(dashboard.signals);
+      setStats(dashboard.stats);
+      setEvents(dashboard.calendar || []);
+      setLastScan(
+        dashboard.scanned_at
+          ? new Date(dashboard.scanned_at).toLocaleTimeString()
+          : new Date().toLocaleTimeString(),
+      );
     } catch (err) {
       console.error("Scanner fetch failed:", err);
     } finally {
