@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from fastapi.testclient import TestClient
 
-os.environ.setdefault("ENVIRONMENT", "development")
+os.environ.setdefault("ENABLE_SIMULATED_DATA", "true")
 os.environ.setdefault("MARKET_DATA_PROVIDER", "simulated")
 
 from apps.api.auth import hash_password, verify_password, _users_db  # noqa: E402

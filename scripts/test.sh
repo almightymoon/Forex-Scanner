@@ -3,7 +3,6 @@
 set -e
 cd "$(dirname "$0")/.."
 export PYTHONPATH=.
-export ENVIRONMENT=development
 export ENABLE_SIMULATED_DATA=true
 export MARKET_DATA_PROVIDER=simulated
 

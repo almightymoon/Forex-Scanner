@@ -1,4 +1,4 @@
-"""Market data configuration — loaded from config/market.yaml + environment."""
+"""Market data configuration — loaded from config/market.yaml + explicit env flags."""
 
 import os
 from dataclasses import dataclass
@@ -15,8 +15,13 @@ _CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "market.yaml"
 class ProviderConfig:
     default: str = "twelvedata"
     simulated_enabled: bool = False
-    fallback_enabled: bool = False
+    allow_fallback: bool = False
     retry_count: int = 3
+
+    @property
+    def fallback_enabled(self) -> bool:
+        """Backward-compatible alias."""
+        return self.allow_fallback
 
 
 @dataclass(frozen=True)
@@ -29,13 +34,8 @@ class MarketConfig:
 
     @property
     def simulated_mode(self) -> bool:
-        if self.provider.simulated_enabled:
-            return True
-        if os.getenv("ENABLE_SIMULATED_DATA", "").lower() == "true":
-            return True
-        if os.getenv("ENVIRONMENT", "").lower() == "development":
-            return True
-        return False
+        """Simulation is opt-in only — never inferred from ENVIRONMENT."""
+        return self.provider.simulated_enabled
 
 
 def _load_yaml() -> dict[str, Any]:
@@ -45,22 +45,24 @@ def _load_yaml() -> dict[str, Any]:
         return yaml.safe_load(f) or {}
 
 
-def _env_bool(name: str, yaml_default: bool) -> bool:
-    val = os.getenv(name)
-    if val is not None:
-        return val.lower() == "true"
-    return bool(yaml_default)
+def _explicit_simulated_flag() -> bool:
+    """Only ENABLE_SIMULATED_DATA=true opts in via environment (explicit string)."""
+    return os.getenv("ENABLE_SIMULATED_DATA", "").lower() == "true"
 
 
 @lru_cache
 def get_market_config() -> MarketConfig:
     raw = _load_yaml()
     p = raw.get("provider", {})
+    yaml_sim = bool(p.get("simulated_enabled", False))
+    env_sim = _explicit_simulated_flag()
+    allow_fallback = bool(p.get("allow_fallback", p.get("fallback_enabled", False)))
+
     return MarketConfig(
         provider=ProviderConfig(
             default=os.getenv("MARKET_DATA_PROVIDER", p.get("default", "twelvedata")).lower(),
-            simulated_enabled=_env_bool("ENABLE_SIMULATED_DATA", p.get("simulated_enabled", False)),
-            fallback_enabled=p.get("fallback_enabled", False),
+            simulated_enabled=yaml_sim or env_sim,
+            allow_fallback=allow_fallback,
             retry_count=int(p.get("retry_count", 3)),
         ),
         timeout=int(raw.get("timeout", 10)),
@@ -70,3 +72,8 @@ def get_market_config() -> MarketConfig:
 
 def is_simulated_mode() -> bool:
     return get_market_config().simulated_mode
+
+
+def reload_market_config() -> MarketConfig:
+    get_market_config.cache_clear()
+    return get_market_config()

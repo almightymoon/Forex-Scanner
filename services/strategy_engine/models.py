@@ -50,10 +50,17 @@ class Strategy:
     active: bool = True
     symbols: list[str] = field(default_factory=list)
     min_score: int = 0
+    user_id: str = "system"
 
     @staticmethod
-    def create(name: str, rules: list[StrategyRule], action: str = "buy") -> "Strategy":
-        return Strategy(id=str(uuid.uuid4())[:8], name=name, rules=rules, action=action)
+    def create(name: str, rules: list[StrategyRule], action: str = "buy", user_id: str = "") -> "Strategy":
+        return Strategy(
+            id=str(uuid.uuid4())[:8],
+            name=name,
+            rules=rules,
+            action=action,
+            user_id=user_id,
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -65,4 +72,5 @@ class Strategy:
             "active": self.active,
             "symbols": self.symbols,
             "min_score": self.min_score,
+            "user_id": self.user_id,
         }

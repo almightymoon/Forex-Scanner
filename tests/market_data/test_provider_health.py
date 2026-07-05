@@ -27,9 +27,11 @@ class TestProviderHealth(unittest.TestCase):
 
 
 class TestFactorySelection(unittest.TestCase):
-    def test_simulated_mode_flag(self):
-        if os.getenv("ENVIRONMENT") == "development" or os.getenv("ENABLE_SIMULATED_DATA") == "true":
+    def test_simulated_only_when_explicit(self):
+        if os.getenv("ENABLE_SIMULATED_DATA") == "true":
             self.assertTrue(is_simulated_mode())
+        else:
+            self.assertFalse(is_simulated_mode())
 
     def test_missing_api_key_validation(self):
         from services.market_data_service.factory import _validate_provider_key

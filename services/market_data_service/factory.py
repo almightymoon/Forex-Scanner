@@ -62,6 +62,10 @@ def create_provider(name: str | None = None) -> MarketDataProvider:
     provider = _import_class(class_path)()
     ProviderHealthTracker.get(provider.name)
     logger.info("Market data provider selected: %s", provider.name)
+
+    from .startup import print_startup_banner
+    print_startup_banner(provider.name)
+
     return provider
 
 

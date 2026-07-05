@@ -45,6 +45,9 @@ class StrategyStorage:
     def list_all(self) -> list[Strategy]:
         return list(self._strategies.values())
 
+    def list_for_user(self, user_id: str) -> list[Strategy]:
+        return [s for s in self._strategies.values() if s.user_id in (user_id, "system")]
+
     def get(self, strategy_id: str) -> Strategy | None:
         return self._strategies.get(strategy_id)
 
@@ -53,12 +56,17 @@ class StrategyStorage:
         self._save()
         return strategy
 
-    def delete(self, strategy_id: str) -> bool:
-        if strategy_id in self._strategies:
-            del self._strategies[strategy_id]
-            self._save()
-            return True
-        return False
+    def delete(self, strategy_id: str, user_id: str) -> bool:
+        strategy = self._strategies.get(strategy_id)
+        if not strategy:
+            return False
+        if strategy.user_id == "system":
+            return False
+        if strategy.user_id != user_id:
+            return False
+        del self._strategies[strategy_id]
+        self._save()
+        return True
 
 
 def _from_dict(data: dict) -> Strategy:
@@ -79,4 +87,5 @@ def _from_dict(data: dict) -> Strategy:
         active=data.get("active", True),
         symbols=data.get("symbols", []),
         min_score=data.get("min_score", 0),
+        user_id=data.get("user_id", "system"),
     )

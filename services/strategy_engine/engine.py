@@ -46,9 +46,13 @@ class StrategyEngine:
                 )
         return triggered
 
-    def list_strategies(self) -> list[dict]:
-        return [s.to_dict() for s in self.storage.list_all()]
+    def list_strategies(self, user_id: str) -> list[dict]:
+        return [s.to_dict() for s in self.storage.list_for_user(user_id)]
 
-    def create_strategy(self, strategy) -> dict:
+    def create_strategy(self, strategy, user_id: str) -> dict:
+        strategy.user_id = user_id
         saved = self.storage.save(strategy)
         return saved.to_dict()
+
+    def delete_strategy(self, strategy_id: str, user_id: str) -> bool:
+        return self.storage.delete(strategy_id, user_id)

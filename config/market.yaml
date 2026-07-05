@@ -1,7 +1,7 @@
 provider:
   default: twelvedata
   simulated_enabled: false
-  fallback_enabled: false
+  allow_fallback: false
   retry_count: 3
 
 timeout: 10

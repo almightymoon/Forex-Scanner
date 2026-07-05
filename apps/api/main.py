@@ -53,6 +53,10 @@ _daemon_task = None
 async def lifespan(app: FastAPI):
     import asyncio
     global _daemon_task
+
+    from apps.api.deps import get_market_data
+    get_market_data()
+
     pipeline = get_pipeline()
     if os.getenv("ENABLE_SCANNER_DAEMON", "false").lower() == "true":
         _daemon_task = asyncio.create_task(pipeline.run_continuous(
@@ -403,7 +407,6 @@ def merge_watchlist(default: list[str], custom: list[str]) -> list[str]:
 
 class CheckoutRequest(BaseModel):
     plan_id: str
-    email: str
 
 
 @app.get("/api/v1/billing/plans")
@@ -412,10 +415,10 @@ async def get_plans(billing: BillingDep):
 
 
 @app.post("/api/v1/billing/checkout")
-async def create_checkout(req: CheckoutRequest, billing: BillingDep):
+async def create_checkout(req: CheckoutRequest, billing: BillingDep, user: CurrentUserDep):
     result = billing.create_checkout_session(
         plan_id=req.plan_id,
-        user_email=req.email,
+        user_email=user["email"],
         success_url="http://localhost:3000?subscribed=true",
         cancel_url="http://localhost:3000?cancelled=true",
     )
@@ -423,12 +426,12 @@ async def create_checkout(req: CheckoutRequest, billing: BillingDep):
 
 
 @app.get("/api/v1/strategies")
-async def list_strategies(strategies: StrategyDep):
-    return {"strategies": strategies.list_strategies()}
+async def list_strategies(strategies: StrategyDep, user: CurrentUserDep):
+    return {"strategies": strategies.list_strategies(user["email"])}
 
 
 @app.post("/api/v1/strategies")
-async def create_strategy(body: StrategyCreate, strategies: StrategyDep):
+async def create_strategy(body: StrategyCreate, strategies: StrategyDep, user: CurrentUserDep):
     from services.strategy_engine import Combinator, RuleOperator, Strategy, StrategyRule
 
     rules = [
@@ -440,17 +443,23 @@ async def create_strategy(body: StrategyCreate, strategies: StrategyDep):
         )
         for r in body.rules
     ]
-    strategy = Strategy.create(body.name, rules, action=body.action)
+    strategy = Strategy.create(body.name, rules, action=body.action, user_id=user["email"])
     strategy.combinator = Combinator(body.combinator)
     strategy.symbols = [s.upper() for s in body.symbols]
     strategy.min_score = body.min_score
-    return strategies.create_strategy(strategy)
+    return strategies.create_strategy(strategy, user["email"])
 
 
 @app.delete("/api/v1/strategies/{strategy_id}")
-async def delete_strategy(strategy_id: str, strategies: StrategyDep):
-    if not strategies.storage.delete(strategy_id):
+async def delete_strategy(strategy_id: str, strategies: StrategyDep, user: CurrentUserDep):
+    existing = strategies.storage.get(strategy_id)
+    if not existing:
         raise HTTPException(404, "Strategy not found")
+    if existing.user_id == "system":
+        raise HTTPException(403, "Cannot delete system strategy")
+    if existing.user_id != user["email"]:
+        raise HTTPException(403, "Not authorized to delete this strategy")
+    strategies.delete_strategy(strategy_id, user["email"])
     return {"deleted": strategy_id}
 
 
