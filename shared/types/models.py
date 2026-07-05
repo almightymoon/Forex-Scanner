@@ -202,6 +202,7 @@ class ScannerSignal:
     trade_type: Optional[str] = None
     expected_duration: Optional[str] = None
     historical_evidence: Optional[dict] = None
+    market_features: Optional[dict] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 

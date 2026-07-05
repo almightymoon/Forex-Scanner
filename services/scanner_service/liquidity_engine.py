@@ -3,6 +3,8 @@
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, SMCPattern, SignalDirection
 
+from services.feature_engine.features import MarketFeatures
+
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .pattern_scoring import filter_patterns
 from .swing_analysis import detect_session_liquidity
@@ -14,7 +16,12 @@ class LiquidityEngine:
     def __init__(self, config: V2ScoringConfig | None = None):
         self.config = config or get_v2_scoring_config()
 
-    def run(self, patterns: list[SMCPattern], candles: list[Candle] | None = None) -> EngineOutput:
+    def run(
+        self,
+        patterns: list[SMCPattern],
+        candles: list[Candle] | None = None,
+        features: MarketFeatures | None = None,
+    ) -> EngineOutput:
         weights = self.config.weights
         rules = self.config.rules.get("liquidity", {
             "liquidity_sweep": 6, "equal_highs": 3, "equal_lows": 3,
@@ -46,7 +53,8 @@ class LiquidityEngine:
             else:
                 sell_pts += pts
 
-        session_tags = detect_session_liquidity(candles or [])
+        session_tags = features.session_tags if features else detect_session_liquidity(candles or [])
+        pools = features.liquidity_pools if features else pools
         for tag in session_tags:
             if "sweep" in tag.lower():
                 score += 2

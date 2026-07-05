@@ -3,6 +3,8 @@
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, SMCPattern, SignalDirection
 
+from services.feature_engine.features import MarketFeatures
+
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .pattern_scoring import filter_patterns
 from .swing_analysis import classify_bos, find_swings
@@ -14,7 +16,12 @@ class MarketStructureEngine:
     def __init__(self, config: V2ScoringConfig | None = None):
         self.config = config or get_v2_scoring_config()
 
-    def run(self, patterns: list[SMCPattern], candles: list[Candle] | None = None) -> EngineOutput:
+    def run(
+        self,
+        patterns: list[SMCPattern],
+        candles: list[Candle] | None = None,
+        features: MarketFeatures | None = None,
+    ) -> EngineOutput:
         weights = self.config.weights
         rules = self.config.rules.get("market_structure", {
             "bos": 8, "choch": 6, "internal_bos": 4, "external_bos": 6,
@@ -27,9 +34,16 @@ class MarketStructureEngine:
         bos_kind = "external"
 
         price = candles[-1].close if candles else 0
-        swing_highs, swing_lows = find_swings(candles or [])
-        if candles and swing_highs and swing_lows:
-            bos_kind = classify_bos(swing_highs, swing_lows, price)
+        bos_kind = features.bos_kind if features else "external"
+        swing_highs, swing_lows = [], []
+        if features and features.structure:
+            swing_highs = features.structure.swing_highs
+            swing_lows = features.structure.swing_lows
+            bos_kind = features.bos_kind
+        elif candles:
+            swing_highs, swing_lows = find_swings(candles)
+            if swing_highs and swing_lows:
+                bos_kind = classify_bos(swing_highs, swing_lows, price)
 
         for p in filtered:
             pts = rules.get(p.pattern_type, 6)
@@ -63,6 +77,8 @@ class MarketStructureEngine:
             metadata={
                 "high_strength": high_strength,
                 "bos_classification": bos_kind,
-                "swing_count": len(swing_highs) + len(swing_lows),
+                "swing_count": features.swing_count if features else len(swing_highs) + len(swing_lows),
+                "continuation": features.structure_continuation if features else True,
+                "last_event": features.last_structure_event if features else None,
             },
         )

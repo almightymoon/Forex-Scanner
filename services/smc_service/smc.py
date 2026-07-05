@@ -1,5 +1,10 @@
-"""Smart Money Concepts detection engine."""
+"""Smart Money Concepts detection engine — uses shared swing analysis."""
 
+from services.scanner_service.swing_analysis import (
+    MarketStructureState,
+    analyze_market_structure,
+    build_zigzag_swings,
+)
 from shared.types.models import Candle, SMCPattern, SignalDirection, Timeframe
 
 
@@ -12,63 +17,87 @@ class SMCEngine:
         if len(candles) < 20:
             return []
 
+        structure = analyze_market_structure(candles)
         patterns: list[SMCPattern] = []
-        patterns.extend(self._detect_bos_choch(candles))
+        patterns.extend(self._detect_bos_choch(candles, structure))
         patterns.extend(self._detect_order_blocks(candles))
         patterns.extend(self._detect_fvg(candles))
-        patterns.extend(self._detect_liquidity_sweeps(candles))
-        patterns.extend(self._detect_equal_levels(candles))
+        patterns.extend(self._detect_liquidity_sweeps(candles, structure))
+        patterns.extend(self._detect_equal_levels(candles, structure))
         return patterns
 
-    def _detect_bos_choch(self, candles: list[Candle]) -> list[SMCPattern]:
+    def _detect_bos_choch(
+        self, candles: list[Candle], structure: MarketStructureState
+    ) -> list[SMCPattern]:
         patterns: list[SMCPattern] = []
-        swing_highs = self._find_swing_points(candles, "high")
-        swing_lows = self._find_swing_points(candles, "low")
+        strength = int(structure.swing_strength_avg) if structure.swing_strength_avg else 70
 
-        if len(swing_highs) >= 2:
-            prev_high = swing_highs[-2]
-            curr_high = swing_highs[-1]
-            if curr_high[1] > prev_high[1]:
+        if len(structure.swing_highs) >= 2:
+            prev_high = structure.swing_highs[-2]
+            curr_high = structure.swing_highs[-1]
+            if curr_high.price > prev_high.price:
                 patterns.append(
                     SMCPattern(
                         pattern_type="bos",
                         direction=SignalDirection.BUY,
-                        price_high=curr_high[1],
-                        strength=70,
-                        metadata={"swing_index": curr_high[0]},
+                        price_high=curr_high.price,
+                        strength=strength,
+                        metadata={
+                            "swing_index": curr_high.index,
+                            "swing_strength": curr_high.strength,
+                            "bos_kind": structure.bos_kind,
+                        },
                     )
                 )
-            elif curr_high[1] < prev_high[1]:
+            elif curr_high.price < prev_high.price:
                 patterns.append(
                     SMCPattern(
                         pattern_type="choch",
                         direction=SignalDirection.SELL,
-                        price_high=curr_high[1],
-                        strength=60,
+                        price_high=curr_high.price,
+                        strength=max(55, strength - 10),
+                        metadata={"swing_strength": curr_high.strength},
                     )
                 )
 
-        if len(swing_lows) >= 2:
-            prev_low = swing_lows[-2]
-            curr_low = swing_lows[-1]
-            if curr_low[1] < prev_low[1]:
+        if len(structure.swing_lows) >= 2:
+            prev_low = structure.swing_lows[-2]
+            curr_low = structure.swing_lows[-1]
+            if curr_low.price < prev_low.price:
                 patterns.append(
                     SMCPattern(
                         pattern_type="bos",
                         direction=SignalDirection.SELL,
-                        price_low=curr_low[1],
-                        strength=70,
+                        price_low=curr_low.price,
+                        strength=strength,
+                        metadata={
+                            "swing_index": curr_low.index,
+                            "swing_strength": curr_low.strength,
+                            "bos_kind": structure.bos_kind,
+                        },
                     )
                 )
-            elif curr_low[1] > prev_low[1]:
+            elif curr_low.price > prev_low.price:
                 patterns.append(
                     SMCPattern(
                         pattern_type="choch",
                         direction=SignalDirection.BUY,
-                        price_low=curr_low[1],
-                        strength=60,
+                        price_low=curr_low.price,
+                        strength=max(55, strength - 10),
+                        metadata={"swing_strength": curr_low.strength},
                     )
                 )
+
+        if structure.last_event and not patterns:
+            direction = SignalDirection.BUY if structure.event_direction == "buy" else SignalDirection.SELL
+            patterns.append(
+                SMCPattern(
+                    pattern_type=structure.last_event,
+                    direction=direction,
+                    strength=strength,
+                    metadata={"bos_kind": structure.bos_kind, "continuation": structure.continuation},
+                )
+            )
 
         return patterns
 
@@ -103,7 +132,7 @@ class SMCEngine:
                     )
                 )
 
-        return patterns[-3:]  # keep recent only
+        return patterns[-3:]
 
     def _detect_fvg(self, candles: list[Candle]) -> list[SMCPattern]:
         patterns: list[SMCPattern] = []
@@ -133,39 +162,107 @@ class SMCEngine:
                 )
         return patterns[-3:]
 
-    def _detect_liquidity_sweeps(self, candles: list[Candle]) -> list[SMCPattern]:
+    def _detect_liquidity_sweeps(
+        self, candles: list[Candle], structure: MarketStructureState
+    ) -> list[SMCPattern]:
         patterns: list[SMCPattern] = []
         if len(candles) < 10:
             return patterns
 
-        recent_low = min(c.low for c in candles[-10:-1])
-        recent_high = max(c.high for c in candles[-10:-1])
         last = candles[-1]
+        if structure.swing_lows:
+            recent_low = structure.swing_lows[-1].price
+            if last.low < recent_low and last.close > recent_low:
+                patterns.append(
+                    SMCPattern(
+                        pattern_type="liquidity_sweep",
+                        direction=SignalDirection.BUY,
+                        price_low=last.low,
+                        strength=80,
+                        metadata={"swept_level": recent_low, "swing_based": True},
+                    )
+                )
 
-        if last.low < recent_low and last.close > recent_low:
-            patterns.append(
-                SMCPattern(
-                    pattern_type="liquidity_sweep",
-                    direction=SignalDirection.BUY,
-                    price_low=last.low,
-                    strength=80,
-                    metadata={"swept_level": recent_low},
+        if structure.swing_highs:
+            recent_high = structure.swing_highs[-1].price
+            if last.high > recent_high and last.close < recent_high:
+                patterns.append(
+                    SMCPattern(
+                        pattern_type="liquidity_sweep",
+                        direction=SignalDirection.SELL,
+                        price_high=last.high,
+                        strength=80,
+                        metadata={"swept_level": recent_high, "swing_based": True},
+                    )
                 )
-            )
-        elif last.high > recent_high and last.close < recent_high:
-            patterns.append(
-                SMCPattern(
-                    pattern_type="liquidity_sweep",
-                    direction=SignalDirection.SELL,
-                    price_high=last.high,
-                    strength=80,
-                    metadata={"swept_level": recent_high},
+
+        if not patterns:
+            recent_low = min(c.low for c in candles[-10:-1])
+            recent_high = max(c.high for c in candles[-10:-1])
+            if last.low < recent_low and last.close > recent_low:
+                patterns.append(
+                    SMCPattern(
+                        pattern_type="liquidity_sweep",
+                        direction=SignalDirection.BUY,
+                        price_low=last.low,
+                        strength=70,
+                        metadata={"swept_level": recent_low},
+                    )
                 )
-            )
+            elif last.high > recent_high and last.close < recent_high:
+                patterns.append(
+                    SMCPattern(
+                        pattern_type="liquidity_sweep",
+                        direction=SignalDirection.SELL,
+                        price_high=last.high,
+                        strength=70,
+                        metadata={"swept_level": recent_high},
+                    )
+                )
 
         return patterns
 
-    def _detect_equal_levels(self, candles: list[Candle]) -> list[SMCPattern]:
+    def _detect_equal_levels(
+        self, candles: list[Candle], structure: MarketStructureState
+    ) -> list[SMCPattern]:
+        patterns: list[SMCPattern] = []
+        tolerance = 0.0003
+
+        highs = structure.swing_highs[-5:] if structure.swing_highs else []
+        for i in range(len(highs)):
+            for j in range(i + 1, len(highs)):
+                if abs(highs[i].price - highs[j].price) / highs[i].price < tolerance:
+                    patterns.append(
+                        SMCPattern(
+                            pattern_type="equal_highs",
+                            direction=SignalDirection.SELL,
+                            price_high=highs[i].price,
+                            strength=int((highs[i].strength + highs[j].strength) / 2),
+                            metadata={"swing_based": True},
+                        )
+                    )
+                    break
+
+        lows = structure.swing_lows[-5:] if structure.swing_lows else []
+        for i in range(len(lows)):
+            for j in range(i + 1, len(lows)):
+                if abs(lows[i].price - lows[j].price) / lows[i].price < tolerance:
+                    patterns.append(
+                        SMCPattern(
+                            pattern_type="equal_lows",
+                            direction=SignalDirection.BUY,
+                            price_low=lows[i].price,
+                            strength=int((lows[i].strength + lows[j].strength) / 2),
+                            metadata={"swing_based": True},
+                        )
+                    )
+                    break
+
+        if not patterns:
+            patterns.extend(self._legacy_equal_levels(candles))
+        return patterns
+
+    def _legacy_equal_levels(self, candles: list[Candle]) -> list[SMCPattern]:
         patterns: list[SMCPattern] = []
         tolerance = 0.0003
         highs = [(i, c.high) for i, c in enumerate(candles[-20:])]
@@ -196,22 +293,12 @@ class SMCEngine:
                         )
                     )
                     break
-
         return patterns
 
     def _find_swing_points(
         self, candles: list[Candle], point_type: str, lookback: int = 3
     ) -> list[tuple[int, float]]:
-        swings: list[tuple[int, float]] = []
-        for i in range(lookback, len(candles) - lookback):
-            if point_type == "high":
-                if all(candles[i].high >= candles[i - j].high for j in range(1, lookback + 1)) and all(
-                    candles[i].high >= candles[i + j].high for j in range(1, lookback + 1)
-                ):
-                    swings.append((i, candles[i].high))
-            else:
-                if all(candles[i].low <= candles[i - j].low for j in range(1, lookback + 1)) and all(
-                    candles[i].low <= candles[i + j].low for j in range(1, lookback + 1)
-                ):
-                    swings.append((i, candles[i].low))
-        return swings
+        """Backward-compatible — delegates to shared zigzag detection."""
+        swings = build_zigzag_swings(candles, lookback=lookback)
+        filtered = [s for s in swings if s.kind == ("high" if point_type == "high" else "low")]
+        return [(s.index, s.price) for s in filtered]

@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 
 from services.indicator_service.indicators import compute_all
+from services.scanner_service.swing_analysis import session_from_hour
 from services.smc_service.smc import SMCEngine
 from shared.types.models import Candle, SignalDirection, Timeframe, TrendDirection
 
@@ -44,6 +45,8 @@ class HistoricalEvidence:
     avg_rr: float = 0.0
     avg_duration_bars: int = 0
     similar_setups: list[str] = field(default_factory=list)
+    best_session: str | None = None
+    worst_session: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -53,6 +56,8 @@ class HistoricalEvidence:
             "avg_duration_bars": self.avg_duration_bars,
             "avg_duration_hours": round(self.avg_duration_bars, 0),
             "similar_setups": self.similar_setups,
+            "best_session": self.best_session,
+            "worst_session": self.worst_session,
         }
 
 
@@ -82,6 +87,7 @@ class HistoricalSetupAnalyzer:
         wins = losses = 0
         rr_vals: list[float] = []
         durations: list[int] = []
+        session_stats: dict[str, dict[str, int]] = {}
 
         for i in range(60, len(candles) - forward_bars, step):
             window = candles[: i + 1]
@@ -107,8 +113,12 @@ class HistoricalSetupAnalyzer:
                 sl, tp = entry + atr * 1.5, entry - atr * 2
 
             outcome = self._simulate_forward(candles[i + 1 : i + 1 + forward_bars], entry, sl, tp, fingerprint.direction)
+            sess = session_from_hour(window[-1].timestamp.hour)
+            session_stats.setdefault(sess, {"wins": 0, "total": 0})
+            session_stats[sess]["total"] += 1
             if outcome == "win":
                 wins += 1
+                session_stats[sess]["wins"] += 1
                 risk = abs(entry - sl)
                 reward = abs(tp - entry)
                 if risk > 0:
@@ -127,6 +137,17 @@ class HistoricalSetupAnalyzer:
         evidence.avg_rr = sum(rr_vals) / len(rr_vals) if rr_vals else 1.5
         evidence.avg_duration_bars = int(sum(durations) / len(durations)) if durations else forward_bars
         evidence.similar_setups = sorted(fingerprint.patterns)
+
+        if session_stats:
+            rates = {
+                s: (d["wins"] / d["total"]) * 100
+                for s, d in session_stats.items()
+                if d["total"] >= 3
+            }
+            if rates:
+                evidence.best_session = max(rates, key=rates.get)
+                evidence.worst_session = min(rates, key=rates.get)
+
         return evidence
 
     @staticmethod

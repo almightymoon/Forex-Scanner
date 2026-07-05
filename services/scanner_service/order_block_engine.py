@@ -3,6 +3,8 @@
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, SMCPattern, SignalDirection
 
+from services.feature_engine.features import MarketFeatures
+
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .pattern_scoring import filter_patterns
 
@@ -11,7 +13,12 @@ class OrderBlockEngine:
     def __init__(self, config: V2ScoringConfig | None = None):
         self.config = config or get_v2_scoring_config()
 
-    def run(self, patterns: list[SMCPattern], candles: list[Candle] | None = None) -> EngineOutput:
+    def run(
+        self,
+        patterns: list[SMCPattern],
+        candles: list[Candle] | None = None,
+        features: MarketFeatures | None = None,
+    ) -> EngineOutput:
         weights = self.config.weights
         rules = self.config.rules.get("order_block", {"bullish_ob": 6, "bearish_ob": 6, "fresh_ob": 4})
         obs = filter_patterns(patterns, {"order_block"})
@@ -21,7 +28,10 @@ class OrderBlockEngine:
         qualities: list[dict] = []
 
         for p in obs[-3:]:
-            q = self._quality_score(p, candles or [], rules)
+            if features and features.best_ob and p == obs[-1]:
+                q = self._quality_from_features(p, features.best_ob)
+            else:
+                q = self._quality_score(p, candles or [], rules)
             score += q["points"]
             qualities.append(q)
             reasons.append(q["label"])
@@ -39,8 +49,24 @@ class OrderBlockEngine:
             confidence=confidence_from_score(score, weights.order_block),
             direction=direction,
             reasons=reasons,
-            metadata={"count": len(obs), "qualities": qualities},
+            metadata={"count": len(obs), "qualities": qualities, "best_quality": qualities[-1]["quality"] if qualities else 0},
         )
+
+    def _quality_from_features(self, p: SMCPattern, ob) -> dict:
+        side = "Bullish" if p.direction == SignalDirection.BUY else "Bearish"
+        stars = lambda v: "★" * int(v * 5) + "☆" * (5 - int(v * 5))
+        overall = int(ob.overall)
+        return {
+            "points": min(10, overall // 10),
+            "quality": overall,
+            "fresh": ob.freshness > 0.5,
+            "mitigated": ob.mitigation < 0.5,
+            "label": (
+                f"{side} OB — Fresh {stars(ob.freshness)} Vol {stars(ob.volume)} "
+                f"Reaction {stars(ob.reaction)} Mit {stars(ob.mitigation)} "
+                f"Impulse {stars(ob.impulse)} · Overall {overall}/100"
+            ),
+        }
 
     def _quality_score(self, p: SMCPattern, candles: list[Candle], rules: dict) -> dict:
         idx = p.metadata.get("index", len(candles) - 1)

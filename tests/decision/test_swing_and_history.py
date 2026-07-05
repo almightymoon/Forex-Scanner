@@ -4,6 +4,7 @@ import unittest
 
 from services.scanner_service.swing_analysis import (
     analyze_trend_context,
+    build_zigzag_swings,
     classify_bos,
     detect_session_liquidity,
     find_swings,
@@ -16,10 +17,11 @@ from tests.helpers import candles
 
 class TestSwingAnalysis(unittest.TestCase):
     def test_find_swings_on_uptrend(self):
-        prices = [1.10 + (i % 4) * 0.003 + i * 0.0003 for i in range(40)]
+        prices = [1.10 + (i % 6) * 0.003 + i * 0.0003 for i in range(40)]
         cs = candles(prices)
         highs, lows = find_swings(cs)
-        self.assertGreaterEqual(len(highs) + len(lows), 0)
+        swings = build_zigzag_swings(cs)
+        self.assertGreaterEqual(len(swings), len(highs) + len(lows) - 2)
 
     def test_trend_context_bullish(self):
         prices = [1.10 + i * 0.002 for i in range(40)]

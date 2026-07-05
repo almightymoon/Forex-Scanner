@@ -59,6 +59,8 @@ export interface HistoricalEvidence {
   avg_duration_bars: number;
   avg_duration_hours?: number;
   similar_setups?: string[];
+  best_session?: string;
+  worst_session?: string;
 }
 
 export interface ScannerSignal {
@@ -84,6 +86,7 @@ export interface ScannerSignal {
   trade_type?: string;
   expected_duration?: string;
   historical_evidence?: HistoricalEvidence;
+  market_features?: Record<string, unknown>;
   entry_zone_low?: number;
   entry_zone_high?: number;
   stop_loss?: number;

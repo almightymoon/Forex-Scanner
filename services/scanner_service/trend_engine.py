@@ -3,6 +3,8 @@
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, IndicatorValues, TrendDirection
 
+from services.feature_engine.features import MarketFeatures
+
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .models import TrendAnalysis
 from .swing_analysis import analyze_trend_context
@@ -12,8 +14,13 @@ class TrendEngine:
     def __init__(self, config: V2ScoringConfig | None = None):
         self._v2 = config or get_v2_scoring_config()
 
-    def run(self, candles: list[Candle], indicators: IndicatorValues) -> EngineOutput:
-        analysis = self._analyze(candles, indicators)
+    def run(
+        self,
+        candles: list[Candle],
+        indicators: IndicatorValues,
+        features: MarketFeatures | None = None,
+    ) -> EngineOutput:
+        analysis = self._analyze(candles, indicators, features)
         direction = "NEUTRAL"
         if analysis.direction == TrendDirection.BULLISH:
             direction = "BUY"
@@ -39,11 +46,21 @@ class TrendEngine:
             },
         )
 
-    def analyze(self, candles: list[Candle], indicators: IndicatorValues) -> TrendAnalysis:
+    def analyze(
+        self,
+        candles: list[Candle],
+        indicators: IndicatorValues,
+        features: MarketFeatures | None = None,
+    ) -> TrendAnalysis:
         """Backward-compatible analysis object."""
-        return self._analyze(candles, indicators)
+        return self._analyze(candles, indicators, features)
 
-    def _analyze(self, candles: list[Candle], indicators: IndicatorValues) -> TrendAnalysis:
+    def _analyze(
+        self,
+        candles: list[Candle],
+        indicators: IndicatorValues,
+        features: MarketFeatures | None = None,
+    ) -> TrendAnalysis:
         rules = self._v2.rules.get("trend", {})
         thresholds = self._v2.thresholds
         adx_threshold = float(thresholds.get("adx", 25))
@@ -105,7 +122,7 @@ class TrendEngine:
             score += rules.get("price_above_vwap", 2)
             result.reasons.append("Price below VWAP")
 
-        ctx = analyze_trend_context(
+        ctx = features.trend_context if features and features.trend_context else analyze_trend_context(
             candles,
             indicators.ema_20,
             indicators.ema_50,

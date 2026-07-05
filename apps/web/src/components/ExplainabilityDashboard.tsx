@@ -171,6 +171,12 @@ function HistoricalStats({
             <span className="explain-hist-value">{hours}h</span>
           </div>
         </div>
+        {(evidence.best_session || evidence.worst_session) && (
+          <p className="explain-hist-sessions">
+            {evidence.best_session && <>Best session: <strong>{formatSession(evidence.best_session)}</strong></>}
+            {evidence.worst_session && <> · Weakest: <strong>{formatSession(evidence.worst_session)}</strong></>}
+          </p>
+        )}
       </>
     );
   }

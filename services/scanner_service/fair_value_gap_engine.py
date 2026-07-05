@@ -3,6 +3,8 @@
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, SMCPattern, SignalDirection
 
+from services.feature_engine.features import MarketFeatures
+
 from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .pattern_scoring import filter_patterns
 
@@ -11,7 +13,12 @@ class FairValueGapEngine:
     def __init__(self, config: V2ScoringConfig | None = None):
         self.config = config or get_v2_scoring_config()
 
-    def run(self, patterns: list[SMCPattern], candles: list[Candle] | None = None) -> EngineOutput:
+    def run(
+        self,
+        patterns: list[SMCPattern],
+        candles: list[Candle] | None = None,
+        features: MarketFeatures | None = None,
+    ) -> EngineOutput:
         weights = self.config.weights
         rules = self.config.rules.get("fair_value_gap", {
             "bullish_fvg": 5, "bearish_fvg": 5, "filled": 2,
@@ -23,7 +30,10 @@ class FairValueGapEngine:
         gap_details: list[dict] = []
 
         for p in fvgs:
-            detail = self._analyze_gap(p, candles or [], rules)
+            if features and features.best_fvg and p == fvgs[-1]:
+                detail = self._analyze_from_features(p, features.best_fvg, rules)
+            else:
+                detail = self._analyze_gap(p, candles or [], rules)
             score += detail["points"]
             gap_details.append(detail)
             reasons.append(detail["label"])
@@ -43,6 +53,22 @@ class FairValueGapEngine:
             reasons=reasons,
             metadata={"gap_count": len(fvgs), "gaps": gap_details},
         )
+
+    def _analyze_from_features(self, p: SMCPattern, fvg, rules: dict) -> dict:
+        side = "Bullish" if p.direction == SignalDirection.BUY else "Bearish"
+        base = rules.get("bullish_fvg" if p.direction == SignalDirection.BUY else "bearish_fvg", 5)
+        points = base if fvg.quality == "high" else base // 2 + 1 if fvg.quality == "moderate" else rules.get("filled", 2)
+        label = (
+            f"{side} FVG — gap {fvg.gap_size:.5f}, {fvg.fill_pct:.0f}% filled, "
+            f"{fvg.quality} quality, confluence {fvg.confluence:.2f}"
+        )
+        return {
+            "points": points,
+            "gap_size": fvg.gap_size,
+            "fill_pct": fvg.fill_pct,
+            "quality": fvg.quality,
+            "label": label,
+        }
 
     def _analyze_gap(self, p: SMCPattern, candles: list[Candle], rules: dict) -> dict:
         gap_low = p.price_low or 0

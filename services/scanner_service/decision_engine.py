@@ -22,6 +22,7 @@ from shared.types.models import (
     rating_from_score,
 )
 
+from services.feature_engine import FeatureExtractor, MarketFeatures
 from services.setup_intelligence import HistoricalSetupAnalyzer, SetupFingerprint
 from .engine_output import EngineOutput
 from .explainability import build_detected_patterns, build_explainability_summary, build_score_deltas
@@ -56,6 +57,7 @@ class DecisionEngine:
         self.news_engine = NewsEngine(cfg)
         self.mtf_engine = MultiTimeframeEngine(cfg)
         self._historical = HistoricalSetupAnalyzer()
+        self._features = FeatureExtractor()
 
     def evaluate(
         self,
@@ -69,13 +71,14 @@ class DecisionEngine:
     ) -> ScannerSignal:
         news_ctx = news or NewsContext()
         mtf_map = mtf_trends or {}
+        features = self._features.extract(candles, indicators, smc_patterns)
 
         outputs: list[EngineOutput] = [
-            self.trend_engine.run(candles, indicators),
-            self.market_structure_engine.run(smc_patterns, candles),
-            self.liquidity_engine.run(smc_patterns, candles),
-            self.order_block_engine.run(smc_patterns, candles),
-            self.fvg_engine.run(smc_patterns, candles),
+            self.trend_engine.run(candles, indicators, features),
+            self.market_structure_engine.run(smc_patterns, candles, features),
+            self.liquidity_engine.run(smc_patterns, candles, features),
+            self.order_block_engine.run(smc_patterns, candles, features),
+            self.fvg_engine.run(smc_patterns, candles, features),
             self.momentum_engine.run(len(candles), indicators),
             self.volatility_engine.run(candles, indicators),
             self.news_engine.run(news_ctx),
@@ -176,6 +179,7 @@ class DecisionEngine:
             trade_type=self._trade_type(direction, outputs),
             expected_duration=self._expected_duration(session, historical),
             historical_evidence=historical.to_dict() if historical.sample_size > 0 else None,
+            market_features=features.to_dict(),
         )
 
     def _resolve_direction(
