@@ -10,6 +10,47 @@ export interface ScoreBreakdown {
   news_risk: number;
 }
 
+export interface DecisionFactor {
+  category: string;
+  score: number;
+  max_score: number;
+  confidence: number;
+  reasons: string[];
+}
+
+export interface DetectedPattern {
+  id: string;
+  label: string;
+  direction: string;
+}
+
+export interface ScoreDelta {
+  text: string;
+  delta: number;
+  sign: string;
+}
+
+export interface Explainability {
+  score: number;
+  confidence: number;
+  confidence_pct: number;
+  session: string;
+  categories: Array<{ label: string; score: number; max_score: number }>;
+  detected_patterns: DetectedPattern[];
+  score_deltas: ScoreDelta[];
+}
+
+export interface EngineOutput {
+  name: string;
+  score: number;
+  max_score: number;
+  confidence: number;
+  direction: string;
+  reasons: string[];
+  metadata?: Record<string, unknown>;
+  warnings?: string[];
+}
+
 export interface ScannerSignal {
   symbol: string;
   timeframe: string;
@@ -21,6 +62,17 @@ export interface ScannerSignal {
   score_breakdown: ScoreBreakdown;
   technical_reasons: string[];
   smc_reasons: string[];
+  confidence?: number;
+  session?: string;
+  decision_factors?: DecisionFactor[];
+  detected_patterns?: DetectedPattern[];
+  score_deltas?: ScoreDelta[];
+  explainability?: Explainability;
+  engine_outputs?: EngineOutput[];
+  score_breakdown_v2?: Record<string, number>;
+  warnings?: string[];
+  trade_type?: string;
+  expected_duration?: string;
   entry_zone_low?: number;
   entry_zone_high?: number;
   stop_loss?: number;

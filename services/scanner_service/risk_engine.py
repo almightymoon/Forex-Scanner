@@ -1,8 +1,8 @@
-"""Risk engine — config-driven support/resistance, volume, spread rules."""
+"""Risk engine — S/R, trade quality, levels (orchestrated output)."""
 
 from typing import Optional
 
-from shared.config.scanner import ScoringConfig, get_scanner_config
+from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import (
     Candle,
     IndicatorValues,
@@ -12,12 +12,47 @@ from shared.types.models import (
     TrendDirection,
 )
 
+from .engine_output import EngineOutput, clamp_score, confidence_from_score
 from .models import SRAnalysis, VolumeAnalysis
 
 
 class RiskEngine:
-    def __init__(self, config: ScoringConfig | None = None):
-        self.config = config or get_scanner_config().scoring
+    def __init__(self, config: V2ScoringConfig | None = None):
+        self._v2 = config or get_v2_scoring_config()
+
+    def run(
+        self,
+        candles: list[Candle],
+        indicators: IndicatorValues,
+        trend: TrendDirection,
+        direction: SignalDirection,
+    ) -> EngineOutput:
+        sr = self.analyze_support_resistance(candles, indicators, trend)
+        max_score = self._v2.weights.risk
+        rules = self._v2.rules.get("risk", {"near_level": 3, "rr_quality": 3})
+        score = min(sr.score, rules.get("near_level", 3) * 2)
+
+        _, sl, tp1, _, _, rr = self.calculate_levels(candles, indicators, direction)
+        reasons = list(sr.reasons)
+        warnings: list[str] = []
+
+        if rr and rr >= 2:
+            score += rules.get("rr_quality", 3)
+            reasons.append(f"Favorable risk/reward ({rr}:1)")
+        elif rr and rr < 1.5:
+            warnings.append("Suboptimal risk/reward ratio")
+
+        score = clamp_score(score, max_score)
+        return EngineOutput(
+            name="Risk",
+            score=score,
+            max_score=max_score,
+            confidence=confidence_from_score(score, max_score),
+            direction="NEUTRAL",
+            reasons=reasons,
+            warnings=warnings,
+            metadata={"stop_loss": sl, "take_profit_1": tp1, "risk_reward": rr},
+        )
 
     def analyze_support_resistance(
         self,
@@ -25,8 +60,6 @@ class RiskEngine:
         indicators: IndicatorValues,
         trend: TrendDirection,
     ) -> SRAnalysis:
-        cfg = self.config
-        rules = cfg.risk_sr.rules
         result = SRAnalysis()
         score = 0
         if not candles:
@@ -38,11 +71,11 @@ class RiskEngine:
 
         if trend == TrendDirection.BULLISH and abs(price - recent_low) / price < 0.005:
             result.near_support = True
-            score += rules["near_support"].points
+            score += 3
             result.reasons.append("Price near support zone")
         elif trend == TrendDirection.BEARISH and abs(price - recent_high) / price < 0.005:
             result.near_resistance = True
-            score += rules["near_resistance"].points
+            score += 3
             result.reasons.append("Price near resistance zone")
 
         if indicators.bb_lower and indicators.bb_upper:
@@ -51,56 +84,45 @@ class RiskEngine:
                 fib_618 = indicators.bb_lower + range_size * 0.618
                 if abs(price - fib_618) / price < 0.003:
                     result.fib_confluence = True
-                    score += rules["fib_confluence"].points
+                    score += 2
                     result.reasons.append("Fibonacci 61.8% confluence")
 
         if indicators.bb_middle:
             if trend == TrendDirection.BULLISH and price > indicators.bb_middle:
                 result.pivot_confirmed = True
-                score += rules["pivot_confirmed"].points
+                score += 2
                 result.reasons.append("Price above pivot/Bollinger midline")
             elif trend == TrendDirection.BEARISH and price < indicators.bb_middle:
                 result.pivot_confirmed = True
-                score += rules["pivot_confirmed"].points
+                score += 2
                 result.reasons.append("Price below pivot/Bollinger midline")
 
-        result.score = min(score, cfg.risk_sr.max_points)
+        result.score = score
         return result
 
     def analyze_volume(self, candles: list[Candle], indicators: IndicatorValues) -> VolumeAnalysis:
-        cfg = self.config
-        rules = cfg.risk_volume.rules
         result = VolumeAnalysis()
         score = 0
+        spread_warn = float(self._v2.thresholds.get("spread_warning", 0.0005))
 
         if len(candles) >= 20:
             avg_vol = sum(c.volume for c in candles[-20:]) / 20
             if candles[-1].volume > avg_vol * 1.2:
                 result.volume_above_avg = True
-                score += rules["volume_above_avg"].points
+                score += 2
                 result.reasons.append("Volume above 20-period average")
 
         if indicators.atr_14:
             result.atr_expanding = True
-            score += rules["atr_expanding"].points
+            score += 2
             result.reasons.append("ATR expansion confirms volatility")
 
-        if len(candles) >= 2:
-            last = candles[-1]
-            body = abs(last.close - last.open)
-            wick = last.high - last.low
-            if wick > 0 and body / wick > 0.6:
-                result.breakout_strength = True
-                score += rules["breakout_strength"].points
-                result.reasons.append("Strong breakout candle body")
-
         if candles and candles[-1].spread is not None:
-            if candles[-1].spread > cfg.spread_warning:
+            if candles[-1].spread > spread_warn:
                 result.spread_normal = False
-                score = max(0, score + rules["spread_penalty"].points)
                 result.reasons.append("Warning: elevated spread")
 
-        result.score = min(score, cfg.risk_volume.max_points)
+        result.score = score
         return result
 
     def assess_risk(self, score: int, news: NewsContext, spread_ok: bool) -> RiskLevel:

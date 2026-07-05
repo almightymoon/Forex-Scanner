@@ -193,6 +193,14 @@ class ScannerSignal:
     confidence: float = 0.0
     session: Optional[str] = None
     decision_factors: list[dict] = field(default_factory=list)
+    detected_patterns: list[dict] = field(default_factory=list)
+    score_deltas: list[dict] = field(default_factory=list)
+    explainability: Optional[dict] = None
+    engine_outputs: list[dict] = field(default_factory=list)
+    score_breakdown_v2: Optional[dict] = None
+    warnings: list[str] = field(default_factory=list)
+    trade_type: Optional[str] = None
+    expected_duration: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 

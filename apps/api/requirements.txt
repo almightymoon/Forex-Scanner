@@ -5,6 +5,7 @@ pydantic-settings==2.7.0
 httpx==0.28.1
 websockets==14.1
 psycopg2-binary==2.9.10
+PyYAML==6.0.2
 
 # Full production deps (install when DB/auth needed):
 # asyncpg==0.30.0

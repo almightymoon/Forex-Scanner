@@ -3,7 +3,8 @@
 from .database import DatabaseConfig, get_database_config
 from .market import MarketConfig, get_market_config
 from .notifications import NotificationsConfig, get_notifications_config
-from .scanner import ScannerConfig, ScoringConfig, DEFAULT_SCORING, get_scanner_config
+from .scanner import DEFAULT_SCORING, ScannerConfig, ScoringConfig, get_scanner_config
+from .scoring_loader import V2ScoringConfig, V2Weights, get_v2_scoring_config
 
 __all__ = [
     "DatabaseConfig",
@@ -12,6 +13,9 @@ __all__ = [
     "ScannerConfig",
     "ScoringConfig",
     "DEFAULT_SCORING",
+    "V2ScoringConfig",
+    "V2Weights",
+    "get_v2_scoring_config",
     "get_database_config",
     "get_market_config",
     "get_notifications_config",

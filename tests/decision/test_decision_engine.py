@@ -19,18 +19,18 @@ class TestDecisionEngine(unittest.TestCase):
         self.assertGreater(signal.score, 0)
         self.assertGreater(signal.confidence, 0)
         self.assertIsNotNone(signal.session)
-        self.assertGreater(len(signal.decision_factors), 0)
-        self.assertEqual(signal.score, signal.score_breakdown.total)
+        self.assertGreater(len(signal.engine_outputs), 0)
+        self.assertEqual(signal.score, sum(o["score"] for o in signal.engine_outputs))
 
-    def test_decision_factors_have_confidence(self):
+    def test_explainability_payload(self):
         engine = DecisionEngine()
-        signal = engine.evaluate("EURUSD", Timeframe.H1, candles([1.10] * 60), indicators(
-            ema_20=1.11, ema_50=1.10, ema_200=1.09, rsi_14=55, atr_14=0.002
+        signal = engine.evaluate("EURUSD", Timeframe.H1, candles([1.10 + i * 0.001 for i in range(60)]), indicators(
+            ema_20=1.12, ema_50=1.11, ema_200=1.10, adx_14=30,
+            macd_histogram=0.5, rsi_14=60, atr_14=0.002,
         ), [])
-        for factor in signal.decision_factors:
-            self.assertIn("category", factor)
-            self.assertIn("confidence", factor)
-            self.assertIn("reasons", factor)
+        self.assertIsNotNone(signal.explainability)
+        self.assertGreater(len(signal.explainability["categories"]), 0)
+        self.assertGreater(len(signal.score_deltas), 0)
 
 
 if __name__ == "__main__":

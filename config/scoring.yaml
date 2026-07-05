@@ -1,0 +1,77 @@
+weights:
+  trend: 20
+  market_structure: 20
+  liquidity: 10
+  order_block: 10
+  fair_value_gap: 10
+  momentum: 10
+  volatility: 5
+  risk: 5
+  news: 5
+  multi_timeframe: 5
+
+rules:
+  trend:
+    ema_alignment: 8
+    sma_alignment: 4
+    adx_strong: 4
+    higher_highs: 2
+    higher_lows: 2
+    lower_highs: 2
+    lower_lows: 2
+    price_above_vwap: 2
+  market_structure:
+    bos: 8
+    choch: 6
+    internal_bos: 4
+    external_bos: 6
+  liquidity:
+    liquidity_sweep: 6
+    equal_highs: 3
+    equal_lows: 3
+    buy_side: 4
+    sell_side: 4
+  order_block:
+    bullish_ob: 6
+    bearish_ob: 6
+    fresh_ob: 4
+  fair_value_gap:
+    bullish_fvg: 5
+    bearish_fvg: 5
+    filled: 2
+  momentum:
+    macd: 4
+    rsi: 4
+    stochastic: 3
+    atr_momentum: 3
+  volatility:
+    atr: 2
+    spread: 2
+    candle_size: 2
+  risk:
+    near_level: 3
+    rr_quality: 3
+  news:
+    clear: 5
+    medium: 3
+    high_soon: 1
+    blocked: 0
+
+thresholds:
+  adx: 25
+  rsi_bullish_min: 50
+  rsi_bullish_max: 70
+  rsi_bearish_min: 30
+  rsi_bearish_max: 50
+  spread_warning: 0.0005
+  rating_elite: 90
+  rating_strong: 80
+  rating_good: 70
+  rating_moderate: 60
+
+session_weights:
+  london: 1.05
+  new_york: 1.05
+  london_ny_overlap: 1.10
+  asia: 0.95
+  off_hours: 0.90

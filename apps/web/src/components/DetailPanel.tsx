@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import type { ScannerSignal, BacktestResult } from "@/lib/api";
 import { getSymbolName, getSymbolShort, getSymbol, getCategoryLabel } from "@/lib/symbols";
 import { PriceChart } from "./PriceChart";
-import { BacktestPanel } from "./BacktestPanel";
-import { ScoreBreakdownPanel } from "./ScoreBreakdownPanel";
+import { ExplainabilityDashboard } from "./ExplainabilityDashboard";
 
 interface Candle {
   timestamp: string;
@@ -48,7 +47,7 @@ export function DetailPanel({ signal, candles, backtest, onClose }: DetailPanelP
   };
 
   const content = (
-  <>
+    <>
       <div className="detail-toolbar">
         <button
           type="button"
@@ -64,25 +63,17 @@ export function DetailPanel({ signal, candles, backtest, onClose }: DetailPanelP
         </button>
       </div>
 
-      <div className="detail-hero">
+      <div className="detail-hero detail-hero-compact">
         <div>
-          <span className={`detail-dir ${signal.direction}`}>{signal.direction}</span>
           <h2>{getSymbolName(signal.symbol)}</h2>
           <span className="detail-tf">
             {getSymbolShort(signal.symbol)} · {getCategoryLabel(getSymbol(signal.symbol).category)} · {signal.timeframe}
           </span>
         </div>
-        <div className="detail-score-block">
-          <span className="big-score">{signal.score}</span>
-          <span className="score-meta">/ 100 · {signal.rating}</span>
-        </div>
+        <span className={`rating-pill-inline ${signal.rating}`}>{signal.rating}</span>
       </div>
 
-      <div className="detail-section">
-        <h3>Score breakdown</h3>
-        <p className="section-hint">Click a category to see why points were awarded</p>
-        <ScoreBreakdownPanel signal={signal} />
-      </div>
+      <ExplainabilityDashboard signal={signal} backtest={backtest} />
 
       <PriceChart
         candles={candles}
@@ -92,32 +83,10 @@ export function DetailPanel({ signal, candles, backtest, onClose }: DetailPanelP
         tall={fullscreen}
       />
 
-      <div className="detail-section">
-        <h3>AI analysis</h3>
-        <div className="explanation">{signal.ai_explanation}</div>
-      </div>
-
-      <BacktestPanel backtest={backtest} />
-
-      {signal.technical_reasons.length > 0 && (
+      {signal.ai_explanation && (
         <div className="detail-section">
-          <h3>Technical</h3>
-          <ul className="reason-list">
-            {signal.technical_reasons.map((r, i) => (
-              <li key={i}>{r}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {signal.smc_reasons.length > 0 && (
-        <div className="detail-section">
-          <h3>Smart money</h3>
-          <ul className="reason-list">
-            {signal.smc_reasons.map((r, i) => (
-              <li key={i}>{r}</li>
-            ))}
-          </ul>
+          <h3>AI summary</h3>
+          <div className="explanation">{signal.ai_explanation}</div>
         </div>
       )}
 

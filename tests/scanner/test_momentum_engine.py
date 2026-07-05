@@ -1,7 +1,7 @@
 import unittest
 
 from services.scanner_service.momentum_engine import MomentumEngine
-from shared.config import get_scanner_config
+from shared.config.scoring_loader import get_v2_scoring_config
 from shared.types.models import TrendDirection
 
 from tests.helpers import indicators
@@ -9,13 +9,10 @@ from tests.helpers import indicators
 
 class TestMomentumEngine(unittest.TestCase):
     def test_bullish_momentum_max_score(self):
-        cfg = get_scanner_config().scoring
+        cfg = get_v2_scoring_config()
         engine = MomentumEngine()
-        result = engine.analyze(
-            indicators(macd_histogram=0.5, rsi_14=60, atr_14=0.002),
-            TrendDirection.BULLISH,
-        )
-        self.assertEqual(result.score, cfg.momentum.max_points)
+        result = engine.run(60, indicators(macd_histogram=0.5, rsi_14=60, atr_14=0.002))
+        self.assertEqual(result.score, cfg.weights.momentum)
 
     def test_bearish_rsi_zone(self):
         engine = MomentumEngine()

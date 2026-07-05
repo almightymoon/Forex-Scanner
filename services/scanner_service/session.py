@@ -2,8 +2,6 @@
 
 from datetime import datetime, timezone
 
-from shared.config.scanner import ScoringConfig, get_scanner_config
-
 
 def current_session(now: datetime | None = None) -> str:
     hour = (now or datetime.now(timezone.utc)).hour
@@ -18,7 +16,8 @@ def current_session(now: datetime | None = None) -> str:
     return "off_hours"
 
 
-def session_weight(session: str | None = None, config: ScoringConfig | None = None) -> float:
-    cfg = config or get_scanner_config().scoring
+def session_weight(session: str | None = None, weights: dict[str, float] | None = None) -> float:
+    from shared.config.scoring_loader import get_v2_scoring_config
+    cfg_weights = weights or get_v2_scoring_config().session_weights
     session = session or current_session()
-    return cfg.session_weights.get(session, 1.0)
+    return cfg_weights.get(session, 1.0)
