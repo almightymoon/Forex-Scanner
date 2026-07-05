@@ -107,8 +107,8 @@ asyncio.run(test())
 "
 
 echo ""
-echo "7. Scoring engine unit tests..."
-python3.11 -m unittest tests.test_engines -q
+echo "7. Unit tests (engines + market data)..."
+python3.11 -m unittest discover -s tests -p '*_test.py' -q
 
 echo ""
 if curl -sf http://localhost:8001/health > /dev/null 2>&1; then

@@ -23,6 +23,8 @@ class Settings:
   OANDA_API_KEY: str = os.getenv("OANDA_API_KEY", "")
   OANDA_ACCOUNT_ID: str = os.getenv("OANDA_ACCOUNT_ID", "")
   TWELVE_DATA_API_KEY: str = os.getenv("TWELVE_DATA_API_KEY", "")
+  POLYGON_API_KEY: str = os.getenv("POLYGON_API_KEY", "")
+  MARKET_DATA_PROVIDER: str = os.getenv("MARKET_DATA_PROVIDER", "frankfurter")
 
   # AI
   OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")

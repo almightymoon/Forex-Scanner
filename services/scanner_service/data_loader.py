@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from services.indicator_service.indicators import compute_all
-from services.market_data_service.live import create_market_data_provider
+from services.market_data_service.factory import create_market_data_provider
 from services.news_service.calendar import NewsService
 from services.smc_service.smc import SMCEngine
 from shared.types.models import (
