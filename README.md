@@ -29,27 +29,40 @@ docker compose up -d
 ## Project Structure
 
 ```
-fxnavigators/
+scanner/
 ├── apps/
 │   ├── web/                 # Next.js dashboard
 │   └── api/                 # FastAPI gateway
 ├── services/
-│   ├── market-data-service/
-│   ├── indicator-service/
-│   ├── scanner-service/     # Decision engine (core IP)
-│   ├── smc-service/
-│   ├── news-service/
-│   └── notification-service/
+│   ├── quant_engine/        # Core IP — scoring & SMC algorithms
+│   │   ├── swing/
+│   │   ├── market_structure/
+│   │   ├── liquidity/
+│   │   ├── order_blocks/
+│   │   ├── fvg/
+│   │   ├── trend/
+│   │   ├── confidence/
+│   │   ├── decision/        # Orchestrator + momentum/volatility/risk/news/mtf
+│   │   ├── features/        # Normalized feature extraction
+│   │   ├── detection/       # SMC pattern detection
+│   │   └── indicators/      # EMA, ADX, VWAP, etc.
+│   ├── data_collector/      # Market data ingestion (single source of truth)
+│   ├── scanner_service/     # Pipeline, data loading, signal assembly
+│   ├── market_data_service/
+│   ├── news_service/
+│   └── notification_service/
 ├── shared/
 │   ├── types/
-│   └── configs/
+│   └── config/
+├── config/
+│   └── scoring.yaml         # V2 engine weights
 ├── database/
-│   ├── schema.sql
-│   └── seed.sql
-├── infrastructure/
-│   └── docker/
 └── docs/
 ```
+
+**`quant_engine/`** is the heart of the platform — swing analysis, structure, liquidity, order blocks, FVGs, trend, confidence aggregation, and the decision orchestrator. Supporting services (data collection, APIs, dashboard, billing) exist to feed and deliver it.
+
+Legacy import paths (`services.scanner_service.*`, `services.smc_service.*`, etc.) remain as thin shims re-exporting from `quant_engine`.
 
 ## Market Data (Phase 1)
 

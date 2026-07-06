@@ -1,7 +1,8 @@
-"""Backward-compatible re-export. Prefer decision_engine.DecisionEngine."""
+"""Backward-compatible shim — use services.quant_engine.decision."""
 
-from .decision_engine import DecisionEngine
-from .models import MomentumAnalysis, SRAnalysis, TrendAnalysis, VolumeAnalysis
+from services.quant_engine.decision.engine import DecisionEngine
+from services.quant_engine.decision.models import MomentumAnalysis, SRAnalysis, VolumeAnalysis
+from services.quant_engine.trend.models import TrendAnalysis
 
 __all__ = [
     "DecisionEngine",

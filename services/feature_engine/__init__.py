@@ -1,4 +1,3 @@
-from .extractor import FeatureExtractor
-from .features import FVGFeatures, MarketFeatures, OrderBlockFeatures
+"""Backward-compatible shim — use services.quant_engine.features."""
 
-__all__ = ["FeatureExtractor", "MarketFeatures", "OrderBlockFeatures", "FVGFeatures"]
+from services.quant_engine.features import *  # noqa: F403
