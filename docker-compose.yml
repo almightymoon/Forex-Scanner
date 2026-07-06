@@ -12,6 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - ./database/collector_init.sql:/docker-entrypoint-initdb.d/03-collector.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fxnav -d fxnavigators"]
       interval: 5s
@@ -31,9 +32,20 @@ services:
       timeout: 3s
       retries: 5
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: fxnav_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    profiles:
+      - monitoring
+
 volumes:
   postgres_data:
   redis_data:
 
-# Optional: run API with PostgreSQL
-# docker compose --profile full up -d
+# Optional: docker compose --profile monitoring up -d  (Prometheus on :9090)

@@ -47,12 +47,14 @@ logging.basicConfig(
 
 _connected_ws: list[WebSocket] = []
 _daemon_task = None
+_collector_task = None
+_collector_daemon = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import asyncio
-    global _daemon_task
+    global _daemon_task, _collector_task, _collector_daemon
 
     from apps.api.deps import get_market_data
     get_market_data()
@@ -63,10 +65,18 @@ async def lifespan(app: FastAPI):
             interval=settings.SCAN_INTERVAL_SECONDS,
             min_score=settings.MIN_ALERT_SCORE,
         ))
+    _collector_task = None
+    if os.getenv("ENABLE_COLLECTOR_DAEMON", "false").lower() == "true":
+        from services.data_collector.daemon import CollectorDaemon
+        _collector_daemon = CollectorDaemon()
+        _collector_task = asyncio.create_task(_collector_daemon.start())
     yield
     if _daemon_task:
         get_pipeline().stop()
         _daemon_task.cancel()
+    if _collector_task and _collector_daemon:
+        await _collector_daemon.stop()
+        _collector_task.cancel()
 
 
 app = FastAPI(
@@ -83,6 +93,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from services.data_collector.api import router as market_data_router
+app.include_router(market_data_router)
 
 
 # --- Auth Models ---

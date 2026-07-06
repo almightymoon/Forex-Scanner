@@ -7,11 +7,14 @@ from services.data_collector.config import get_collector_config
 from services.data_collector.database import CollectorDatabase, get_collector_database
 from services.data_collector.downloader import DataDownloader
 from services.data_collector.health import CollectorHealth
+from services.data_collector.import_history import HistoricalImportManager
 from services.data_collector.logger import get_logger
+from services.data_collector.market_service import InternalMarketDataService, get_market_data_service
 from services.data_collector.models import CollectionJob, JobType
 from services.data_collector.providers.base_provider import BaseDataProvider
 from services.data_collector.providers.dukascopy import DukascopyDataProvider
 from services.data_collector.providers.mt5 import MT5DataProvider
+from services.data_collector.metrics import get_collector_metrics
 from services.data_collector.scheduler import CollectionScheduler
 from services.data_collector.symbols import SymbolRegistry
 from services.data_collector.validator import DataValidator
@@ -50,6 +53,7 @@ class DataCollector:
         self.downloaders: dict[str, DataDownloader] = {}
         self.health = CollectorHealth(self.database)
         self.scheduler = CollectionScheduler(handler=self._handle_job)
+        self.import_manager = HistoricalImportManager(self.database, self.validator)
 
         if providers:
             for p in providers:
@@ -167,6 +171,24 @@ class DataCollector:
 
     def get_health_snapshot(self) -> dict:
         return self.health.snapshot()
+
+    def get_market_service(self) -> InternalMarketDataService:
+        return get_market_data_service()
+
+    async def import_historical(
+        self,
+        provider_name: str,
+        symbol: str,
+        timeframe: Timeframe,
+        range_label: str,
+    ):
+        provider = self.providers.get(provider_name)
+        if not provider:
+            raise ValueError(f"Provider not registered: {provider_name}")
+        return await self.import_manager.import_range(
+            provider, symbol, timeframe, range_label,
+            metrics=get_collector_metrics(),
+        )
 
     def get_candles(
         self,

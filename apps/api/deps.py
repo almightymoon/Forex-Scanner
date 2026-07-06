@@ -26,7 +26,10 @@ _strategy: StrategyEngine | None = None
 def get_market_data() -> MarketDataService:
     global _market_data
     if _market_data is None:
-        provider = create_market_data_provider()
+        from services.data_collector.scanner_adapter import wrap_with_collector_first
+
+        upstream = create_market_data_provider()
+        provider = wrap_with_collector_first(upstream)
         _market_data = provider if isinstance(provider, MarketDataService) else MarketDataService(provider)
     return _market_data
 

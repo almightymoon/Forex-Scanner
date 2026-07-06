@@ -43,14 +43,21 @@ class CollectorHealth:
                 {
                     "provider": s.provider,
                     "state": s.state.value,
+                    "sync_status": s.sync_status.value,
                     "connected": s.connected,
                     "last_update": s.last_update.isoformat() if s.last_update else None,
                     "last_successful_sync": s.last_successful_sync.isoformat() if s.last_successful_sync else None,
+                    "last_candle_timestamp": s.last_candle_timestamp.isoformat() if s.last_candle_timestamp else None,
                     "rows_collected": s.rows_collected,
+                    "rows_downloaded": s.rows_downloaded,
                     "rows_rejected": s.rows_rejected,
+                    "rows_repaired": s.rows_repaired,
                     "latency_ms": s.latency_ms,
+                    "sync_latency_ms": s.sync_latency_ms,
                     "message": s.message,
                 }
                 for s in statuses
             ],
+            "open_gaps": len(self.database.get_open_gaps(limit=1000)),
+            "candle_count": self.database.count_candles(),
         }

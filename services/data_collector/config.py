@@ -60,6 +60,16 @@ class ValidationConfig:
     max_future_skew_seconds: int = 60
     gap_detection_enabled: bool = True
     reject_duplicates: bool = True
+    max_spread_ratio: float = 0.15
+    max_price_spike_ratio: float = 0.10
+    require_volume: bool = False
+
+
+@dataclass(frozen=True)
+class CacheConfig:
+    enabled: bool = True
+    candle_ttl_seconds: int = 300
+    latest_ttl_seconds: int = 60
 
 
 @dataclass(frozen=True)
@@ -77,6 +87,7 @@ class CollectorConfig:
     scheduler: SchedulerConfig
     validation: ValidationConfig
     logging: LoggingConfig
+    cache: CacheConfig = field(default_factory=CacheConfig)
 
 
 def _load_yaml() -> dict[str, Any]:
@@ -115,6 +126,7 @@ def get_collector_config() -> CollectorConfig:
     sched_raw = raw.get("scheduler", {})
     val_raw = raw.get("validation", {})
     log_raw = raw.get("logging", {})
+    cache_raw = raw.get("cache", {})
 
     symbols = tuple(s.upper() for s in raw.get("symbols", []))
     timeframes = tuple(
@@ -143,10 +155,18 @@ def get_collector_config() -> CollectorConfig:
             max_future_skew_seconds=int(val_raw.get("max_future_skew_seconds", 60)),
             gap_detection_enabled=bool(val_raw.get("gap_detection_enabled", True)),
             reject_duplicates=bool(val_raw.get("reject_duplicates", True)),
+            max_spread_ratio=float(val_raw.get("max_spread_ratio", 0.15)),
+            max_price_spike_ratio=float(val_raw.get("max_price_spike_ratio", 0.10)),
+            require_volume=bool(val_raw.get("require_volume", False)),
         ),
         logging=LoggingConfig(
             level=os.getenv("COLLECTOR_LOG_LEVEL", log_raw.get("level", "INFO")),
             json=bool(log_raw.get("json", True)),
+        ),
+        cache=CacheConfig(
+            enabled=bool(cache_raw.get("enabled", True)),
+            candle_ttl_seconds=int(cache_raw.get("candle_ttl_seconds", 300)),
+            latest_ttl_seconds=int(cache_raw.get("latest_ttl_seconds", 60)),
         ),
     )
 

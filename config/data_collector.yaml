@@ -59,6 +59,14 @@ validation:
   max_future_skew_seconds: 60
   gap_detection_enabled: true
   reject_duplicates: true
+  max_spread_ratio: 0.15
+  max_price_spike_ratio: 0.10
+  require_volume: false
+
+cache:
+  enabled: true
+  candle_ttl_seconds: 300
+  latest_ttl_seconds: 60
 
 logging:
   level: INFO
