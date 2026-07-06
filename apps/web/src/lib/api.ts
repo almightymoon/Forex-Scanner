@@ -134,17 +134,69 @@ const API_BASE =
     ? ""
     : process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
 
+const DEV_EMAIL = process.env.NEXT_PUBLIC_DEV_EMAIL || "dev@fxnav.local";
+const DEV_PASSWORD = process.env.NEXT_PUBLIC_DEV_PASSWORD || "dev123456";
+
+let sessionPromise: Promise<void> | null = null;
+
+/** Register or log in a dev user when no JWT is stored (local dashboard use). */
+export async function ensureSession(): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (localStorage.getItem("fxnav_token")) return;
+
+  if (!sessionPromise) {
+    sessionPromise = (async () => {
+      const register = await fetch(`${API_BASE}/api/v1/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Dev User", email: DEV_EMAIL, password: DEV_PASSWORD }),
+      });
+
+      if (register.ok) {
+        const data = await register.json();
+        localStorage.setItem("fxnav_token", data.access_token);
+        if (data.refresh_token) {
+          localStorage.setItem("fxnav_refresh_token", data.refresh_token);
+        }
+        return;
+      }
+
+      await login(DEV_EMAIL, DEV_PASSWORD);
+    })().catch((err) => {
+      sessionPromise = null;
+      throw err;
+    });
+  }
+
+  await sessionPromise;
+}
+
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const url = `${API_BASE}${path}`;
   const headers = new Headers(init?.headers);
   if (typeof window !== "undefined") {
+    await ensureSession();
     const token = localStorage.getItem("fxnav_token");
     if (token && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${token}`);
     }
   }
   try {
-    return await fetch(url, { ...init, headers });
+    let res = await fetch(url, { ...init, headers });
+
+    // Token stale after API restart (in-memory user store cleared)
+    if (res.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("fxnav_token");
+      localStorage.removeItem("fxnav_refresh_token");
+      sessionPromise = null;
+      await ensureSession();
+      const retryHeaders = new Headers(init?.headers);
+      const token = localStorage.getItem("fxnav_token");
+      if (token) retryHeaders.set("Authorization", `Bearer ${token}`);
+      res = await fetch(url, { ...init, headers: retryHeaders });
+    }
+
+    return res;
   } catch (err) {
     throw new Error(
       `Cannot reach API at ${path}. Start it with: ./scripts/run-api.sh`,
@@ -204,7 +256,16 @@ export async function fetchDashboard(
     params.set("symbols", extraSymbols.join(","));
   }
   const res = await apiFetch(`/api/v1/dashboard?${params}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch dashboard");
+  if (!res.ok) {
+    let detail = "Failed to fetch dashboard";
+    try {
+      const body = await res.json();
+      detail = body.message || body.detail || detail;
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(detail);
+  }
   return res.json();
 }
 

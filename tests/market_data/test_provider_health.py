@@ -2,10 +2,12 @@
 
 import os
 import unittest
+from unittest.mock import patch
 
 from services.market_data_service.exceptions import ProviderAuthError, ProviderStatus
+from services.market_data_service.factory import _validate_provider_key, validate_startup
 from services.market_data_service.provider_health import ProviderHealthTracker
-from shared.config.market import get_market_config, is_simulated_mode
+from shared.config.market import is_simulated_mode, reload_market_config
 
 
 class TestProviderHealth(unittest.TestCase):
@@ -27,6 +29,9 @@ class TestProviderHealth(unittest.TestCase):
 
 
 class TestFactorySelection(unittest.TestCase):
+    def tearDown(self):
+        reload_market_config()
+
     def test_simulated_only_when_explicit(self):
         if os.getenv("ENABLE_SIMULATED_DATA") == "true":
             self.assertTrue(is_simulated_mode())
@@ -34,10 +39,15 @@ class TestFactorySelection(unittest.TestCase):
             self.assertFalse(is_simulated_mode())
 
     def test_missing_api_key_validation(self):
-        from services.market_data_service.factory import _validate_provider_key
         if not os.getenv("TWELVE_DATA_API_KEY"):
             with self.assertRaises(ProviderAuthError):
                 _validate_provider_key("twelvedata")
+
+    @patch.dict(os.environ, {"ENABLE_SIMULATED_DATA": "false", "TWELVE_DATA_API_KEY": "", "POLYGON_API_KEY": ""}, clear=False)
+    def test_validate_startup_requires_keys(self):
+        reload_market_config()
+        with self.assertRaises(ProviderAuthError):
+            validate_startup()
 
 
 if __name__ == "__main__":

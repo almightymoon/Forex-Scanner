@@ -51,6 +51,25 @@ fxnavigators/
 └── docs/
 ```
 
+## Market Data (Phase 1)
+
+Provider priority:
+
+1. **Twelve Data** — primary OHLC and live quotes
+2. **Polygon** — failover when `fallback_enabled: true` in `config/market.yaml`
+3. **Simulated** — development only (`ENABLE_SIMULATED_DATA=true`)
+
+Configure in `.env`:
+
+```bash
+TWELVE_DATA_API_KEY=your_key
+POLYGON_API_KEY=your_key
+ENABLE_SIMULATED_DATA=false   # explicit opt-in for dev
+```
+
+Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
+`services/market_data_service/providers/disabled/` until a separate broker layer is introduced.
+
 ## Core Features (MVP)
 
 - **Decision Engine** — 100-point transparent scoring across 7 categories

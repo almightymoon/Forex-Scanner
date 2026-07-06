@@ -20,9 +20,15 @@ class DashboardService:
         signals_raw = await self.scanner.pipeline.scan_all(
             symbols=symbols, timeframe=timeframe, min_score=min_score
         )
-        events = await self.scanner.get_calendar()
+        try:
+            events = await self.scanner.get_calendar()
+        except Exception:
+            events = []
         stats = self.scanner.get_stats()
-        market_status = await self.scanner.get_market_status()
+        try:
+            market_status = await self.scanner.get_market_status()
+        except Exception:
+            market_status = {"live": False, "pairs_with_prices": 0, "source": "unknown"}
 
         heatmap = [
             {"symbol": s.symbol, "score": s.score, "direction": s.direction.value, "trend": s.trend.value}

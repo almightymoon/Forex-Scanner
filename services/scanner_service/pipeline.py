@@ -1,6 +1,7 @@
 """Scanner pipeline — orchestrates staged scan flow."""
 
 import asyncio
+import logging
 from datetime import datetime, timezone
 
 from services.ai_service.explainer import AIExplainer
@@ -12,6 +13,8 @@ from services.scanner_service.signal_builder import SignalBuilder
 from shared.db_factory import get_database
 from shared.types.models import ScannerSignal, Timeframe
 
+logger = logging.getLogger("fxnav.scanner")
+
 
 class ScannerPipeline:
     """
@@ -21,8 +24,8 @@ class ScannerPipeline:
       → persistence & alerts
     """
 
-    def __init__(self):
-        self.data_loader = DataLoader()
+    def __init__(self, data_loader=None):
+        self.data_loader = data_loader or DataLoader()
         self.signal_builder = SignalBuilder()
         self.notifier = NotificationService()
         self.backtester = BacktestEngine()
@@ -94,8 +97,17 @@ class ScannerPipeline:
     ) -> list[ScannerSignal]:
         await self.data_loader.load_events()
         symbols = symbols or FOREX_PAIRS
-        tasks = [self.scan_symbol(s, timeframe, with_ai=True) for s in symbols]
-        results = await asyncio.gather(*tasks)
+        sem = asyncio.Semaphore(6)
+
+        async def _scan_one(symbol: str) -> ScannerSignal | None:
+            async with sem:
+                try:
+                    return await self.scan_symbol(symbol, timeframe, with_ai=True)
+                except Exception as exc:
+                    logger.warning("Scan failed for %s: %s", symbol, exc)
+                    return None
+
+        results = await asyncio.gather(*[_scan_one(s) for s in symbols])
         signals = [r for r in results if r and r.score >= min_score]
         signals.sort(key=lambda s: s.score, reverse=True)
         self._results = signals

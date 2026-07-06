@@ -52,7 +52,10 @@ def http_get_json(
             reason = f"{exc.code} {exc.reason}: {body}"
             status, error_cls = _classify_http(exc.code, provider, reason, symbol, timeframe)
             ProviderHealthTracker.record_failure(provider, status, reason, latency_ms)
-            _log_failure(provider, symbol, timeframe, reason, latency_ms, fallback="Disabled")
+            _log_failure(
+                provider, symbol, timeframe, reason, latency_ms,
+                fallback="Disabled", exc_info=exc.code not in (429,),
+            )
             last_exc = error_cls(provider, reason, symbol=symbol, timeframe=timeframe)
             if exc.code in (429, 401, 403) or attempt >= retries:
                 raise last_exc from exc
@@ -100,6 +103,7 @@ def _log_failure(
     reason: str,
     latency_ms: float,
     fallback: str,
+    exc_info: bool = True,
 ) -> None:
     logger.warning(
         "%s provider failed | symbol=%s timeframe=%s reason=%s latency_ms=%.1f fallback=%s",
@@ -109,5 +113,5 @@ def _log_failure(
         reason,
         latency_ms,
         fallback,
-        exc_info=True,
+        exc_info=exc_info,
     )

@@ -41,7 +41,35 @@ class MarketDataService(MarketDataProvider):
         return self.provider.name
 
     def health_snapshot(self) -> dict:
+        if hasattr(self.provider, "health_snapshot"):
+            return self.provider.health_snapshot()
         return ProviderHealthTracker.snapshot(self.provider.name)
+
+    def monitored_providers_health(self) -> dict[str, dict]:
+        if hasattr(self.provider, "monitored_health"):
+            return self.provider.monitored_health()
+
+        import os
+
+        from .provider_chain import MONITORED_PROVIDERS
+
+        result: dict[str, dict] = {}
+        for key in MONITORED_PROVIDERS:
+            snap = ProviderHealthTracker.snapshot(key)
+            configured = (
+                bool(os.getenv("TWELVE_DATA_API_KEY", ""))
+                if key == "twelvedata"
+                else bool(os.getenv("POLYGON_API_KEY", ""))
+            )
+            status = snap.get("provider_status", "unknown")
+            if not configured:
+                status = "not_configured"
+            result[key] = {
+                "configured": configured,
+                "status": status,
+                "latency_ms": snap.get("latency_ms"),
+            }
+        return result
 
     def is_simulated(self) -> bool:
         return is_simulated_mode() or self.provider.name == "simulated"

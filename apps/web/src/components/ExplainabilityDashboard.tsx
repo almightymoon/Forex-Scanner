@@ -20,9 +20,16 @@ interface CategoryRow {
 interface ExplainabilityDashboardProps {
   signal: ScannerSignal;
   backtest: BacktestResult | null;
+  compact?: boolean;
+  layout?: "stack" | "bento";
 }
 
-export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDashboardProps) {
+export function ExplainabilityDashboard({
+  signal,
+  backtest,
+  compact,
+  layout = "stack",
+}: ExplainabilityDashboardProps) {
   const color = RATING_COLORS[signal.rating] || "#64748b";
   const confidencePct = signal.explainability?.confidence_pct
     ?? Math.round((signal.confidence ?? signal.score / 100) * 100);
@@ -41,24 +48,56 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
   const deltas = signal.explainability?.score_deltas ?? signal.score_deltas ?? [];
   const adjustments = signal.explainability?.adjustments ?? [];
   const warnings = signal.warnings ?? [];
+  const isBento = layout === "bento";
+  const uniquePatterns = patterns.filter(
+    (p, i, arr) => arr.findIndex((x) => x.label === p.label) === i,
+  );
 
-  return (
-    <div className="explain-dashboard">
-      <div className="explain-hero">
-        <div className="explain-hero-left">
-          <span className={`detail-dir ${signal.direction}`}>{signal.direction.toUpperCase()}</span>
+  const sectionClass = (wide = false) =>
+    `explain-section${isBento ? " explain-card" : ""}${wide ? " explain-card-wide" : ""}`;
+
+  const content = (
+    <>
+      {!isBento && !compact && (
+        <div className="explain-hero">
+          <div className="explain-hero-left">
+            <span className={`detail-dir ${signal.direction}`}>{signal.direction.toUpperCase()}</span>
+            <div className="explain-confidence">
+              <span className="explain-confidence-label">Confidence</span>
+              <span className="explain-confidence-value" style={{ color }}>{confidencePct}</span>
+            </div>
+          </div>
+          <div className="explain-hero-score">
+            <span className="big-score" style={{ color }}>{signal.score}</span>
+            <span className="score-meta">/ 100</span>
+          </div>
+        </div>
+      )}
+
+      {isBento && (signal.trade_type || signal.expected_duration) && (
+        <p className="explain-session explain-session-bento">
+          {signal.trade_type}
+          {signal.expected_duration && <> · ~{signal.expected_duration}</>}
+        </p>
+      )}
+
+      {!isBento && compact && (
+        <div className="explain-compact-meta">
           <div className="explain-confidence">
             <span className="explain-confidence-label">Confidence</span>
             <span className="explain-confidence-value" style={{ color }}>{confidencePct}</span>
           </div>
+          {(signal.session || signal.trade_type) && (
+            <p className="explain-session">
+              {signal.session && <>Session: <strong>{formatSession(signal.session)}</strong></>}
+              {signal.trade_type && <> · {signal.trade_type}</>}
+              {signal.expected_duration && <> · ~{signal.expected_duration}</>}
+            </p>
+          )}
         </div>
-        <div className="explain-hero-score">
-          <span className="big-score" style={{ color }}>{signal.score}</span>
-          <span className="score-meta">/ 100</span>
-        </div>
-      </div>
+      )}
 
-      {(signal.session || signal.trade_type) && (
+      {!isBento && !compact && (signal.session || signal.trade_type) && (
         <p className="explain-session">
           {signal.session && <>Session: <strong>{formatSession(signal.session)}</strong></>}
           {signal.trade_type && <> · {signal.trade_type}</>}
@@ -66,7 +105,7 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
         </p>
       )}
 
-      <section className="explain-section">
+      <section className={sectionClass(true)}>
         <h3>Score breakdown</h3>
         <div className="explain-categories">
           {categories.map((cat) => (
@@ -76,7 +115,7 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
       </section>
 
       {evidence.length > 0 && (
-        <section className="explain-section">
+        <section className={sectionClass()}>
           <h3>Evidence</h3>
           <ul className="explain-detected">
             {evidence.map((item) => (
@@ -90,9 +129,9 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
       )}
 
       {adjustments.length > 0 && (
-        <section className="explain-section">
+        <section className={sectionClass()}>
           <h3>Confidence adjustments</h3>
-          <ul className="explain-deltas">
+          <ul className="explain-adjustments">
             {adjustments.map((a, i) => (
               <li key={i}>{a}</li>
             ))}
@@ -100,11 +139,11 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
         </section>
       )}
 
-      {patterns.length > 0 && (
-        <section className="explain-section">
-          <h3>Detected</h3>
+      {uniquePatterns.length > 0 && (
+        <section className={sectionClass()}>
+          <h3>Detected patterns</h3>
           <ul className="explain-detected">
-            {patterns.map((p) => (
+            {uniquePatterns.map((p) => (
               <li key={p.id ?? p.label}>
                 <span className="check-icon" aria-hidden>✓</span>
                 {p.label}
@@ -114,7 +153,7 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
         </section>
       )}
 
-      <section className="explain-section">
+      <section className={sectionClass()}>
         <h3>Historical performance</h3>
         <HistoricalStats
           backtest={backtest}
@@ -123,7 +162,7 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
       </section>
 
       {deltas.length > 0 && (
-        <section className="explain-section">
+        <section className={sectionClass(true)}>
           <h3>Why this score changed</h3>
           <ul className="explain-deltas">
             {deltas.map((d, i) => (
@@ -138,7 +177,7 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
       )}
 
       {warnings.length > 0 && (
-        <section className="explain-section">
+        <section className={sectionClass(true)}>
           <h3>Warnings</h3>
           <ul className="explain-warnings">
             {warnings.map((w, i) => (
@@ -147,6 +186,16 @@ export function ExplainabilityDashboard({ signal, backtest }: ExplainabilityDash
           </ul>
         </section>
       )}
+    </>
+  );
+
+  if (isBento) {
+    return <div className="explain-bento">{content}</div>;
+  }
+
+  return (
+    <div className={`explain-dashboard${compact ? " explain-dashboard-compact" : ""}`}>
+      {content}
     </div>
   );
 }

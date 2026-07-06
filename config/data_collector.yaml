@@ -1,0 +1,65 @@
+# FX Navigators — Market Data Collector configuration
+# Milestone 1: framework only. Providers are stubs until Milestone 2+.
+
+database:
+  url: ""  # falls back to DATABASE_URL env, then SQLite for dev
+  pool_size: 5
+  auto_migrate: true
+
+providers:
+  mt5:
+    enabled: false
+    host: localhost
+    port: 443
+    login: 0
+    password: ""
+    server: ""
+    timeout_seconds: 30
+  dukascopy:
+    enabled: false
+    base_url: https://datafeed.dukascopy.com
+    timeout_seconds: 60
+    max_concurrent_downloads: 4
+
+symbols:
+  - EURUSD
+  - GBPUSD
+  - USDJPY
+  - AUDUSD
+  - NZDUSD
+  - USDCAD
+  - USDCHF
+  - XAUUSD
+  - XAGUSD
+  - BTCUSD
+  - ETHUSD
+  - NAS100
+  - US30
+  - SPX500
+  - GER40
+
+timeframes:
+  - M1
+  - M5
+  - M15
+  - M30
+  - H1
+  - H4
+  - D1
+
+scheduler:
+  polling_interval_seconds: 60
+  incremental_interval_seconds: 300
+  historical_batch_size: 500
+  max_concurrent_jobs: 3
+  retry_count: 3
+  retry_backoff_seconds: 5
+
+validation:
+  max_future_skew_seconds: 60
+  gap_detection_enabled: true
+  reject_duplicates: true
+
+logging:
+  level: INFO
+  json: true

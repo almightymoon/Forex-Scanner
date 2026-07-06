@@ -1,15 +1,16 @@
-"""MetaTrader 5 provider — requires active bridge; no silent fallback."""
+"""MetaTrader 5 provider — disabled; reserved for future broker layer."""
 
 from datetime import datetime
 from typing import AsyncGenerator
 
+from services.market_data_service.exceptions import MarketDataProviderError
+from services.market_data_service.provider import MarketDataProvider
 from shared.types.models import Candle, Tick, Timeframe
-
-from .exceptions import MarketDataProviderError
-from .provider import MarketDataProvider
 
 
 class MT5Provider(MarketDataProvider):
+    """MT5 broker bridge stub — not registered in the active market-data factory."""
+
     name = "mt5"
 
     def __init__(self):
@@ -25,7 +26,7 @@ class MT5Provider(MarketDataProvider):
         if not self._connected:
             raise MarketDataProviderError(
                 self.name,
-                "MT5 bridge not connected — set MT5_ENABLED=true and configure bridge",
+                "MT5 bridge not connected — configure broker layer (Phase 2)",
                 symbol=symbol,
                 timeframe=timeframe.value,
             )

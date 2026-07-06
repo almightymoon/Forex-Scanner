@@ -81,7 +81,7 @@ class TestHealthEndpoint(unittest.TestCase):
         data = res.json()
         self.assertIn("provider", data)
         self.assertIn("provider_status", data)
-        self.assertIn("simulated_data", data)
+        self.assertIn("simulated", data)
         self.assertIn("status", data)
 
 

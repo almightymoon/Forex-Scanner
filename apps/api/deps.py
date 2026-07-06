@@ -9,6 +9,7 @@ from services.dashboard_service import DashboardService
 from services.market_data_service.factory import create_market_data_provider
 from services.market_data_service.service import MarketDataService
 from services.replay_engine.replay import ReplayEngine
+from services.scanner_service.data_loader import DataLoader
 from services.scanner_service.pipeline import ScannerPipeline
 from services.scanner_service.scanner_service import ScannerService
 from services.strategy_engine import StrategyEngine
@@ -33,7 +34,7 @@ def get_market_data() -> MarketDataService:
 def get_pipeline() -> ScannerPipeline:
     global _pipeline
     if _pipeline is None:
-        _pipeline = ScannerPipeline()
+        _pipeline = ScannerPipeline(data_loader=DataLoader(market_data=get_market_data()))
     return _pipeline
 
 

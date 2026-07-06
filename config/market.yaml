@@ -1,13 +1,10 @@
-provider:
-  default: twelvedata
+market_data:
+  default_provider: twelvedata
+  providers:
+    - twelvedata
+    - polygon
   simulated_enabled: false
-  allow_fallback: false
+  fallback_enabled: true
   retry_count: 3
 
 timeout: 10
-
-real_ohlc_providers:
-  - twelvedata
-  - polygon
-  - oanda
-  - mt5

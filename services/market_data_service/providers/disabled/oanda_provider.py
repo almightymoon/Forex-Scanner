@@ -1,16 +1,13 @@
-"""OANDA v20 REST provider — real historical OHLC candles."""
+"""OANDA v20 REST provider — disabled; reserved for future broker layer."""
 
 import asyncio
-from datetime import datetime, timezone
+import os
+from datetime import datetime
 
-from shared.configs.settings import get_settings
+from services.market_data_service.exceptions import MarketDataProviderError, ProviderAuthError
+from services.market_data_service.http_client import http_get_json
+from services.market_data_service.provider import MarketDataProvider
 from shared.types.models import Candle, Timeframe
-
-from .exceptions import MarketDataProviderError, ProviderAuthError
-from .http_client import http_get_json
-from .provider import MarketDataProvider
-
-settings = get_settings()
 
 GRANULARITY = {
     Timeframe.M1: "M1",
@@ -34,12 +31,14 @@ def _oanda_instrument(symbol: str) -> str:
 
 
 class OandaProvider(MarketDataProvider):
+    """OANDA broker adapter — not registered in the active market-data factory."""
+
     name = "oanda"
     BASE_URL = "https://api-fxpractice.oanda.com/v3"
 
     def __init__(self):
-        self._api_key = settings.OANDA_API_KEY
-        self._account_id = settings.OANDA_ACCOUNT_ID
+        self._api_key = os.getenv("OANDA_API_KEY", "")
+        self._account_id = os.getenv("OANDA_ACCOUNT_ID", "")
         if not self._api_key or not self._account_id:
             raise ProviderAuthError("oanda", "OANDA_API_KEY and OANDA_ACCOUNT_ID are required")
 

@@ -9,6 +9,7 @@ import { fetchDashboard, fetchCandles, fetchBacktest } from "@/lib/api";
 import { DetailPanel } from "@/components/DetailPanel";
 import { PairSearch } from "@/components/PairSearch";
 import { loadCustomPairs, addCustomPair, removeCustomPair } from "@/lib/watchlist";
+import { useHeaderHeight } from "@/hooks/useHeaderHeight";
 
 interface Candle {
   timestamp: string;
@@ -19,6 +20,7 @@ interface Candle {
 }
 
 export default function Dashboard() {
+  useHeaderHeight();
   const [signals, setSignals] = useState<ScannerSignal[]>([]);
   const [selected, setSelected] = useState<ScannerSignal | null>(null);
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -29,9 +31,18 @@ export default function Dashboard() {
   const [lastScan, setLastScan] = useState<string>("");
   const [stats, setStats] = useState({ total_scans: 0, elite_setups: 0, scans_today: 0 });
   const [customPairs, setCustomPairs] = useState<string[]>(() => loadCustomPairs());
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [currencyFilter, setCurrencyFilter] = useState<string | null>(null);
+
+  const filteredSignals = currencyFilter
+    ? signals.filter(
+        (s) => s.symbol.startsWith(currencyFilter) || s.symbol.slice(3).startsWith(currencyFilter),
+      )
+    : signals;
 
   const loadSignals = async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const dashboard = await fetchDashboard(minScore, customPairs);
       setSignals(dashboard.signals);
@@ -44,6 +55,8 @@ export default function Dashboard() {
       );
     } catch (err) {
       console.error("Scanner fetch failed:", err);
+      setSignals([]);
+      setFetchError(err instanceof Error ? err.message : "Failed to load scanner data");
     } finally {
       setLoading(false);
     }
@@ -61,9 +74,16 @@ export default function Dashboard() {
     fetchBacktest(selected.symbol, selected.timeframe).then(setBacktest).catch(() => setBacktest(null));
   }, [selected]);
 
-  const buyCount = signals.filter((s) => s.direction === "buy").length;
-  const sellCount = signals.filter((s) => s.direction === "sell").length;
-  const eliteCount = signals.filter((s) => s.rating === "elite").length;
+  useEffect(() => {
+    document.body.style.overflow = selected ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selected]);
+
+  const buyCount = filteredSignals.filter((s) => s.direction === "buy").length;
+  const sellCount = filteredSignals.filter((s) => s.direction === "sell").length;
+  const eliteCount = filteredSignals.filter((s) => s.rating === "elite").length;
 
   return (
     <div className="app-shell">
@@ -82,34 +102,42 @@ export default function Dashboard() {
             onAdd={(sym) => setCustomPairs((prev) => addCustomPair(sym, prev))}
             onRemove={(sym) => setCustomPairs((prev) => removeCustomPair(sym, prev))}
           />
-          <div className="live-pill">
-            <span className="live-dot" />
-            Live
+          <div className="header-controls">
+            <div className="live-pill">
+              <span className="live-dot" />
+              Live
+            </div>
+            <div className="filter-group">
+              <label htmlFor="min-score">Min score</label>
+              <select id="min-score" value={minScore} onChange={(e) => setMinScore(Number(e.target.value))}>
+                <option value={60}>60+</option>
+                <option value={70}>70+ Good</option>
+                <option value={80}>80+ Strong</option>
+                <option value={90}>90+ Elite</option>
+              </select>
+            </div>
+            <button type="button" className="btn-primary" onClick={loadSignals} disabled={loading}>
+              {loading ? (
+                <><span className="btn-spinner" /> Scanning</>
+              ) : (
+                "Refresh"
+              )}
+            </button>
+            {lastScan && <span className="last-scan">Updated {lastScan}</span>}
           </div>
-          <div className="filter-group">
-            <label htmlFor="min-score">Min score</label>
-            <select id="min-score" value={minScore} onChange={(e) => setMinScore(Number(e.target.value))}>
-              <option value={60}>60+</option>
-              <option value={70}>70+ Good</option>
-              <option value={80}>80+ Strong</option>
-              <option value={90}>90+ Elite</option>
-            </select>
-          </div>
-          <button type="button" className="btn-primary" onClick={loadSignals} disabled={loading}>
-            {loading ? (
-              <><span className="btn-spinner" /> Scanning</>
-            ) : (
-              "Refresh"
-            )}
-          </button>
-          {lastScan && <span className="last-scan">Updated {lastScan}</span>}
         </div>
       </header>
 
       <main className="dashboard">
+        {fetchError && (
+          <div className="state-message" style={{ marginBottom: "1rem", color: "#f87171" }}>
+            <p>{fetchError}</p>
+            <span>Check API logs or try Refresh. If using Twelve Data free tier, enable Polygon fallback.</span>
+          </div>
+        )}
         <section className="stats-bar">
           <div className="stat-card">
-            <span className="stat-value accent">{signals.length}</span>
+            <span className="stat-value accent">{filteredSignals.length}</span>
             <span className="stat-label">Active signals</span>
           </div>
           <div className="stat-card">
@@ -132,18 +160,27 @@ export default function Dashboard() {
           )}
         </section>
 
-        {signals.length > 0 && (
+        {filteredSignals.length > 0 && (
           <section className="panel heatmap-section">
             <div className="panel-header">
               <h2>Market heatmap</h2>
-              <span className="panel-hint">{signals.length} pairs · click to inspect</span>
+              <span className="panel-hint">{filteredSignals.length} pairs · click to inspect</span>
             </div>
             <Heatmap
-              signals={signals}
+              signals={filteredSignals}
               selectedSymbol={selected?.symbol}
               onSelect={setSelected}
             />
           </section>
+        )}
+
+        {currencyFilter && (
+          <div className="calendar-filter-banner">
+            <span>Showing pairs affected by <strong>{currencyFilter}</strong> news</span>
+            <button type="button" className="calendar-filter-clear" onClick={() => setCurrencyFilter(null)}>
+              Clear filter
+            </button>
+          </div>
         )}
 
         <div className="main-content">
@@ -159,13 +196,21 @@ export default function Dashboard() {
                   <span className="btn-spinner large" />
                   <p>Scanning {28 + customPairs.length}+ pairs including Gold/USD…</p>
                 </div>
-              ) : signals.length === 0 ? (
+              ) : filteredSignals.length === 0 ? (
                 <div className="state-message empty-state">
-                  <p>No setups above {minScore} points right now.</p>
-                  <span>Try lowering the minimum score filter.</span>
+                  <p>
+                    {currencyFilter
+                      ? `No setups above ${minScore} for ${currencyFilter} pairs right now.`
+                      : `No setups above ${minScore} points right now.`}
+                  </p>
+                  <span>
+                    {currencyFilter
+                      ? "Clear the calendar filter or lower the minimum score."
+                      : "Try lowering the minimum score filter."}
+                  </span>
                 </div>
               ) : (
-                signals.map((signal) => (
+                filteredSignals.map((signal) => (
                   <SignalCard
                     key={`${signal.symbol}-${signal.timeframe}`}
                     signal={signal}
@@ -178,25 +223,31 @@ export default function Dashboard() {
           </section>
 
           <aside className="side-panel">
-            {selected ? (
-              <DetailPanel
-                signal={selected}
-                candles={candles}
-                backtest={backtest}
-                onClose={() => setSelected(null)}
-              />
-            ) : (
-              <div className="calendar-panel panel">
-                <div className="panel-header">
-                  <h2>Economic calendar</h2>
-                  <span className="panel-hint">Upcoming events</span>
-                </div>
-                <EconomicCalendar events={events} />
+            <div className="calendar-panel panel">
+              <div className="panel-header">
+                <h2>Economic calendar</h2>
+                <span className="panel-hint">Upcoming events</span>
               </div>
-            )}
+              <EconomicCalendar
+                events={events}
+                activeCurrency={currencyFilter}
+                onFilterCurrency={setCurrencyFilter}
+              />
+            </div>
           </aside>
         </div>
       </main>
+
+      {selected && (
+        <div className="detail-sheet" role="dialog" aria-label="Signal details">
+          <DetailPanel
+            signal={selected}
+            candles={candles}
+            backtest={backtest}
+            onClose={() => setSelected(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }

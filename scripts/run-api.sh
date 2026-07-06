@@ -4,6 +4,13 @@ set -e
 cd "$(dirname "$0")/.."
 export PYTHONPATH=.
 
+if [ -f .env ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
 if [ -d .venv ]; then
   source .venv/bin/activate
 fi

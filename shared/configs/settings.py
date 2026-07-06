@@ -19,12 +19,10 @@ class Settings:
   SCAN_INTERVAL_SECONDS: int = 60
   DEFAULT_TIMEFRAMES: list[str] = ["M15", "H1", "H4"]
 
-  # Market data
-  OANDA_API_KEY: str = os.getenv("OANDA_API_KEY", "")
-  OANDA_ACCOUNT_ID: str = os.getenv("OANDA_ACCOUNT_ID", "")
+  # Market data (Phase 1 — OHLC only; brokers are Phase 2)
   TWELVE_DATA_API_KEY: str = os.getenv("TWELVE_DATA_API_KEY", "")
   POLYGON_API_KEY: str = os.getenv("POLYGON_API_KEY", "")
-  MARKET_DATA_PROVIDER: str = os.getenv("MARKET_DATA_PROVIDER", "frankfurter")
+  MARKET_DATA_PROVIDER: str = os.getenv("MARKET_DATA_PROVIDER", "twelvedata")
 
   # AI
   OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")

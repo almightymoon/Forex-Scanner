@@ -174,25 +174,32 @@ async def market_data_error_handler(request, exc: MarketDataProviderError):
 async def health(market_data: MarketDataDep, pipeline: PipelineDep):
     stats = pipeline.db.get_stats()
     provider_name = getattr(market_data, "underlying_provider", getattr(market_data, "name", "unknown"))
+    provider_name = provider_name.replace("service:", "")
     health_info = market_data.health_snapshot() if hasattr(market_data, "health_snapshot") else {}
     simulated = market_data.is_simulated() if hasattr(market_data, "is_simulated") else is_simulated_mode()
 
+    provider_status = health_info.get("provider_status", "unknown")
     status_label = "healthy"
-    if health_info.get("provider_status") not in (None, "healthy"):
+    if provider_status not in (None, "healthy"):
         status_label = "degraded"
     if simulated:
         status_label = "warning"
+
+    monitored = (
+        market_data.monitored_providers_health()
+        if hasattr(market_data, "monitored_providers_health")
+        else {}
+    )
 
     payload = {
         "status": status_label,
         "service": "fx-navigators-api",
         "version": "1.0.0",
-        "provider": provider_name.replace("service:", ""),
-        "provider_status": health_info.get("provider_status", "unknown"),
+        "provider": provider_name,
+        "provider_status": provider_status,
         "latency_ms": health_info.get("latency_ms"),
-        "last_success": health_info.get("last_success"),
-        "last_failure": health_info.get("last_failure"),
-        "simulated_data": simulated,
+        "simulated": simulated,
+        "providers": monitored,
         "stats": stats,
     }
     if simulated:
