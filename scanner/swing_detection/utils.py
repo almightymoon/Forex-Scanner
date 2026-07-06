@@ -1,0 +1,212 @@
+"""Configuration loader and shared utilities for swing detection."""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from shared.types.models import Candle, Timeframe
+
+logger = logging.getLogger("fxnav.swing_detection")
+
+_CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "swing_detection.yaml"
+
+
+@dataclass(frozen=True)
+class PivotConfig:
+    left_lookback: int = 3
+    right_lookback: int = 3
+
+
+@dataclass(frozen=True)
+class NoiseFilterConfig:
+    min_candle_distance: int = 2
+    min_pip_distance: float = 2.0
+    min_atr_multiple: float = 0.25
+    dedupe_equal_levels: bool = True
+    equal_level_tolerance_pips: float = 1.5
+    ignore_consecutive_same_direction: bool = True
+
+
+@dataclass(frozen=True)
+class AtrConfig:
+    period: int = 14
+    validation_multiplier: float = 0.35
+
+
+@dataclass(frozen=True)
+class LegConfig:
+    min_pips: float = 2.0
+    min_atr_multiple: float = 0.35
+
+
+@dataclass(frozen=True)
+class ConfirmationConfig:
+    min_candles: int = 2
+    delay_bars: int = 2
+    require_structure_break: bool = False
+    required_retracement_atr: float = 0.0
+
+
+@dataclass(frozen=True)
+class StrengthConfig:
+    weights: dict[str, float] = field(
+        default_factory=lambda: {
+            "leg_size": 0.25,
+            "atr_multiple": 0.25,
+            "reaction_size": 0.20,
+            "duration": 0.15,
+            "volume": 0.15,
+        }
+    )
+    level_thresholds: tuple[int, ...] = (20, 40, 60, 80)
+
+
+@dataclass(frozen=True)
+class ClassificationConfig:
+    major_min_atr_multiple: float = 1.2
+    major_min_strength: int = 4
+    minor_max_atr_multiple: float = 1.2
+
+
+@dataclass(frozen=True)
+class PipSizeConfig:
+    default: float = 0.0001
+    jpy: float = 0.01
+    jpy_symbols: tuple[str, ...] = (
+        "USDJPY",
+        "EURJPY",
+        "GBPJPY",
+        "AUDJPY",
+        "NZDJPY",
+        "CADJPY",
+        "CHFJPY",
+    )
+
+
+@dataclass(frozen=True)
+class EvaluationConfig:
+    price_match_tolerance_pips: float = 2.0
+    index_match_tolerance_bars: int = 2
+
+
+@dataclass(frozen=True)
+class SwingDetectionConfig:
+    pivot: PivotConfig = field(default_factory=PivotConfig)
+    noise_filter: NoiseFilterConfig = field(default_factory=NoiseFilterConfig)
+    atr: AtrConfig = field(default_factory=AtrConfig)
+    leg: LegConfig = field(default_factory=LegConfig)
+    confirmation: ConfirmationConfig = field(default_factory=ConfirmationConfig)
+    strength: StrengthConfig = field(default_factory=StrengthConfig)
+    classification: ClassificationConfig = field(default_factory=ClassificationConfig)
+    pip_size: PipSizeConfig = field(default_factory=PipSizeConfig)
+    evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
+
+
+def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    result = dict(base)
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = _deep_merge(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
+def _dict_to_config(data: dict[str, Any]) -> SwingDetectionConfig:
+    return SwingDetectionConfig(
+        pivot=PivotConfig(**data.get("pivot", {})),
+        noise_filter=NoiseFilterConfig(**data.get("noise_filter", {})),
+        atr=AtrConfig(**data.get("atr", {})),
+        leg=LegConfig(**data.get("leg", {})),
+        confirmation=ConfirmationConfig(**data.get("confirmation", {})),
+        strength=StrengthConfig(
+            weights=data.get("strength", {}).get("weights", StrengthConfig().weights),
+            level_thresholds=tuple(data.get("strength", {}).get("level_thresholds", (20, 40, 60, 80))),
+        ),
+        classification=ClassificationConfig(**data.get("classification", {})),
+        pip_size=PipSizeConfig(
+            default=data.get("pip_size", {}).get("default", 0.0001),
+            jpy=data.get("pip_size", {}).get("jpy", 0.01),
+            jpy_symbols=tuple(data.get("pip_size", {}).get("jpy_symbols", PipSizeConfig().jpy_symbols)),
+        ),
+        evaluation=EvaluationConfig(**data.get("evaluation", {})),
+    )
+
+
+@lru_cache(maxsize=1)
+def _load_raw_config() -> dict[str, Any]:
+    with _CONFIG_PATH.open(encoding="utf-8") as fh:
+        return yaml.safe_load(fh) or {}
+
+
+def get_swing_detection_config(timeframe: Timeframe | None = None) -> SwingDetectionConfig:
+    """Load config with optional per-timeframe overrides."""
+    raw = _load_raw_config()
+    base = {k: v for k, v in raw.items() if k != "timeframe_overrides"}
+    if timeframe:
+        tf_key = timeframe.value
+        overrides = raw.get("timeframe_overrides", {}).get(tf_key, {})
+        base = _deep_merge(base, overrides)
+    return _dict_to_config(base)
+
+
+def pip_size_for_symbol(symbol: str, config: SwingDetectionConfig) -> float:
+    sym = symbol.upper().replace("/", "")
+    if sym in config.pip_size.jpy_symbols or sym.endswith("JPY"):
+        return config.pip_size.jpy
+    return config.pip_size.default
+
+
+def pips_to_price(pips: float, symbol: str, config: SwingDetectionConfig) -> float:
+    return pips * pip_size_for_symbol(symbol, config)
+
+
+def compute_atr_series(candles: list[Candle], period: int) -> list[float]:
+    """Wilder ATR — O(n)."""
+    n = len(candles)
+    if n == 0:
+        return []
+    trs: list[float] = [candles[0].high - candles[0].low]
+    for i in range(1, n):
+        c, prev = candles[i], candles[i - 1]
+        tr = max(c.high - c.low, abs(c.high - prev.close), abs(c.low - prev.close))
+        trs.append(tr)
+
+    atrs: list[float] = [trs[0]]
+    for i in range(1, n):
+        if i < period:
+            atrs.append(sum(trs[: i + 1]) / (i + 1))
+        elif i == period:
+            atrs.append(sum(trs[1 : period + 1]) / period)
+        else:
+            atrs.append((atrs[-1] * (period - 1) + trs[i]) / period)
+    return atrs
+
+
+def atr_at(index: int, atr_series: list[float], candles: list[Candle]) -> float:
+    if 0 <= index < len(atr_series) and atr_series[index] > 0:
+        return atr_series[index]
+    if candles and 0 <= index < len(candles):
+        return max(candles[index].high - candles[index].low, 1e-12)
+    return 1e-12
+
+
+def log_stage(stage: str, input_count: int, output_count: int, **details: Any) -> None:
+    """Structured logging for pipeline stages."""
+    logger.info(
+        "swing_detection.%s",
+        stage,
+        extra={
+            "stage": stage,
+            "input_count": input_count,
+            "output_count": output_count,
+            "rejected": input_count - output_count,
+            **details,
+        },
+    )

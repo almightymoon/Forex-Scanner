@@ -1,12 +1,24 @@
-"""Robust swing detection and market structure analysis — foundation for all SMC engines."""
+"""
+Market structure helpers built on scanner.swing_detection.
 
-from dataclasses import dataclass, field
+BOS/CHoCH classification remains here for backward compatibility until
+market_structure sprint extracts it.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field, replace
 
 from shared.types.models import Candle, TrendDirection
+
+from scanner.swing_detection import SwingDetectionEngine, get_swing_detection_config
+from scanner.swing_detection.models import Swing, SwingDirection
 
 
 @dataclass
 class SwingPoint:
+    """Legacy swing point — maps from production Swing model."""
+
     index: int
     price: float
     kind: str  # "high" | "low"
@@ -42,62 +54,14 @@ class TrendContext:
     reasons: list[str] = field(default_factory=list)
 
 
-def _atr(candles: list[Candle], period: int = 14) -> float:
-    if len(candles) < 2:
-        return 0.0
-    trs: list[float] = []
-    for i in range(1, min(len(candles), period + 1)):
-        c, prev = candles[i], candles[i - 1]
-        tr = max(c.high - c.low, abs(c.high - prev.close), abs(c.low - prev.close))
-        trs.append(tr)
-    return sum(trs) / len(trs) if trs else candles[-1].high - candles[-1].low
-
-
-def _raw_fractals(candles: list[Candle], lookback: int) -> list[SwingPoint]:
-    """Fractal pivots — local extrema over `lookback` bars each side."""
-    pivots: list[SwingPoint] = []
-    if len(candles) < lookback * 2 + 1:
-        return pivots
-
-    for i in range(lookback, len(candles) - lookback):
-        is_high = all(candles[i].high >= candles[i - j].high for j in range(1, lookback + 1)) and all(
-            candles[i].high >= candles[i + j].high for j in range(1, lookback + 1)
-        )
-        is_low = all(candles[i].low <= candles[i - j].low for j in range(1, lookback + 1)) and all(
-            candles[i].low <= candles[i + j].low for j in range(1, lookback + 1)
-        )
-        if is_high:
-            pivots.append(SwingPoint(i, candles[i].high, "high"))
-        elif is_low:
-            pivots.append(SwingPoint(i, candles[i].low, "low"))
-    return pivots
-
-
-def _score_swing(
-    swing: SwingPoint,
-    prev: SwingPoint | None,
-    candles: list[Candle],
-    atr: float,
-    lookback: int,
-) -> SwingPoint:
-    disp = abs(swing.price - prev.price) if prev else atr
-    swing.displacement_atr = disp / atr if atr > 0 else 1.0
-
-    left = max(0, swing.index - lookback)
-    right = min(len(candles), swing.index + lookback + 1)
-    window = candles[left:right]
-    if swing.kind == "high":
-        prominence = swing.price - min(c.low for c in window)
-    else:
-        prominence = max(c.high for c in window) - swing.price
-
-    prom_score = min(1.0, prominence / (atr * 2)) if atr > 0 else 0.5
-    disp_score = min(1.0, swing.displacement_atr / 2.0)
-    age_bars = len(candles) - 1 - swing.index
-    recency = max(0.3, 1.0 - age_bars / 50)
-
-    swing.strength = round((disp_score * 40 + prom_score * 35 + recency * 25), 1)
-    return swing
+def _swing_to_point(swing: Swing) -> SwingPoint:
+    return SwingPoint(
+        index=swing.pivot_index,
+        price=swing.price,
+        kind=swing.direction.value.lower(),
+        strength=swing.score,
+        displacement_atr=float(swing.metadata.get("leg_atr", 0.0)),
+    )
 
 
 def build_zigzag_swings(
@@ -105,46 +69,23 @@ def build_zigzag_swings(
     lookback: int = 3,
     min_atr_mult: float = 0.35,
 ) -> list[SwingPoint]:
-    """
-    Zigzag-filtered alternating swings.
-    Filters noise via ATR minimum displacement and keeps strongest same-type pivots.
-    """
-    if len(candles) < lookback * 2 + 3:
+    """Backward-compatible zigzag swings via SwingDetectionEngine."""
+    if not candles:
         return []
 
-    atr = _atr(candles)
-    min_move = atr * min_atr_mult
-    raw = _raw_fractals(candles, lookback)
-    if not raw:
-        return []
-
-    zigzag: list[SwingPoint] = []
-    for pivot in raw:
-        if not zigzag:
-            zigzag.append(pivot)
-            continue
-
-        last = zigzag[-1]
-        if pivot.kind == last.kind:
-            if pivot.kind == "high" and pivot.price >= last.price:
-                zigzag[-1] = pivot
-            elif pivot.kind == "low" and pivot.price <= last.price:
-                zigzag[-1] = pivot
-            continue
-
-        if abs(pivot.price - last.price) < min_move:
-            continue
-        zigzag.append(pivot)
-
-    scored: list[SwingPoint] = []
-    for i, s in enumerate(zigzag):
-        prev = zigzag[i - 1] if i > 0 else None
-        scored.append(_score_swing(s, prev, candles, atr, lookback))
-    return scored
+    tf = candles[0].timeframe
+    base = get_swing_detection_config(tf)
+    cfg = replace(
+        base,
+        pivot=replace(base.pivot, left_lookback=lookback, right_lookback=lookback),
+        leg=replace(base.leg, min_atr_multiple=min_atr_mult),
+        atr=replace(base.atr, validation_multiplier=min_atr_mult),
+    )
+    result = SwingDetectionEngine(cfg).detect(candles)
+    return [_swing_to_point(s) for s in result.swings]
 
 
 def find_swings(candles: list[Candle], lookback: int = 3) -> tuple[list[SwingPoint], list[SwingPoint]]:
-    """Backward-compatible API — returns zigzag-filtered highs and lows separately."""
     swings = build_zigzag_swings(candles, lookback=lookback)
     highs = [s for s in swings if s.kind == "high"]
     lows = [s for s in swings if s.kind == "low"]
@@ -152,7 +93,7 @@ def find_swings(candles: list[Candle], lookback: int = 3) -> tuple[list[SwingPoi
 
 
 def analyze_market_structure(candles: list[Candle], lookback: int = 3) -> MarketStructureState:
-    """Derive BOS/CHoCH, internal/external structure, and swing sequence from zigzag swings."""
+    """Derive BOS/CHoCH, internal/external structure, and swing sequence from swings."""
     state = MarketStructureState()
     swings = build_zigzag_swings(candles, lookback=lookback)
     state.swings = swings

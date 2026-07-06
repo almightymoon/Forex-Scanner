@@ -1,0 +1,89 @@
+# Swing Detection Engine — all thresholds live here (no magic numbers in code).
+
+pivot:
+  left_lookback: 3
+  right_lookback: 3
+
+noise_filter:
+  min_candle_distance: 2
+  min_pip_distance: 2.0        # pips (multiplied by pip size)
+  min_atr_multiple: 0.25
+  dedupe_equal_levels: true
+  equal_level_tolerance_pips: 1.5
+  ignore_consecutive_same_direction: true
+
+atr:
+  period: 14
+  validation_multiplier: 0.35   # reject moves smaller than multiplier × ATR
+
+leg:
+  min_pips: 2.0
+  min_atr_multiple: 0.35
+
+confirmation:
+  min_candles: 2
+  delay_bars: 2
+  require_structure_break: false
+  required_retracement_atr: 0.0
+
+strength:
+  weights:
+    leg_size: 0.25
+    atr_multiple: 0.25
+    reaction_size: 0.20
+    duration: 0.15
+    volume: 0.15
+  # Composite score 0–100 mapped to strength 1–5
+  level_thresholds: [20, 40, 60, 80]
+
+classification:
+  major_min_atr_multiple: 1.2
+  major_min_strength: 4
+  minor_max_atr_multiple: 1.2
+
+pip_size:
+  default: 0.0001
+  jpy: 0.01
+  jpy_symbols:
+    - USDJPY
+    - EURJPY
+    - GBPJPY
+    - AUDJPY
+    - NZDJPY
+    - CADJPY
+    - CHFJPY
+
+evaluation:
+  price_match_tolerance_pips: 2.0
+  index_match_tolerance_bars: 2
+
+timeframe_overrides:
+  M1:
+    pivot:
+      left_lookback: 2
+      right_lookback: 2
+    confirmation:
+      min_candles: 2
+      delay_bars: 2
+  M5:
+    pivot:
+      left_lookback: 2
+      right_lookback: 2
+  H1:
+    pivot:
+      left_lookback: 3
+      right_lookback: 3
+    confirmation:
+      min_candles: 3
+      delay_bars: 3
+  H4:
+    pivot:
+      left_lookback: 4
+      right_lookback: 4
+  D1:
+    pivot:
+      left_lookback: 5
+      right_lookback: 5
+    confirmation:
+      min_candles: 4
+      delay_bars: 4

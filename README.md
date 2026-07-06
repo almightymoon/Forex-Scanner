@@ -29,40 +29,31 @@ docker compose up -d
 ## Project Structure
 
 ```
-scanner/
+fx-navigators/
+├── scanner/
+│   └── swing_detection/     # Sprint 1 — Swing Detection Engine
 ├── apps/
 │   ├── web/                 # Next.js dashboard
 │   └── api/                 # FastAPI gateway
 ├── services/
-│   ├── quant_engine/        # Core IP — scoring & SMC algorithms
-│   │   ├── swing/
-│   │   ├── market_structure/
-│   │   ├── liquidity/
-│   │   ├── order_blocks/
-│   │   ├── fvg/
-│   │   ├── trend/
-│   │   ├── confidence/
-│   │   ├── decision/        # Orchestrator + momentum/volatility/risk/news/mtf
-│   │   ├── features/        # Normalized feature extraction
-│   │   ├── detection/       # SMC pattern detection
-│   │   └── indicators/      # EMA, ADX, VWAP, etc.
-│   ├── data_collector/      # Market data ingestion (single source of truth)
+│   ├── quant_engine/        # Quant algorithms (swing re-exports scanner.swing_detection)
+│   ├── data_collector/      # Market data ingestion
 │   ├── scanner_service/     # Pipeline, data loading, signal assembly
-│   ├── market_data_service/
-│   ├── news_service/
-│   └── notification_service/
+│   └── market_data_service/
+├── config/
+│   ├── swing_detection.yaml # Swing engine thresholds
+│   └── scoring.yaml         # V2 decision engine weights
 ├── shared/
 │   ├── types/
 │   └── config/
-├── config/
-│   └── scoring.yaml         # V2 engine weights
-├── database/
+├── tests/
+│   └── swing_detection/     # Unit tests per pipeline stage
 └── docs/
 ```
 
-**`quant_engine/`** is the heart of the platform — swing analysis, structure, liquidity, order blocks, FVGs, trend, confidence aggregation, and the decision orchestrator. Supporting services (data collection, APIs, dashboard, billing) exist to feed and deliver it.
+**`scanner/swing_detection/`** is the Sprint 1 foundation — deterministic swing detection feeding future BOS, CHoCH, liquidity, OB, FVG, and decision modules. All thresholds live in `config/swing_detection.yaml`.
 
-Legacy import paths (`services.scanner_service.*`, `services.smc_service.*`, etc.) remain as thin shims re-exporting from `quant_engine`.
+Legacy import paths (`services.scanner_service.*`, `services.quant_engine.swing.*`) remain as thin shims.
 
 ## Market Data (Phase 1)
 

@@ -1,4 +1,4 @@
-"""Swing detection — core engine in scanner.swing_detection."""
+"""Re-exports Swing Detection Engine from scanner.swing_detection."""
 
 from scanner.swing_detection import (
     SwingDetectionEngine,
@@ -15,26 +15,10 @@ from scanner.swing_detection.models import (
     SwingDirection,
 )
 
-from services.quant_engine.swing.analysis import (
-    MarketStructureState,
-    SwingPoint,
-    TrendContext,
-    analyze_market_structure,
-    analyze_trend_context,
-    build_zigzag_swings,
-    classify_bos,
-    detect_session_liquidity,
-    find_swings,
-    session_from_hour,
-)
-from services.quant_engine.swing.visualizer import build_chart_overlay
-
-# Legacy aliases
 SwingDetector = SwingDetectionEngine
 SwingDetectionResult = SwingDetectionOutput
 SwingSide = SwingDirection
 SwingTier = SwingClassification
-get_swing_config = get_swing_detection_config
 
 __all__ = [
     "SwingDetectionEngine",
@@ -49,18 +33,6 @@ __all__ = [
     "SwingTier",
     "SwingEvaluator",
     "get_swing_detection_config",
-    "get_swing_config",
-    "build_chart_overlay",
-    "SwingPoint",
-    "MarketStructureState",
-    "TrendContext",
-    "build_zigzag_swings",
-    "find_swings",
-    "analyze_market_structure",
-    "analyze_trend_context",
-    "classify_bos",
-    "session_from_hour",
-    "detect_session_liquidity",
     "BenchmarkSwing",
     "EvaluationReport",
 ]
