@@ -9,6 +9,8 @@ from shared.types.models import Candle, Timeframe
 
 from swing_engine.config import SwingEngineConfig, get_config
 from swing_engine.confirmation import confirm_swings
+from swing_engine.context import adapt_config, compute_market_context
+from swing_engine.explain import build_rejection_explanation
 from swing_engine.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
 from swing_engine.models import DetectionResult, PipelineArtifacts, RejectedCandidate
 from swing_engine.performance import measure_performance
@@ -26,7 +28,8 @@ def run_pipeline(
     config: SwingEngineConfig | None = None,
 ) -> DetectionResult:
     tf = timeframe or (bars[0].timeframe if bars else Timeframe.H1)
-    cfg = config or get_config(tf, version=version)
+    sym = symbol or (bars[0].symbol if bars else None)
+    cfg = config or get_config(tf, version=version, symbol=sym)
     artifacts = PipelineArtifacts()
     stage_logs: list[dict[str, Any]] = []
 
@@ -39,6 +42,12 @@ def run_pipeline(
     with measure_performance(sym, tf.value, version, len(bars)) as perf_ctx:
         atr_series = compute_atr_series(bars, cfg.atr.period)
         artifacts.atr_series = atr_series
+
+        context = compute_market_context(bars, atr_series, cfg)
+        artifacts.market_context = context
+        if cfg.adaptive.enabled:
+            cfg = adapt_config(cfg, context)
+            stage_logs.append({"stage": "adaptive", "context": context.to_dict()})
 
         candidates = detect_pivot_candidates(bars, cfg)
         artifacts.pivot_candidates = candidates
@@ -90,6 +99,8 @@ def run_pipeline(
             "engine": "swing_engine",
             "version": version,
             "commit_hash": _git_commit_hash(),
+            "adaptive": cfg.adaptive.enabled,
+            "market_context": artifacts.market_context.to_dict() if artifacts.market_context else None,
         },
     )
 
@@ -116,6 +127,7 @@ def _build_timeline(artifacts: PipelineArtifacts) -> list[dict[str, Any]]:
                 entry["status"] = "rejected"
                 entry["rejection_stage"] = rej.stage
                 entry["rejection_reason"] = rej.reason
+                entry["explanation"] = build_rejection_explanation(rej).summary
 
     for entry in timeline:
         if entry["status"] == "accepted":

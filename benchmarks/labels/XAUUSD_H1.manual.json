@@ -1,0 +1,232 @@
+{
+  "symbol": "XAUUSD",
+  "timeframe": "H1",
+  "benchmark_version": "1.0",
+  "source": "v1.2.0 confirmed swings on synthetic gold (seed=7); replace with human review",
+  "swings": [
+    {
+      "pivot_index": 18,
+      "timestamp": "2025-01-01T18:00:00",
+      "price": 2364.223,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 24,
+      "timestamp": "2025-01-02T00:00:00",
+      "price": 2358.131,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
+      "pivot_index": 30,
+      "timestamp": "2025-01-02T06:00:00",
+      "price": 2369.122,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 35,
+      "timestamp": "2025-01-02T11:00:00",
+      "price": 2363.63,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 42,
+      "timestamp": "2025-01-02T18:00:00",
+      "price": 2374.171,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 48,
+      "timestamp": "2025-01-03T00:00:00",
+      "price": 2368.667,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 54,
+      "timestamp": "2025-01-03T06:00:00",
+      "price": 2377.943,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 66,
+      "timestamp": "2025-01-03T18:00:00",
+      "price": 2383.844,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 72,
+      "timestamp": "2025-01-04T00:00:00",
+      "price": 2378.135,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 84,
+      "timestamp": "2025-01-04T12:00:00",
+      "price": 2382.107,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 90,
+      "timestamp": "2025-01-04T18:00:00",
+      "price": 2392.979,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 96,
+      "timestamp": "2025-01-05T00:00:00",
+      "price": 2387.274,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 102,
+      "timestamp": "2025-01-05T06:00:00",
+      "price": 2397.273,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 108,
+      "timestamp": "2025-01-05T12:00:00",
+      "price": 2392.091,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 114,
+      "timestamp": "2025-01-05T18:00:00",
+      "price": 2402.782,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 120,
+      "timestamp": "2025-01-06T00:00:00",
+      "price": 2396.928,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 126,
+      "timestamp": "2025-01-06T06:00:00",
+      "price": 2406.834,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 132,
+      "timestamp": "2025-01-06T12:00:00",
+      "price": 2401.262,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 138,
+      "timestamp": "2025-01-06T18:00:00",
+      "price": 2411.704,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 144,
+      "timestamp": "2025-01-07T00:00:00",
+      "price": 2406.646,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 150,
+      "timestamp": "2025-01-07T06:00:00",
+      "price": 2417.426,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 155,
+      "timestamp": "2025-01-07T11:00:00",
+      "price": 2411.535,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 162,
+      "timestamp": "2025-01-07T18:00:00",
+      "price": 2421.318,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 168,
+      "timestamp": "2025-01-08T00:00:00",
+      "price": 2416.027,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 174,
+      "timestamp": "2025-01-08T06:00:00",
+      "price": 2427.009,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 180,
+      "timestamp": "2025-01-08T12:00:00",
+      "price": 2420.345,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 186,
+      "timestamp": "2025-01-08T18:00:00",
+      "price": 2431.999,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 192,
+      "timestamp": "2025-01-09T00:00:00",
+      "price": 2425.415,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    }
+  ]
+}

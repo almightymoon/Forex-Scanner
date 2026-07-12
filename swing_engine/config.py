@@ -124,6 +124,49 @@ class PipSizeConfig:
     jpy_symbols: tuple[str, ...] = (
         "USDJPY", "EURJPY", "GBPJPY", "AUDJPY", "NZDJPY", "CADJPY", "CHFJPY",
     )
+    symbol_overrides: dict[str, float] = field(
+        default_factory=lambda: {"XAUUSD": 0.1, "XAGUSD": 0.001, "XAUEUR": 0.1}
+    )
+
+
+@dataclass(frozen=True)
+class AdaptiveConfig:
+    enabled: bool = False
+    atr_percentile_window: int = 100
+    high_volatility_percentile: float = 75.0
+    low_volatility_percentile: float = 25.0
+    trending_efficiency_min: float = 0.35
+    efficiency_window: int = 20
+    session_enabled: bool = True
+    high_vol_pip_distance_mult: float = 1.3
+    high_vol_major_atr_mult: float = 1.15
+    low_vol_pip_distance_mult: float = 0.8
+    low_vol_min_atr_mult: float = 0.85
+    ranging_leg_atr_mult: float = 1.2
+    ranging_pivot_strength_add: float = 4.0
+    trending_leg_atr_mult: float = 0.9
+    asia_min_pip_mult: float = 1.25
+    asia_delay_add: int = 1
+    overlap_min_pip_mult: float = 0.9
+    wide_spread_atr_ratio: float = 0.5
+
+
+@dataclass(frozen=True)
+class QualityConfig:
+    weights: dict[str, float] = field(
+        default_factory=lambda: {
+            "confirmation": 0.20,
+            "displacement": 0.15,
+            "wick": 0.10,
+            "atr_normalization": 0.15,
+            "leg_symmetry": 0.15,
+            "liquidity_sweep": 0.10,
+            "trend_alignment": 0.15,
+        }
+    )
+    min_acceptable: float = 50.0
+    sweep_lookback_bars: int = 10
+    sweep_penetration_atr: float = 0.1
 
 
 @dataclass(frozen=True)
@@ -144,6 +187,8 @@ class SwingEngineConfig:
     classification: ClassificationConfig = field(default_factory=ClassificationConfig)
     confidence: ConfidenceConfig = field(default_factory=ConfidenceConfig)
     pip_size: PipSizeConfig = field(default_factory=PipSizeConfig)
+    adaptive: AdaptiveConfig = field(default_factory=AdaptiveConfig)
+    quality: QualityConfig = field(default_factory=QualityConfig)
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
 
 
@@ -189,6 +234,17 @@ def _dict_to_config(data: dict[str, Any]) -> SwingEngineConfig:
             default=data.get("pip_size", {}).get("default", 0.0001),
             jpy=data.get("pip_size", {}).get("jpy", 0.01),
             jpy_symbols=tuple(data.get("pip_size", {}).get("jpy_symbols", PipSizeConfig().jpy_symbols)),
+            symbol_overrides={
+                k.upper(): float(v)
+                for k, v in data.get("pip_size", {}).get("symbol_overrides", PipSizeConfig().symbol_overrides).items()
+            },
+        ),
+        adaptive=AdaptiveConfig(**data.get("adaptive", {})),
+        quality=QualityConfig(
+            weights=data.get("quality", {}).get("weights", QualityConfig().weights),
+            min_acceptable=data.get("quality", {}).get("min_acceptable", 50.0),
+            sweep_lookback_bars=data.get("quality", {}).get("sweep_lookback_bars", 10),
+            sweep_penetration_atr=data.get("quality", {}).get("sweep_penetration_atr", 0.1),
         ),
         evaluation=EvaluationConfig(**data.get("evaluation", {})),
     )
@@ -200,21 +256,31 @@ def _load_raw_config() -> dict[str, Any]:
         return yaml.safe_load(fh) or {}
 
 
+_META_KEYS = ("timeframe_overrides", "version_profiles", "symbol_overrides")
+
+
 def get_config(
     timeframe: Timeframe | None = None,
     version: str | None = None,
+    symbol: str | None = None,
     **overrides: Any,
 ) -> SwingEngineConfig:
-    """Load config with optional per-timeframe and per-version overrides."""
+    """Load config with optional per-version, per-timeframe, and per-symbol overrides.
+
+    Merge order (later wins): base -> version profile -> timeframe -> symbol -> kwargs.
+    """
     raw = _load_raw_config()
-    base = {k: v for k, v in raw.items() if k not in ("timeframe_overrides", "version_profiles")}
+    base = {k: v for k, v in raw.items() if k not in _META_KEYS}
     if version:
         profile = raw.get("version_profiles", {}).get(version, {})
         base = _deep_merge(base, profile)
     if timeframe:
-        tf_key = timeframe.value
-        tf_overrides = raw.get("timeframe_overrides", {}).get(tf_key, {})
+        tf_overrides = raw.get("timeframe_overrides", {}).get(timeframe.value, {})
         base = _deep_merge(base, tf_overrides)
+    if symbol:
+        sym_key = symbol.upper().replace("/", "")
+        sym_overrides = raw.get("symbol_overrides", {}).get(sym_key, {})
+        base = _deep_merge(base, sym_overrides)
     base = _deep_merge(base, overrides) if overrides else base
     return _dict_to_config(base)
 

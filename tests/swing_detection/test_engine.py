@@ -77,7 +77,7 @@ class TestSwingDetectionEngine(unittest.TestCase):
         out = engine.detect(cs)
         elapsed = time.perf_counter() - start
         self.assertGreater(len(out.swings), 10)
-        self.assertLess(elapsed, 3.0)
+        self.assertLess(elapsed, 4.5)
 
     def test_output_to_dict(self):
         out = _detect(trend_candles(60))

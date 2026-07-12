@@ -91,6 +91,47 @@ pip_size:
     - NZDJPY
     - CADJPY
     - CHFJPY
+  # Per-symbol pip overrides (metals, indices). XAUUSD gold pip = 0.1.
+  symbol_overrides:
+    XAUUSD: 0.1
+    XAGUSD: 0.001
+    XAUEUR: 0.1
+
+# Sprint 3 — adaptive detection. Disabled at base; enabled in the 1.2.0 profile.
+adaptive:
+  enabled: false
+  atr_percentile_window: 100
+  high_volatility_percentile: 75.0
+  low_volatility_percentile: 25.0
+  trending_efficiency_min: 0.35     # Kaufman efficiency ratio threshold
+  efficiency_window: 20
+  session_enabled: true
+  # Scaling factors applied to thresholds by regime/session
+  high_vol_pip_distance_mult: 1.3
+  high_vol_major_atr_mult: 1.15
+  low_vol_pip_distance_mult: 0.8
+  low_vol_min_atr_mult: 0.85
+  ranging_leg_atr_mult: 1.2
+  ranging_pivot_strength_add: 4.0
+  trending_leg_atr_mult: 0.9
+  asia_min_pip_mult: 1.25
+  asia_delay_add: 1
+  overlap_min_pip_mult: 0.9
+  wide_spread_atr_ratio: 0.5
+
+# Sprint 3 — swing quality score (0-100). Downstream modules gate on this.
+quality:
+  weights:
+    confirmation: 0.20
+    displacement: 0.15
+    wick: 0.10
+    atr_normalization: 0.15
+    leg_symmetry: 0.15
+    liquidity_sweep: 0.10
+    trend_alignment: 0.15
+  min_acceptable: 50.0               # advisory threshold for downstream filtering
+  sweep_lookback_bars: 10
+  sweep_penetration_atr: 0.1
 
 evaluation:
   price_match_tolerance_pips: 2.0
@@ -113,6 +154,32 @@ version_profiles:
       break_internal_structure: false
     classification:
       protected_lookback_swings: 4
+  "1.2.0":
+    pivot:
+      allow_equal_levels: true
+      min_pivot_strength: 8.0
+    noise_filter:
+      volatility_filter_enabled: true
+      insignificant_pullback_atr: 0.20
+    leg:
+      validate_same_direction: true
+    confirmation:
+      displacement_atr_min: 0.15
+      break_internal_structure: false
+    classification:
+      protected_lookback_swings: 4
+    adaptive:
+      enabled: true
+
+# Per-symbol overrides (merged after version + timeframe). Gold trades wider.
+symbol_overrides:
+  XAUUSD:
+    noise_filter:
+      min_pip_distance: 5.0
+    leg:
+      min_pips: 5.0
+    adaptive:
+      wide_spread_atr_ratio: 0.6
 
 timeframe_overrides:
   M1:

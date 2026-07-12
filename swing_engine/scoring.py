@@ -5,7 +5,9 @@ from __future__ import annotations
 from shared.types.models import Candle
 
 from swing_engine.config import SwingEngineConfig
+from swing_engine.explain import build_swing_explanation
 from swing_engine.models import DetectedSwing, InternalSwing, SwingDirection, SwingScope, SwingTier
+from swing_engine.quality import compute_quality_score
 from swing_engine.strength import score_all_swings
 from swing_engine.utils import atr_at, log_stage
 
@@ -135,10 +137,15 @@ def score_and_classify(
         )
         ds.tier = classify_tier(ds, leg_atr, reaction_atr, duration, config)
         opp = SwingDirection.LOW if ds.direction == SwingDirection.HIGH else SwingDirection.HIGH
+        prev_same, prev_opp = last[ds.direction], last[opp]
         prot_hi, prot_lo = _protected_levels(detected, i, lookback)
-        ds.scope = classify_scope(ds, last[ds.direction], last[opp], prot_hi, prot_lo, config)
+        ds.scope = classify_scope(ds, prev_same, prev_opp, prot_hi, prot_lo, config)
         ds.confidence = compute_confidence(ds, config)
         ds.metadata["leg_atr"] = round(leg_atr, 3)
+        ds.quality_score, ds.quality_factors = compute_quality_score(
+            ds, prev_same, prev_opp, candles, atr_series, config
+        )
+        ds.explanation = build_swing_explanation(ds, config)
         detected.append(ds)
         last[ds.direction] = ds
 

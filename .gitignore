@@ -43,3 +43,9 @@ data/
 
 # Docker
 .docker/
+
+# Generated swing-engine artifacts (keep source labels under benchmarks/labels/)
+debug/
+benchmarks/reports/
+benchmarks/history/
+benchmarks/live/

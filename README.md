@@ -30,7 +30,7 @@ docker compose up -d
 
 ```
 fx-navigators/
-├── swing_engine/            # Single source of truth — swing detection only
+├── swing_engine/            # Single source of truth — swing detection (v1.2.0: adaptive, quality, explainability)
 ├── services/
 │   ├── bar_builder/         # Deterministic M1–D1 bar generation
 │   ├── data_collector/      # Market data ingestion + raw tick storage
@@ -39,7 +39,9 @@ fx-navigators/
 ├── config/
 │   ├── swing_detection.yaml
 │   └── data_collector.yaml
-├── benchmarks/reports/      # Evaluation JSON/CSV output
+├── benchmarks/reports/      # Evaluation JSON/CSV/MD + regression dashboard
+├── benchmarks/history/      # Regression history (JSONL, per-run metrics)
+├── benchmarks/live/         # Paper-mode swing logs + live validation reports
 ├── tests/
 │   ├── test_swing_engine_pkg/
 │   ├── swing_detection/
@@ -84,7 +86,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
 - [Architecture](docs/ARCHITECTURE.md) — System design
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
-- [Swing Detection](docs/SWING_DETECTION.md) — Sprint 1 engine spec
+- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (Sprint 3: adaptive detection, quality score, explainability, regression dashboard, paper validation)
 
 ## License
 

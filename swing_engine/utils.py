@@ -14,6 +14,9 @@ logger = logging.getLogger("fxnav.swing_engine")
 
 def pip_size_for_symbol(symbol: str, config: SwingEngineConfig) -> float:
     sym = symbol.upper().replace("/", "")
+    overrides = getattr(config.pip_size, "symbol_overrides", {}) or {}
+    if sym in overrides:
+        return overrides[sym]
     if sym in config.pip_size.jpy_symbols or sym.endswith("JPY"):
         return config.pip_size.jpy
     return config.pip_size.default

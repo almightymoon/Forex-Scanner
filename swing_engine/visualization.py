@@ -44,6 +44,9 @@ class SwingVisualizer:
             payload["candidates"] = [p.to_dict() for p in artifacts.pivot_candidates]
             payload["filtered"] = [p.to_dict() for p in artifacts.noise_filtered]
             payload["timeline"] = artifacts.decision_timeline
+            payload["market_context"] = (
+                artifacts.market_context.to_dict() if artifacts.market_context else None
+            )
             if include_rejected:
                 payload["rejected"] = [r.to_dict() for r in (
                     artifacts.noise_rejected + artifacts.atr_rejected + artifacts.leg_rejected
@@ -112,10 +115,13 @@ class SwingVisualizer:
             "direction": s.direction.value, "tier": s.tier.value, "scope": s.scope.value,
             "strength": s.strength, "score": s.score,
             "normalized_score": s.normalized_score, "confidence": s.confidence,
+            "quality_score": s.quality_score,
+            "quality_factors": s.quality_factors,
             "confirmed": s.confirmed,
             "confirmation_delay": s.confirmation_delay,
             "confirmation_index": s.confirmation_index,
             "reasoning": s.reasoning,
+            "explanation": s.explanation.to_dict() if s.explanation else None,
             "color": self._color(s), "label": f"{s.tier.value} {s.scope.value} {s.direction.value}",
         }
 
@@ -193,7 +199,7 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 </div>
 <div id="main">
   <div id="chart"></div>
-  <div id="sidebar"><h3>Decision Timeline</h3><div id="timeline"></div></div>
+  <div id="sidebar"><div id="context"></div><h3>Decision Timeline</h3><div id="timeline"></div></div>
 </div>
 <div id="tooltip"></div>
 <script>
@@ -274,9 +280,25 @@ chart.subscribeCrosshairMove(param=>{
     tip.style.display='block';
     tip.style.left=(param.point?.x||0)+12+'px';
     tip.style.top=(param.point?.y||0)+12+'px';
-    tip.innerHTML=`<b>${s.label}</b><br>Confidence: ${(s.confidence*100).toFixed(1)}%<br>Strength: ${s.strength} | Score: ${s.normalized_score}<br>Delay: ${s.confirmation_delay} bars<br>${(s.reasoning||[]).slice(0,3).join('<br>')}`;
+    const q=(s.quality_score!=null)?s.quality_score.toFixed(0):'-';
+    const factors=(s.explanation&&s.explanation.factors)?s.explanation.factors:(s.reasoning||[]).slice(0,3);
+    tip.innerHTML=`<b>${s.label}</b><br>`+
+      `Quality: <b>${q}/100</b> | Confidence: ${(s.confidence*100).toFixed(0)}%<br>`+
+      `Strength: ${s.strength} | Score: ${s.normalized_score} | Delay: ${s.confirmation_delay} bars<br>`+
+      `<span style="color:#94a3b8">${factors.map(f=>'• '+f).join('<br>')}</span>`;
   } else {tip.style.display='none';}
 });
+
+const ctxEl=document.getElementById('context');
+if(DATA.market_context){
+  const c=DATA.market_context;
+  ctxEl.innerHTML='<h3>Market Context</h3>'+
+    '<div style="line-height:1.6">'+
+    'Volatility: <b>'+c.volatility_regime+'</b> ('+c.atr_percentile+'%ile)<br>'+
+    'Structure: <b>'+c.structure_regime+'</b> (ER '+c.efficiency_ratio+')<br>'+
+    'Session: <b>'+c.session+'</b><br>'+
+    'Spread/ATR: '+c.spread_atr_ratio+'</div>';
+}
 
 const tl=document.getElementById('timeline');
 (DATA.timeline||[]).forEach(item=>{
@@ -284,7 +306,7 @@ const tl=document.getElementById('timeline');
   div.className='tl-item '+(item.status==='accepted'?'tl-accepted':'tl-rejected');
   div.textContent=`#${item.pivot_index} ${item.direction} ${item.status}` +
     (item.rejection_reason?` — ${item.rejection_stage}: ${item.rejection_reason}`:'');
-  div.title=(item.events||[]).join(' → ');
+  div.title=item.explanation || (item.events||[]).join(' → ');
   tl.appendChild(div);
 });
 

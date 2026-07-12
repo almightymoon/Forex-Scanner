@@ -30,6 +30,71 @@ class SwingScope(str, Enum):
 SwingClassification = SwingTier
 
 
+class VolatilityRegime(str, Enum):
+    LOW = "LOW"
+    NORMAL = "NORMAL"
+    HIGH = "HIGH"
+
+
+class StructureRegime(str, Enum):
+    TRENDING = "TRENDING"
+    RANGING = "RANGING"
+
+
+class TradingSession(str, Enum):
+    ASIA = "ASIA"
+    LONDON = "LONDON"
+    NEW_YORK = "NEW_YORK"
+    OVERLAP = "OVERLAP"
+    OFF = "OFF"
+
+
+@dataclass(frozen=True)
+class MarketContext:
+    """Snapshot of market conditions used for adaptive detection."""
+
+    volatility_regime: VolatilityRegime = VolatilityRegime.NORMAL
+    structure_regime: StructureRegime = StructureRegime.RANGING
+    session: TradingSession = TradingSession.OFF
+    atr_percentile: float = 50.0
+    efficiency_ratio: float = 0.0
+    spread_atr_ratio: float = 0.0
+    current_atr: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "volatility_regime": self.volatility_regime.value,
+            "structure_regime": self.structure_regime.value,
+            "session": self.session.value,
+            "atr_percentile": round(self.atr_percentile, 1),
+            "efficiency_ratio": round(self.efficiency_ratio, 3),
+            "spread_atr_ratio": round(self.spread_atr_ratio, 3),
+            "current_atr": round(self.current_atr, 6),
+        }
+
+
+@dataclass
+class SwingExplanation:
+    """Human-readable, structured explanation for a swing decision."""
+
+    status: str = "accepted"  # accepted | rejected
+    summary: str = ""
+    factors: list[str] = field(default_factory=list)
+    stage_scores: dict[str, float] = field(default_factory=dict)
+    rejection_stage: str | None = None
+    rejection_reason: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "summary": self.summary,
+            "factors": list(self.factors),
+            "stage_scores": {k: round(v, 2) for k, v in self.stage_scores.items()},
+            "rejection_stage": self.rejection_stage,
+            "rejection_reason": self.rejection_reason,
+        }
+
+
 @dataclass(frozen=True)
 class PivotCandidate:
     pivot_index: int
@@ -100,6 +165,9 @@ class DetectedSwing:
     score: float = 0.0
     normalized_score: float = 0.0
     confidence: float = 0.0
+    quality_score: float = 0.0
+    quality_factors: dict[str, float] = field(default_factory=dict)
+    explanation: "SwingExplanation | None" = None
     reasoning: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -129,6 +197,9 @@ class DetectedSwing:
             "score": round(self.score, 2),
             "normalized_score": round(self.normalized_score, 2),
             "confidence": round(self.confidence, 4),
+            "quality_score": round(self.quality_score, 1),
+            "quality_factors": {k: round(v, 1) for k, v in self.quality_factors.items()},
+            "explanation": self.explanation.to_dict() if self.explanation else None,
             "reasoning": list(self.reasoning),
             "metadata": to_dict(self.metadata),
         }
@@ -149,6 +220,7 @@ class PipelineArtifacts:
     unconfirmed_swings: list[InternalSwing] = field(default_factory=list)
     decision_timeline: list[dict[str, Any]] = field(default_factory=list)
     atr_series: list[float] = field(default_factory=list)
+    market_context: "MarketContext | None" = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -161,6 +233,7 @@ class PipelineArtifacts:
             "leg_rejected": [r.to_dict() for r in self.leg_rejected],
             "confirmed_swings": len(self.confirmed_swings),
             "unconfirmed_swings": len(self.unconfirmed_swings),
+            "market_context": self.market_context.to_dict() if self.market_context else None,
         }
 
 
