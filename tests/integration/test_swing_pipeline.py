@@ -14,7 +14,7 @@ class TestPipelineIntegration(unittest.TestCase):
         bars = swing_candles(120)
         result = SwingEngine(get_config(Timeframe.H1)).detect(bars)
         self.assertGreater(len(result.swings), 4)
-        self.assertEqual(len(result.stage_logs), 6)
+        self.assertEqual(len(result.stage_logs), 7)
 
     def test_ticks_to_bars_to_swings(self):
         bars_raw = swing_candles(100)

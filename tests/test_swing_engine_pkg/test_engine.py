@@ -87,5 +87,61 @@ class TestVolatileMarket(unittest.TestCase):
         self.assertGreater(len(swings), 2)
 
 
+class TestArtifacts(unittest.TestCase):
+    def test_pipeline_artifacts_populated(self):
+        bars = trend_candles(100)
+        result = SwingEngine().detect(bars, symbol="EURUSD")
+        a = result.artifacts
+        self.assertGreater(len(a.pivot_candidates), 0)
+        self.assertIsInstance(a.noise_rejected, list)
+        self.assertIsInstance(a.atr_rejected, list)
+        self.assertIsInstance(a.leg_rejected, list)
+        self.assertGreater(len(a.atr_series), 0)
+
+    def test_artifacts_to_dict(self):
+        result = SwingEngine().detect(trend_candles(60))
+        d = result.artifacts.to_dict()
+        self.assertIn("pivot_candidates", d)
+        self.assertIn("noise_rejected", d)
+
+
+class TestPerformance(unittest.TestCase):
+    def test_performance_metrics_recorded(self):
+        bars = trend_candles(80)
+        result = SwingEngine().detect(bars, symbol="EURUSD")
+        self.assertIsNotNone(result.performance)
+        p = result.performance
+        self.assertGreater(p.runtime_ms, 0)
+        self.assertEqual(p.bar_count, len(bars))
+        self.assertGreater(p.bars_per_second, 0)
+
+
+class TestVersioning(unittest.TestCase):
+    def test_default_version(self):
+        engine = SwingEngine()
+        self.assertEqual(engine.version, "1.0.0")
+
+    def test_explicit_version(self):
+        from swing_engine import SUPPORTED_VERSIONS
+        self.assertIn("1.0.0", SUPPORTED_VERSIONS)
+        result = SwingEngine(version="1.0.0").detect(trend_candles(50))
+        self.assertEqual(result.version, "1.0.0")
+
+
+class TestDebugHtml(unittest.TestCase):
+    def test_render_debug_html(self):
+        import tempfile
+        from pathlib import Path
+
+        bars = trend_candles(60)
+        result = SwingEngine().detect(bars, symbol="EURUSD")
+        with tempfile.TemporaryDirectory() as td:
+            path = SwingVisualizer().render_debug_html(result, bars, Path(td) / "debug.html")
+            self.assertTrue(path.exists())
+            content = path.read_text(encoding="utf-8")
+            self.assertIn("lightweight-charts", content)
+            self.assertNotIn("__DATA__", content)
+
+
 if __name__ == "__main__":
     unittest.main()

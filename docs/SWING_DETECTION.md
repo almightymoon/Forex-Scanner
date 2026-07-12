@@ -21,8 +21,9 @@ flowchart TD
 |--------|------|----------------|
 | Data Collector | `services/data_collector/` | Download, validate, persist ticks + candles |
 | Bar Builder | `services/bar_builder/` | Deterministic UTC bar aggregation + rollup |
-| Swing Engine | `swing_engine/` | Standalone swing detection (versioned) |
-| Legacy shim | `scanner/swing_detection/` | Backward-compatible pipeline |
+| Swing Engine | `swing_engine/` | **Single source of truth** — versioned pipeline, artifacts, metrics |
+| Legacy shim | `scanner/swing_detection/` | Thin re-exports + backward-compatible `detect_swings()` |
+| Quant shim | `services/quant_engine/swing/` | Thin re-exports + `analysis.py` (BOS/CHoCH helpers) |
 | Config | `config/swing_detection.yaml` | All thresholds |
 
 ## Swing Engine Pipeline
@@ -35,14 +36,82 @@ Bars → Pivots → Noise Filter → ATR Validation → Leg Validation
 ### Public API
 
 ```python
-from swing_engine import detect_swings, SwingEngine, SwingVisualizer
+from swing_engine import SwingEngine, SwingVisualizer, SUPPORTED_VERSIONS
+from shared.types.models import Timeframe
 
-swings = detect_swings(bars)  # List[DetectedSwing]
-
-engine = SwingEngine()
+# Versioned engine (canonical)
+engine = SwingEngine(version="1.0.0")
 result = engine.detect(bars, symbol="EURUSD", timeframe=Timeframe.H1)
 
-viz = SwingVisualizer().build(bars, swings, window_start=..., window_end=...)
+result.swings              # List[DetectedSwing]
+result.artifacts           # PipelineArtifacts — intermediate stages
+result.performance         # PerformanceMetrics — runtime / throughput
+result.stage_logs          # Per-stage counts for debugging
+
+# Convenience helper (returns swing list only)
+from swing_engine import detect_swings
+swings = detect_swings(bars)
+
+# Legacy shim (returns full DetectionResult)
+from scanner.swing_detection import detect_swings as detect_swings_legacy
+legacy_result = detect_swings_legacy(bars)
+```
+
+### Versioning
+
+Implementations live under `swing_engine/versions/`. Compare engines without replacing prior logic:
+
+```python
+from swing_engine import SwingEngine, SUPPORTED_VERSIONS
+
+v1 = SwingEngine(version="1.0.0").detect(bars)
+# v2 = SwingEngine(version="2.0.0").detect(bars)  # when added
+```
+
+### Pipeline Artifacts
+
+`PipelineArtifacts` stores intermediate results for debugging:
+
+| Field | Description |
+|-------|-------------|
+| `pivot_candidates` | Raw pivot detections |
+| `noise_filtered` / `noise_rejected` | After noise filter |
+| `atr_validated` / `atr_rejected` | After ATR validation |
+| `leg_validated` / `leg_rejected` | After leg validation |
+| `confirmed_swings` / `unconfirmed_swings` | Post-confirmation |
+| `atr_series` | ATR values aligned to bars |
+
+### Performance Metrics
+
+Each `engine.detect()` run records:
+
+- Runtime (ms) per symbol/timeframe
+- Bars processed per second
+- Swings detected per second
+- Peak memory (MB)
+
+### Interactive Visualization
+
+```python
+from pathlib import Path
+from swing_engine import SwingEngine, SwingVisualizer
+
+result = SwingEngine().detect(bars, symbol="EURUSD")
+SwingVisualizer().render_debug_html(result, bars, Path("debug/swing_debug.html"))
+```
+
+The HTML debugger shows candlesticks, candidate pivots, confirmed/rejected swings,
+major/minor and internal/external coloring, confidence on hover, confirmation markers,
+and optional ATR overlay.
+
+```bash
+PYTHONPATH=. python scripts/render_swing_debug.py --symbol EURUSD --output debug.html
+```
+
+### Chart overlay API
+
+```python
+viz = SwingVisualizer().build(bars, swings, artifacts=result.artifacts, window_start=..., window_end=...)
 ```
 
 ### DetectedSwing Fields
@@ -144,7 +213,8 @@ Per-timeframe overrides under `timeframe_overrides`.
 ## Testing
 
 ```bash
-PYTHONPATH=. python -m unittest discover -s tests/swing_engine -p 'test_*.py' -v
+PYTHONPATH=. python -m unittest discover -s tests/test_swing_engine_pkg -p 'test_*.py' -v
+PYTHONPATH=. python -m unittest discover -s tests/swing_detection -p 'test_*.py' -v
 PYTHONPATH=. python -m unittest discover -s tests/bar_builder -p 'test_*.py' -v
 PYTHONPATH=. python -m unittest discover -s tests/integration -p 'test_*.py' -v
 PYTHONPATH=. ./scripts/test.sh
@@ -163,7 +233,8 @@ PYTHONPATH=. ./scripts/test.sh
 
 ## Developer Notes
 
+- **Single implementation:** all logic in `swing_engine/`; other paths are thin shims
 - **No repaint:** confirmed swings depend only on bars through `confirmation_index`
 - **No magic numbers:** all thresholds in YAML
 - **Backward compat:** `scanner.swing_detection` and `services.quant_engine.swing` remain functional
-- **Version:** `swing_engine.__version__` = `1.0.0`
+- **Version:** `swing_engine.__version__` = `1.0.0`; use `SwingEngine(version=...)` to pin

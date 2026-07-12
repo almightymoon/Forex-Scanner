@@ -11,8 +11,8 @@ from dataclasses import dataclass, field, replace
 
 from shared.types.models import Candle, TrendDirection
 
-from scanner.swing_detection import SwingDetectionEngine, get_swing_detection_config
-from scanner.swing_detection.models import Swing, SwingDirection
+from swing_engine import SwingEngine, get_config
+from swing_engine.models import DetectedSwing, SwingDirection
 
 
 @dataclass
@@ -54,7 +54,7 @@ class TrendContext:
     reasons: list[str] = field(default_factory=list)
 
 
-def _swing_to_point(swing: Swing) -> SwingPoint:
+def _swing_to_point(swing: DetectedSwing) -> SwingPoint:
     return SwingPoint(
         index=swing.pivot_index,
         price=swing.price,
@@ -74,14 +74,14 @@ def build_zigzag_swings(
         return []
 
     tf = candles[0].timeframe
-    base = get_swing_detection_config(tf)
+    base = get_config(tf)
     cfg = replace(
         base,
         pivot=replace(base.pivot, left_lookback=lookback, right_lookback=lookback),
         leg=replace(base.leg, min_atr_multiple=min_atr_mult),
         atr=replace(base.atr, validation_multiplier=min_atr_mult),
     )
-    result = SwingDetectionEngine(cfg).detect(candles)
+    result = SwingEngine(cfg).detect(candles)
     return [_swing_to_point(s) for s in result.swings]
 
 

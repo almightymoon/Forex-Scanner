@@ -1,4 +1,4 @@
-"""Detected swing domain models."""
+"""Domain models for swing_engine."""
 
 from __future__ import annotations
 
@@ -26,9 +26,60 @@ class SwingScope(str, Enum):
     NEUTRAL = "NEUTRAL"
 
 
+# Legacy aliases
+SwingClassification = SwingTier
+
+
+@dataclass(frozen=True)
+class PivotCandidate:
+    pivot_index: int
+    pivot_timestamp: datetime
+    price: float
+    direction: SwingDirection
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "pivot_index": self.pivot_index,
+            "timestamp": self.pivot_timestamp.isoformat(),
+            "price": self.price,
+            "direction": self.direction.value,
+        }
+
+
+@dataclass(frozen=True)
+class RejectedCandidate:
+    """Pivot rejected at a pipeline stage with reason."""
+
+    candidate: PivotCandidate
+    stage: str
+    reason: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"stage": self.stage, "reason": self.reason, **self.candidate.to_dict()}
+
+
+@dataclass
+class InternalSwing:
+    """Intermediate swing after confirmation, before final scoring."""
+
+    timestamp: datetime
+    price: float
+    direction: SwingDirection
+    pivot_index: int
+    confirmed: bool = False
+    confirmed_timestamp: datetime | None = None
+    confirmation_index: int | None = None
+    confirmation_delay: int = 0
+    strength: int = 1
+    score: float = 0.0
+    tier: SwingTier = SwingTier.MINOR
+    reasoning: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
 @dataclass
 class DetectedSwing:
-    """Production swing output for downstream market structure modules."""
+    """Final production swing output."""
 
     timestamp: datetime
     price: float
@@ -49,6 +100,11 @@ class DetectedSwing:
     @property
     def type_label(self) -> str:
         return f"{self.tier.value}_{self.scope.value}_{self.direction.value}"
+
+    @property
+    def classification(self) -> SwingTier:
+        """Legacy alias for tier."""
+        return self.tier
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -72,13 +128,71 @@ class DetectedSwing:
 
 
 @dataclass
-class DetectionResult:
-    """Engine output with audit trail."""
+class PipelineArtifacts:
+    """Intermediate pipeline results for debugging."""
 
+    pivot_candidates: list[PivotCandidate] = field(default_factory=list)
+    noise_filtered: list[PivotCandidate] = field(default_factory=list)
+    noise_rejected: list[RejectedCandidate] = field(default_factory=list)
+    atr_validated: list[PivotCandidate] = field(default_factory=list)
+    atr_rejected: list[RejectedCandidate] = field(default_factory=list)
+    leg_validated: list[PivotCandidate] = field(default_factory=list)
+    leg_rejected: list[RejectedCandidate] = field(default_factory=list)
+    confirmed_swings: list[InternalSwing] = field(default_factory=list)
+    unconfirmed_swings: list[InternalSwing] = field(default_factory=list)
+    atr_series: list[float] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "pivot_candidates": [p.to_dict() for p in self.pivot_candidates],
+            "noise_filtered": [p.to_dict() for p in self.noise_filtered],
+            "noise_rejected": [r.to_dict() for r in self.noise_rejected],
+            "atr_validated": [p.to_dict() for p in self.atr_validated],
+            "atr_rejected": [r.to_dict() for r in self.atr_rejected],
+            "leg_validated": [p.to_dict() for p in self.leg_validated],
+            "leg_rejected": [r.to_dict() for r in self.leg_rejected],
+            "confirmed_swings": len(self.confirmed_swings),
+            "unconfirmed_swings": len(self.unconfirmed_swings),
+        }
+
+
+@dataclass
+class PerformanceMetrics:
+    """Runtime and throughput metrics."""
+
+    symbol: str
+    timeframe: str
+    version: str
+    runtime_ms: float
+    bar_count: int
+    swing_count: int
+    bars_per_second: float
+    swings_per_second: float
+    peak_memory_mb: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "symbol": self.symbol,
+            "timeframe": self.timeframe,
+            "version": self.version,
+            "runtime_ms": round(self.runtime_ms, 2),
+            "bar_count": self.bar_count,
+            "swing_count": self.swing_count,
+            "bars_per_second": round(self.bars_per_second, 1),
+            "swings_per_second": round(self.swings_per_second, 2),
+            "peak_memory_mb": round(self.peak_memory_mb, 2),
+        }
+
+
+@dataclass
+class DetectionResult:
     swings: list[DetectedSwing]
     symbol: str
     timeframe: Timeframe
     bar_count: int
+    version: str = "1.0.0"
+    artifacts: PipelineArtifacts = field(default_factory=PipelineArtifacts)
+    performance: PerformanceMetrics | None = None
     stage_logs: list[dict[str, Any]] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -90,12 +204,15 @@ class DetectionResult:
         return {
             "symbol": self.symbol,
             "timeframe": self.timeframe.value,
+            "version": self.version,
             "bar_count": self.bar_count,
             "swing_count": len(self.swings),
             "confirmed_count": len(self.confirmed_swings),
             "swings": [s.to_dict() for s in self.swings],
+            "artifacts": self.artifacts.to_dict(),
+            "performance": self.performance.to_dict() if self.performance else None,
             "stage_logs": self.stage_logs,
-            "metadata": self.metadata,
+            "metadata": to_dict(self.metadata),
         }
 
 
@@ -107,6 +224,9 @@ class BenchmarkLabel:
     direction: SwingDirection
     tier: SwingTier = SwingTier.MAJOR
     scope: SwingScope = SwingScope.EXTERNAL
+
+
+BenchmarkSwing = BenchmarkLabel
 
 
 @dataclass
@@ -145,3 +265,10 @@ class EvaluationReport:
             "matched_pairs": self.matched_pairs,
             "metadata": self.metadata,
         }
+
+
+# Legacy pipeline types
+PipelineStageLog = dict
+SwingDetectionOutput = DetectionResult
+Swing = InternalSwing
+SwingSide = SwingDirection
