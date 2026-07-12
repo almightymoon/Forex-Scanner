@@ -30,7 +30,7 @@ docker compose up -d
 
 ```
 fx-navigators/
-├── swing_engine/            # Single source of truth — swing detection (v1.4.0: score-gated confirmation, datasets)
+├── swing_engine/            # Single source of truth — swing detection (v2.0.0: production freeze)
 ├── services/
 │   ├── bar_builder/         # Deterministic M1–D1 bar generation
 │   ├── data_collector/      # Market data ingestion + raw tick storage
@@ -86,7 +86,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
 - [Architecture](docs/ARCHITECTURE.md) — System design
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
-- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v1.4.0: score-gated confirmation, benchmark datasets, explainability v2)
+- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0: human-review benchmarks, score breakdown studio, calibration)
 - [Project Roadmap](docs/ROADMAP.md) — master plan to production (BOS, CHoCH, liquidity, decision engine)
 
 ## License

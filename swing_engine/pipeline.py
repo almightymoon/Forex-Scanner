@@ -18,6 +18,7 @@ from swing_engine.performance import measure_performance
 from swing_engine.pivots import detect_pivot_candidates
 from swing_engine.rules import build_rule_checks_for_swing
 from swing_engine.scoring import score_and_classify
+from swing_engine.structure_metadata import enrich_structure_metadata
 from swing_engine.utils import compute_atr_series, log_stage
 
 
@@ -81,6 +82,9 @@ def run_pipeline(
 
         detected = score_and_classify(confirmed, bars, atr_series, cfg)
 
+        if _structure_metadata_enabled(version):
+            enrich_structure_metadata(detected)
+
         if _sprint4_enabled(version):
             artifacts.lifecycle_tracks = build_lifecycle(artifacts, detected)
             artifacts.repainting_stats = compute_repainting_stats(artifacts.lifecycle_tracks)
@@ -122,7 +126,11 @@ def run_pipeline(
 
 
 def _sprint4_enabled(version: str) -> bool:
-    return version in ("1.3.0", "1.4.0")
+    return version in ("1.3.0", "1.4.0", "2.0.0")
+
+
+def _structure_metadata_enabled(version: str) -> bool:
+    return version in ("1.4.0", "2.0.0")
 
 
 def _build_timeline(artifacts: PipelineArtifacts) -> list[dict[str, Any]]:

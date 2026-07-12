@@ -4,21 +4,17 @@ This document is the master plan from **current state (~50%)** to a production-r
 institutional market-structure scanner. Work is organized into sprints with clear
 dependencies.
 
-## Current State (Sprint 4 complete)
+## Current State (v2.0.0 production freeze)
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| Swing Engine (versioned) | ✅ v1.3.0 | `swing_engine/` |
-| Adaptive detection | ✅ | `swing_engine/context.py` |
-| Quality score + explainability | ✅ | `swing_engine/quality.py`, `explain.py` |
-| Candidate lifecycle | ✅ | `swing_engine/lifecycle.py` |
-| Rule inspector (studio) | ✅ | `swing_engine/rules.py`, `visualization.py` |
-| Bar-by-bar replay | ✅ | `swing_engine/replay.py` |
-| MTF swing hierarchy | ✅ (prototype) | `swing_engine/mtf.py` |
-| Benchmark + regression history | ✅ | `swing_engine/regression.py` |
-| Paper-mode validation | ✅ | `swing_engine/live_validation.py` |
-| Parameter optimizer | ✅ | `swing_engine/optimizer.py` |
-| CI regression | ✅ | `.github/workflows/swing_regression.yml` |
+| Swing Engine | ✅ v2.0.0 default | `swing_engine/` |
+| Human-review benchmarks | ✅ fractal ground truth | `benchmarks/datasets/manifest.json` |
+| Score breakdown studio | ✅ weighted points panel | `swing_engine/visualization.py` |
+| Benchmark history + version table | ✅ | `swing_engine/regression.py` |
+| Confidence calibration | ✅ | `swing_engine/calibration.py` |
+| BOS-ready structure metadata | ✅ | `swing_engine/structure_metadata.py` |
+| Parameter optimizer (major focus) | ✅ | `scripts/optimize_human_labels.py` |
 | BOS / CHoCH | ⏳ Not started | — |
 | Liquidity engine | ⏳ Not started | — |
 | Order blocks / FVG | ⏳ Not started | — |
@@ -32,7 +28,7 @@ dependencies.
 ```
 Data Layer          services/data_collector, services/bar_builder
         ↓
-Swing Layer         swing_engine/          ← YOU ARE HERE (mature)
+Swing Layer         swing_engine/          ← v2.0.0 PRODUCTION FREEZE
         ↓
 Structure Layer     market_structure/      ← Sprint 5–6
         ↓

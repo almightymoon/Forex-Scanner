@@ -20,9 +20,9 @@ from scripts.run_benchmark_suite import load_bars
 
 
 class TestSprint5Version(unittest.TestCase):
-    def test_default_v1_4(self):
-        self.assertEqual(DEFAULT_VERSION, "1.4.0")
-        self.assertEqual(SwingEngine().version, "1.4.0")
+    def test_default_v2_0(self):
+        self.assertEqual(DEFAULT_VERSION, "2.0.0")
+        self.assertEqual(SwingEngine().version, "2.0.0")
 
 
 class TestConfirmationScore(unittest.TestCase):
@@ -76,9 +76,9 @@ class TestGoldRangeFixture(unittest.TestCase):
 
 
 class TestBenchmarkDatasets(unittest.TestCase):
-    def test_manifest_has_eight_datasets(self):
+    def test_manifest_has_eleven_datasets(self):
         specs = load_manifest()
-        self.assertEqual(len(specs), 8)
+        self.assertEqual(len(specs), 11)
         ids = {s.id for s in specs}
         self.assertIn("XAUUSD_H1_range", ids)
         self.assertIn("EURUSD_H1_trend", ids)
@@ -93,7 +93,7 @@ class TestBenchmarkDatasets(unittest.TestCase):
 
     def test_suite_passes_all_datasets(self):
         specs = load_manifest()
-        suite = run_suite(specs, load_bars, version="1.4.0")
+        suite = run_suite(specs, load_bars, version="2.0.0", append_to_history=False, write_dashboard=False)
         failed = [r for r in suite.results if not r.passed]
         self.assertEqual(
             failed,

@@ -176,6 +176,31 @@ PYTHONPATH=. python scripts/run_benchmark_suite.py --version 1.4.0
 
 `build_swing_explanation()` includes per-factor pass/fail audit from `confirmation_checks`.
 
+## v2.0.0 Production Freeze
+
+### Human-review benchmarks
+Independent fractal pivot labels (`label_source: fractal_truth`) — not bootstrapped from engine output.
+```bash
+PYTHONPATH=. python scripts/generate_human_labels.py
+PYTHONPATH=. python scripts/run_benchmark_suite.py --version 2.0.0 --human-only
+```
+
+### Score breakdown studio
+Click any swing → weighted confirmation score panel (ATR Reaction +15, etc.).
+
+### Benchmark history
+Every suite run appends to `benchmarks/history/regression_history.jsonl` and refreshes
+`benchmarks/reports/regression_dashboard.html` with a version comparison table.
+
+### Confidence calibration
+```bash
+PYTHONPATH=. python scripts/calibrate_confidence.py --dataset XAUUSD_H1_human
+```
+
+### BOS-ready metadata
+Every confirmed swing stores `swing_id`, `leg_id`, `prev_opposite_swing_id`, `trend_state`,
+`confirmation_candle_index` in `metadata` (v2.0.0+).
+
 ## XAUUSD (Gold) Support
 
 - Gold pip size is `0.1` via `pip_size.symbol_overrides.XAUUSD` (silver `XAGUSD` = `0.001`).

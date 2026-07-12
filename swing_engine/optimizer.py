@@ -32,6 +32,9 @@ class ParamGrid:
     quality_min_acceptable: tuple[float, ...] = (40.0, 50.0, 60.0)
     major_min_atr_multiple: tuple[float, ...] = (1.0, 1.2, 1.4)
 
+    confirmation_score_threshold: tuple[float, ...] = (65.0, 70.0, 75.0)
+    min_pivot_strength: tuple[float, ...] = (6.0, 8.0, 10.0)
+
     def combinations(self) -> Iterator[dict[str, Any]]:
         keys = [
             "pivot_left_lookback",
@@ -39,6 +42,8 @@ class ParamGrid:
             "leg_min_atr_multiple",
             "quality_min_acceptable",
             "major_min_atr_multiple",
+            "confirmation_score_threshold",
+            "min_pivot_strength",
         ]
         values = [
             self.pivot_left_lookback,
@@ -46,6 +51,8 @@ class ParamGrid:
             self.leg_min_atr_multiple,
             self.quality_min_acceptable,
             self.major_min_atr_multiple,
+            self.confirmation_score_threshold,
+            self.min_pivot_strength,
         ]
         for combo in itertools.product(*values):
             yield dict(zip(keys, combo))
@@ -65,6 +72,8 @@ class OptimizationResult:
             "precision": round(self.report.precision, 4),
             "recall": round(self.report.recall, 4),
             "delay": round(self.report.average_detection_delay_bars, 2),
+            "major_precision": round(self.report.major_precision, 4),
+            "major_recall": round(self.report.major_recall, 4),
             "repainting_rate": round(self.report.repainting_rate, 4),
         }
 
@@ -82,6 +91,14 @@ def _apply_params(base: SwingEngineConfig, params: dict[str, Any]) -> SwingEngin
         base.classification,
         major_min_atr_multiple=params["major_min_atr_multiple"],
     )
+    confirmation_score = dataclasses.replace(
+        base.confirmation_score,
+        threshold=params.get("confirmation_score_threshold", base.confirmation_score.threshold),
+    )
+    pivot = dataclasses.replace(
+        pivot,
+        min_pivot_strength=params.get("min_pivot_strength", base.pivot.min_pivot_strength),
+    )
     return dataclasses.replace(
         base,
         pivot=pivot,
@@ -89,16 +106,22 @@ def _apply_params(base: SwingEngineConfig, params: dict[str, Any]) -> SwingEngin
         leg=leg,
         quality=quality,
         classification=classification,
+        confirmation_score=confirmation_score,
     )
 
 
-def _rank_score(report: EvaluationReport) -> float:
+def _rank_score(report: EvaluationReport, *, major_focus: bool = False) -> float:
     """Higher is better: F1 primary, penalize delay and repainting."""
+    f1 = report.f1_score
+    if major_focus:
+        mp, mr = report.major_precision, report.major_recall
+        f1 = 2 * mp * mr / (mp + mr) if (mp + mr) else 0.0
     return (
-        report.f1_score * 100
+        f1 * 100
         - report.average_detection_delay_bars * 2
         - report.repainting_rate * 20
         + report.precision * 5
+        + (report.major_recall * 10 if major_focus else 0)
     )
 
 
@@ -108,9 +131,10 @@ def run_optimization(
     *,
     symbol: str,
     timeframe: Timeframe,
-    version: str = "1.3.0",
+    version: str = "2.0.0",
     grid: ParamGrid | None = None,
     max_combinations: int = 500,
+    major_focus: bool = False,
 ) -> list[OptimizationResult]:
     """Evaluate parameter combinations and return ranked results."""
     grid = grid or ParamGrid()
@@ -132,7 +156,7 @@ def run_optimization(
             runtime_ms=det.performance.runtime_ms if det.performance else None,
         )
         report.repainting_rate = det.artifacts.repainting_stats.get("repainting_rate", report.repainting_rate)
-        score = _rank_score(report)
+        score = _rank_score(report, major_focus=major_focus)
         results.append(OptimizationResult(params=params, report=report, rank_score=score))
 
     results.sort(key=lambda r: r.rank_score, reverse=True)

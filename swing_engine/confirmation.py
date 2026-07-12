@@ -5,7 +5,7 @@ from __future__ import annotations
 from shared.types.models import Candle
 
 from swing_engine.config import SwingEngineConfig
-from swing_engine.confirmation_score import compute_confirmation_score
+from swing_engine.confirmation_score import compute_confirmation_score, compute_score_breakdown
 from swing_engine.models import InternalSwing, PivotCandidate, SwingDirection, SwingTier
 from swing_engine.utils import atr_at, log_stage
 
@@ -107,6 +107,9 @@ def _evaluate_score_gated(
         "confirmation_threshold": threshold,
         "confirmation_factors": factors,
         "confirmation_checks": checks,
+        "confirmation_breakdown": compute_score_breakdown(
+            factors, config.confirmation_score.weights, score
+        ),
     }
     return confirmed, conf_index if confirmed else None, delay if confirmed else 0, reasons, meta
 

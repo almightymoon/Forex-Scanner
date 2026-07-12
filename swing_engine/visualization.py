@@ -131,6 +131,7 @@ class SwingVisualizer:
             "rule_checks": [r.to_dict() for r in s.rule_checks],
             "lifecycle_state": s.lifecycle_state.value if s.lifecycle_state else None,
             "mtf_context": s.mtf_context.to_dict() if s.mtf_context else None,
+            "metadata": s.metadata,
             "color": self._color(s), "label": f"{s.tier.value} {s.scope.value} {s.direction.value}",
         }
 
@@ -183,6 +184,9 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
   #inspector{background:#111a2e;border:1px solid #1e293b;border-radius:8px;padding:10px;min-height:120px}
   .rule-pass{color:#22c55e}.rule-fail{color:#ef4444}
   .rule-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #1e293b;font-size:11px}
+  .score-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e293b;font-size:11px}
+  .score-row.pos{color:#22c55e}.score-row.neg{color:#ef4444}
+  .score-final{font-weight:700;border-top:2px solid #334155;margin-top:6px;padding-top:6px}
   #replayBar{display:none;gap:8px;align-items:center;padding:6px 16px;border-bottom:1px solid #334155;font-size:12px}
   #replayBar input{flex:1}
   .legend{display:flex;gap:8px;flex-wrap:wrap}
@@ -232,11 +236,24 @@ function showInspector(s){
   if(!s){ el.innerHTML='<h3>Swing Inspector</h3><p style="color:#64748b">Click a swing marker.</p>'; return; }
   const rules=(s.rule_checks||[]).map(r=>'<div class="rule-row"><span class="'+(r.passed?'rule-pass':'rule-fail')+'">'+(r.passed?'✓':'✗')+' '+r.label+'</span><span>'+r.value+(r.threshold?' / '+r.threshold:'')+'</span></div>').join('');
   const exp=s.explanation||{};
+  const meta=s.metadata||{};
+  const breakdown=(meta.confirmation_breakdown||[]).filter(r=>r.key!=='final');
+  const finalRow=(meta.confirmation_breakdown||[]).find(r=>r.key==='final');
+  const scorePanel=breakdown.length?('<div style="margin-top:8px"><b>Confirmation Score Breakdown</b>'
+    +'<div style="color:#64748b;font-size:10px;margin:2px 0">Candidate #'+s.index+'</div>'
+    +breakdown.map(r=>'<div class="score-row '+(r.points>=0?'pos':'neg')+'"><span>'+r.label+'</span><span>'+(r.points>=0?'+':'')+r.points.toFixed(1)+'</span></div>').join('')
+    +(finalRow?'<div class="score-row score-final"><span>Final Score</span><span>'+finalRow.points.toFixed(1)+' / 100</span></div>':'')
+    +'</div>'):'';
+  const struct=meta.swing_id?('<div style="margin-top:8px;font-size:10px;color:#64748b">'
+    +'ID: '+meta.swing_id+' · Leg: '+meta.leg_id+'<br>'
+    +'Trend: '+(meta.trend_state||'-')+' · Prev opp: '+(meta.prev_opposite_swing_id||'-')
+    +'</div>'):'';
   el.innerHTML='<h3>'+s.label+'</h3>'
     +'<div>Quality <b>'+(s.quality_score||0).toFixed(0)+'</b> · Confidence <b>'+((s.confidence||0)*100).toFixed(0)+'%</b> · Strength <b>'+s.strength+'</b></div>'
     +'<div style="margin:6px 0;color:#94a3b8">State: '+(s.lifecycle_state||'-')+' · Delay: '+s.confirmation_delay+' bars</div>'
     +'<div style="margin-bottom:6px;font-size:10px;color:#64748b">'+(exp.summary||'')+'</div>'
-    +'<div><b>Rules</b></div>'+rules;
+    +scorePanel+struct
+    +'<div style="margin-top:8px"><b>Rules</b></div>'+rules;
 }
 
 const chart = LightweightCharts.createChart(document.getElementById('chart'), {

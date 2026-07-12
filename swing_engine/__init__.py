@@ -34,10 +34,14 @@ from swing_engine.evaluation import (
     SwingBenchmarkEvaluator, SwingEvaluator,
     write_csv_report, write_json_report, write_markdown_report, write_comparison_charts,
 )
+from swing_engine.calibration import CalibrationReport, calibrate_confidence
+from swing_engine.confirmation_score import compute_score_breakdown
+from swing_engine.ground_truth import labels_from_synthetic_bars, synthetic_pivot_indices, write_ground_truth_file
+from swing_engine.structure_metadata import enrich_structure_metadata, swing_id
 from swing_engine.visualization import SwingVisualizer
 from swing_engine.versions import DEFAULT_VERSION, SUPPORTED_VERSIONS
 
-__version__ = "1.4.0"
+__version__ = "2.0.0"
 
 __all__ = [
     "SwingEngine", "SwingDetectionEngine", "detect_swings",
@@ -62,4 +66,9 @@ __all__ = [
     "append_history", "load_history", "write_regression_dashboard", "write_benchmark_dashboard",
     "load_manifest", "load_labels", "write_labels", "run_dataset", "run_suite",
     "BenchmarkSuiteReport", "DatasetSpec",
+    "calibrate_confidence", "CalibrationReport",
+    "compute_score_breakdown",
+    "labels_from_synthetic_bars", "synthetic_pivot_indices", "write_ground_truth_file",
+    "enrich_structure_metadata", "swing_id",
+    "SwingVisualizer",
 ]

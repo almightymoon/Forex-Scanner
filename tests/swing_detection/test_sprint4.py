@@ -25,8 +25,8 @@ from tests.swing_detection.fixtures import gold_candles, trend_candles
 
 
 class TestSprint4Version(unittest.TestCase):
-    def test_default_v1_4(self):
-        self.assertEqual(DEFAULT_VERSION, "1.4.0")
+    def test_default_v2_0(self):
+        self.assertEqual(DEFAULT_VERSION, "2.0.0")
 
 
 class TestLifecycle(unittest.TestCase):
@@ -110,6 +110,8 @@ class TestOptimizer(unittest.TestCase):
             leg_min_atr_multiple=(0.35,),
             quality_min_acceptable=(50.0,),
             major_min_atr_multiple=(1.2,),
+            confirmation_score_threshold=(70.0,),
+            min_pivot_strength=(8.0,),
         )
         results = run_optimization(bars, labels, symbol="EURUSD", timeframe=Timeframe.H1, grid=grid)
         self.assertEqual(len(results), 1)

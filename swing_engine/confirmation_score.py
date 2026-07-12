@@ -96,6 +96,51 @@ def compute_confirmation_score(
     return round(max(0.0, min(100.0, score)), 1), factors, checks
 
 
+_FACTOR_LABELS = {
+    "hold_quality": "Hold Quality",
+    "atr_reaction": "ATR Reaction",
+    "displacement": "Displacement",
+    "wick": "Wick Quality",
+    "structure_break": "Structure Break",
+    "trend_alignment": "Trend Alignment",
+    "liquidity_sweep": "Liquidity Sweep",
+    "volume": "Volume",
+    "mtf_alignment": "Parent Trend",
+    "delay": "Confirmation Delay",
+}
+
+
+def compute_score_breakdown(
+    factors: dict[str, float],
+    weights: dict[str, float],
+    final_score: float,
+) -> list[dict[str, float | str | bool]]:
+    """Weighted point contributions that sum to the confirmation score."""
+    total_w = sum(weights.get(k, 0.0) for k in factors) or 1.0
+    rows: list[dict] = []
+    for key, value in factors.items():
+        w = weights.get(key, 0.0)
+        points = round(value * w / total_w, 1)
+        rows.append({
+            "key": key,
+            "label": _FACTOR_LABELS.get(key, key.replace("_", " ").title()),
+            "raw_value": round(value, 1),
+            "weight": round(w, 3),
+            "points": points,
+            "passed": value >= 50.0,
+        })
+    rows.sort(key=lambda r: abs(float(r["points"])), reverse=True)
+    rows.append({
+        "key": "final",
+        "label": "Final Score",
+        "raw_value": round(final_score, 1),
+        "weight": 1.0,
+        "points": round(final_score, 1),
+        "passed": True,
+    })
+    return rows
+
+
 def _check(
     rule_id: str, label: str, value: float, threshold: float, passed: bool, *, blocking: bool = False
 ) -> dict:

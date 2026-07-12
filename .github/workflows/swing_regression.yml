@@ -34,24 +34,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyyaml pytest
 
+      - name: Generate human-review labels
+        run: PYTHONPATH=. python scripts/generate_human_labels.py
+
       - name: Run swing tests
         run: PYTHONPATH=. python -m pytest tests/swing_detection tests/test_swing_engine_pkg -q
 
-      - name: Run benchmark dataset suite (v1.4.0)
-        run: PYTHONPATH=. python scripts/run_benchmark_suite.py --version 1.4.0 --fail-fast
+      - name: Run benchmark dataset suite (v2.0.0)
+        run: PYTHONPATH=. python scripts/run_benchmark_suite.py --version 2.0.0 --fail-fast --no-history
+
+      - name: Run human-review benchmark gate
+        run: PYTHONPATH=. python scripts/run_benchmark_suite.py --version 2.0.0 --human-only --fail-fast --no-history
 
       - name: Benchmark EURUSD regression
         run: |
           PYTHONPATH=. python scripts/benchmark_swings.py \
             --symbol EURUSD --timeframe H1 --regime trend --bars 120 \
-            --version 1.4.0 \
+            --version 2.0.0 \
             --labels benchmarks/labels/EURUSD_H1.regression.json \
-            --min-f1 0.85 --no-history
-
-      - name: Benchmark XAUUSD regression
-        run: |
-          PYTHONPATH=. python scripts/benchmark_swings.py \
-            --symbol XAUUSD --timeframe H1 --regime trend --bars 200 \
-            --version 1.4.0 \
-            --labels benchmarks/labels/XAUUSD_H1.manual.json \
             --min-f1 0.85 --no-history

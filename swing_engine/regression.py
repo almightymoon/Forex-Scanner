@@ -57,6 +57,16 @@ class RegressionEntry:
 
 def entry_from_report(report: EvaluationReport) -> RegressionEntry:
     meta = report.metadata
+    extra = {
+        "major_precision": round(report.major_precision, 4),
+        "major_recall": round(report.major_recall, 4),
+        "major_f1": meta.get("major_f1", 0.0),
+        "false_positives": report.false_positives,
+        "false_negatives": report.false_negatives,
+        "dataset_id": meta.get("dataset_id"),
+        "human_review": meta.get("human_review", False),
+        "label_source": meta.get("label_source"),
+    }
     return RegressionEntry(
         timestamp=datetime.utcnow().isoformat(timespec="seconds"),
         engine_version=str(meta.get("engine_version") or "unknown"),
@@ -69,6 +79,7 @@ def entry_from_report(report: EvaluationReport) -> RegressionEntry:
         average_price_error_pips=report.average_price_error_pips,
         repainting_rate=report.repainting_rate,
         commit_hash=meta.get("commit_hash"),
+        extra=extra,
     )
 
 
@@ -135,9 +146,10 @@ td:first-child,th:first-child,td:nth-child(2),th:nth-child(2){text-align:left}
   <label>Version <select id="fVersion"><option value="">All</option></select></label>
 </div>
 <div class="cards" id="cards"></div>
+<div id="versionTable" style="margin-bottom:20px"></div>
 <table><thead><tr>
 <th>Time</th><th>Symbol</th><th>Version</th><th>Regime</th>
-<th>Precision</th><th>Recall</th><th>F1</th><th>Delay</th><th>Repaint</th><th>Commit</th>
+<th>Precision</th><th>Recall</th><th>F1</th><th>Major F1</th><th>Delay</th><th>FP</th><th>FN</th><th>Repaint</th><th>Commit</th>
 </tr></thead><tbody id="tbody"></tbody></table>
 <script>
 const ALL = """
@@ -154,14 +166,33 @@ function filtered(){
   const ver=document.getElementById('fVersion').value;
   return ALL.filter(e=>(!sym||e.symbol===sym)&&(!reg||e.regime===reg)&&(!ver||e.engine_version===ver));
 }
+function versionSummary(rows){
+  const by={};
+  rows.forEach(e=>{
+    const v=e.engine_version||'?';
+    if(!by[v]) by[v]={n:0,p:0,r:0,f:0,mf:0,d:0};
+    by[v].n++; by[v].p+=e.precision||0; by[v].r+=e.recall||0; by[v].f+=e.f1_score||0;
+    by[v].mf+=(e.major_f1||e.extra?.major_f1||0); by[v].d+=e.average_detection_delay_bars||0;
+  });
+  let html='<h3 style="font-size:13px;color:#94a3b8">Version Comparison</h3><table style="margin-bottom:12px"><tr><th>Version</th><th>Runs</th><th>Precision</th><th>Recall</th><th>F1</th><th>Major F1</th><th>Delay</th></tr>';
+  Object.keys(by).sort().forEach(v=>{
+    const x=by[v], n=x.n||1;
+    html+='<tr><td style="text-align:left"><span class="badge">v'+v+'</span></td><td>'+x.n+'</td>'
+      +'<td>'+(x.p/n).toFixed(3)+'</td><td>'+(x.r/n).toFixed(3)+'</td><td>'+(x.f/n).toFixed(3)+'</td>'
+      +'<td>'+(x.mf/n).toFixed(3)+'</td><td>'+(x.d/n).toFixed(2)+'</td></tr>';
+  });
+  return html+'</table>';
+}
 function render(){
   const rows=filtered();
   const n=rows.length||1;
   const avg=k=>rows.reduce((s,e)=>s+(e[k]||0),0)/n;
+  document.getElementById('versionTable').innerHTML=versionSummary(ALL);
   document.getElementById('cards').innerHTML=[
     ['Precision',avg('precision').toFixed(3)],
     ['Recall',avg('recall').toFixed(3)],
     ['F1',avg('f1_score').toFixed(3)],
+    ['Major F1',avg('major_f1').toFixed(3)],
     ['Delay',avg('average_detection_delay_bars').toFixed(2)+' bars'],
     ['Repaint',avg('repainting_rate').toFixed(3)],
     ['Runs',rows.length],
@@ -169,13 +200,17 @@ function render(){
   const tb=document.getElementById('tbody'); tb.innerHTML='';
   rows.slice().reverse().forEach(e=>{
     const tr=document.createElement('tr');
+    const mf=e.major_f1||e.extra?.major_f1||0;
+    const fp=e.false_positives??e.extra?.false_positives??'-';
+    const fn=e.false_negatives??e.extra?.false_negatives??'-';
     tr.innerHTML='<td>'+(e.timestamp||'')+'</td><td>'+e.symbol+'</td><td><span class="badge">v'+e.engine_version+'</span></td><td>'+e.regime+'</td>'
       +'<td>'+e.precision.toFixed(3)+'</td><td>'+e.recall.toFixed(3)+'</td><td>'+e.f1_score.toFixed(3)+'</td>'
-      +'<td>'+e.average_detection_delay_bars.toFixed(2)+'</td><td>'+e.repainting_rate.toFixed(3)+'</td>'
+      +'<td>'+Number(mf).toFixed(3)+'</td><td>'+e.average_detection_delay_bars.toFixed(2)+'</td>'
+      +'<td>'+fp+'</td><td>'+fn+'</td><td>'+e.repainting_rate.toFixed(3)+'</td>'
       +'<td><span class="badge">'+(e.commit_hash||'-')+'</span></td>';
     tb.appendChild(tr);
   });
-  if(!rows.length) tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:#64748b;padding:32px">No data — run scripts/benchmark_swings.py</td></tr>';
+  if(!rows.length) tb.innerHTML='<tr><td colspan="13" style="text-align:center;color:#64748b;padding:32px">No data — run scripts/run_benchmark_suite.py</td></tr>';
 }
 ['fSymbol','fRegime','fVersion'].forEach(id=>document.getElementById(id).onchange=render);
 render();
