@@ -568,6 +568,7 @@ class CollectorDatabase:
         return inserted
 
     def insert_ticks(self, ticks: list[CollectedTick]) -> int:
+        """Append-only tick storage — duplicates are ignored (immutable raw data)."""
         if not ticks:
             return 0
         inserted = 0
@@ -579,21 +580,77 @@ class CollectorDatabase:
                         """INSERT INTO dc_ticks
                            (symbol, timestamp, bid, ask, volume, provider, created_at)
                            VALUES (%s,%s,%s,%s,%s,%s,%s)
-                           ON CONFLICT (symbol, timestamp) DO UPDATE SET
-                             bid=EXCLUDED.bid, ask=EXCLUDED.ask, volume=EXCLUDED.volume,
-                             provider=EXCLUDED.provider""",
+                           ON CONFLICT (symbol, timestamp) DO NOTHING""",
                         (t.symbol, t.timestamp, t.bid, t.ask, t.volume, t.provider, t.created_at),
                     )
                 else:
                     cur.execute(
-                        """INSERT OR REPLACE INTO dc_ticks
+                        """INSERT OR IGNORE INTO dc_ticks
                            (symbol, timestamp, bid, ask, volume, provider, created_at)
                            VALUES (?,?,?,?,?,?,?)""",
                         (t.symbol, t.timestamp.isoformat(), t.bid, t.ask, t.volume,
                          t.provider, t.created_at.isoformat()),
                     )
-                inserted += 1
+                if cur.rowcount:
+                    inserted += 1
         return inserted
+
+    def get_ticks(
+        self,
+        symbol: str,
+        limit: int = 5000,
+        since: Optional[datetime] = None,
+        until: Optional[datetime] = None,
+    ) -> list[CollectedTick]:
+        """Read stored raw ticks (UTC)."""
+        query = """SELECT symbol, timestamp, bid, ask, volume, provider, created_at
+                   FROM dc_ticks WHERE symbol = ?"""
+        params: list[Any] = [symbol.upper()]
+
+        if since:
+            query += " AND timestamp >= ?"
+            params.append(since.isoformat() if not self._use_postgres else since)
+        if until:
+            query += " AND timestamp <= ?"
+            params.append(until.isoformat() if not self._use_postgres else until)
+
+        query += " ORDER BY timestamp ASC LIMIT ?"
+        params.append(limit)
+
+        if self._use_postgres:
+            query = query.replace("?", "%s")
+
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(query, params)
+            rows = cur.fetchall()
+
+        ticks: list[CollectedTick] = []
+        for row in rows:
+            if isinstance(row, dict):
+                ts = row["timestamp"]
+                if isinstance(ts, str):
+                    ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                created = row["created_at"]
+                if isinstance(created, str):
+                    created = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                ticks.append(CollectedTick(
+                    symbol=row["symbol"],
+                    timestamp=ts,
+                    bid=float(row["bid"]),
+                    ask=float(row["ask"]),
+                    volume=int(row["volume"]),
+                    provider=row["provider"],
+                    created_at=created,
+                ))
+            else:
+                ts = datetime.fromisoformat(row[1].replace("Z", "+00:00")) if isinstance(row[1], str) else row[1]
+                created = datetime.fromisoformat(row[6].replace("Z", "+00:00")) if isinstance(row[6], str) else row[6]
+                ticks.append(CollectedTick(
+                    symbol=row[0], timestamp=ts, bid=float(row[2]), ask=float(row[3]),
+                    volume=int(row[4]), provider=row[5], created_at=created,
+                ))
+        return ticks
 
     def get_candles(
         self,

@@ -1,0 +1,6 @@
+{
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "description": "Example ground-truth labels for benchmark evaluation",
+  "swings": []
+}

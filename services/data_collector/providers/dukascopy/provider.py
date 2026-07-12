@@ -30,6 +30,26 @@ class DukascopyDataProvider(BaseDataProvider):
         self._connected = True
         return True
 
+    async def download_ticks(
+        self,
+        symbol: str,
+        start: datetime,
+        end: datetime,
+    ) -> list[RawTick]:
+        if not self._connected:
+            raise ConnectionError("Dukascopy provider not connected")
+        tick_tuples = await self._client.fetch_ticks(symbol, start, end)
+        return [
+            RawTick(
+                symbol=symbol.upper(),
+                timestamp=ts,
+                bid=bid,
+                ask=ask,
+                volume=int(vol),
+            )
+            for ts, bid, ask, vol in tick_tuples
+        ]
+
     async def download_history(
         self,
         symbol: str,

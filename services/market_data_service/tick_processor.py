@@ -5,7 +5,8 @@ from typing import Optional
 
 from shared.types.models import Candle, Tick, Timeframe
 
-from .candle_builder import TF_MINUTES
+from services.bar_builder.builder import BarBuilder
+from services.bar_builder.constants import TF_MINUTES
 
 
 class TickProcessor:
@@ -18,9 +19,7 @@ class TickProcessor:
         self._bar_start: dict[str, datetime] = {}
 
     def _bar_open_time(self, ts: datetime) -> datetime:
-        ts = ts.astimezone(timezone.utc)
-        minute = (ts.minute // self._minutes) * self._minutes if self._minutes < 1440 else 0
-        return ts.replace(minute=minute, second=0, microsecond=0)
+        return BarBuilder.bucket_timestamp(ts, self._minutes * 60)
 
     def process_tick(self, tick: Tick) -> Optional[Candle]:
         """Returns a completed candle when a new bar opens, else None."""

@@ -30,30 +30,23 @@ docker compose up -d
 
 ```
 fx-navigators/
-├── scanner/
-│   └── swing_detection/     # Sprint 1 — Swing Detection Engine
-├── apps/
-│   ├── web/                 # Next.js dashboard
-│   └── api/                 # FastAPI gateway
+├── swing_engine/            # Standalone Swing Detection Engine (v1.0)
+├── scanner/swing_detection/ # Legacy pipeline (delegates to swing_engine)
 ├── services/
-│   ├── quant_engine/        # Quant algorithms (swing re-exports scanner.swing_detection)
-│   ├── data_collector/      # Market data ingestion
-│   ├── scanner_service/     # Pipeline, data loading, signal assembly
-│   └── market_data_service/
+│   ├── bar_builder/         # Deterministic M1–D1 bar generation
+│   ├── data_collector/      # Market data ingestion + raw tick storage
+│   ├── quant_engine/        # Future quant modules (swing shim)
+│   └── scanner_service/     # Pipeline orchestration
 ├── config/
-│   ├── swing_detection.yaml # Swing engine thresholds
-│   └── scoring.yaml         # V2 decision engine weights
-├── shared/
-│   ├── types/
-│   └── config/
+│   ├── swing_detection.yaml
+│   └── data_collector.yaml
+├── benchmarks/reports/      # Evaluation JSON/CSV output
 ├── tests/
-│   └── swing_detection/     # Unit tests per pipeline stage
-└── docs/
+│   ├── swing_engine/
+│   ├── bar_builder/
+│   └── integration/
+└── docs/SWING_DETECTION.md
 ```
-
-**`scanner/swing_detection/`** is the Sprint 1 foundation — deterministic swing detection feeding future BOS, CHoCH, liquidity, OB, FVG, and decision modules. All thresholds live in `config/swing_detection.yaml`.
-
-Legacy import paths (`services.scanner_service.*`, `services.quant_engine.swing.*`) remain as thin shims.
 
 ## Market Data (Phase 1)
 
@@ -91,7 +84,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
 - [Architecture](docs/ARCHITECTURE.md) — System design
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
-- [Decision Engine](docs/DECISION_ENGINE.md) — Scoring logic
+- [Swing Detection](docs/SWING_DETECTION.md) — Sprint 1 engine spec
 
 ## License
 

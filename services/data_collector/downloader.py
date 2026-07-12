@@ -80,6 +80,18 @@ class DataDownloader:
         try:
             existing = self.database.get_existing_timestamps(symbol, timeframe, start, end)
             raw = await self.provider.download_history(symbol, timeframe, start, end)
+
+            # Persist immutable raw ticks when provider supports it
+            if hasattr(self.provider, "download_ticks"):
+                try:
+                    raw_ticks = await self.provider.download_ticks(symbol, start, end)
+                    norm_ticks = self.normalizer.normalize_ticks(raw_ticks)
+                    tick_rows = self.database.insert_ticks(norm_ticks)
+                    if tick_rows:
+                        logger.info("ticks_persisted", extra={"symbol": symbol, "rows": tick_rows})
+                except Exception as exc:
+                    logger.warning("tick_persist_failed", extra={"symbol": symbol, "error": str(exc)})
+
             normalized = self.normalizer.normalize_candles(raw)
             result = self.validator.validate_candles(normalized)
 

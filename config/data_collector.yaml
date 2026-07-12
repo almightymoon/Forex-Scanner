@@ -24,19 +24,14 @@ providers:
 symbols:
   - EURUSD
   - GBPUSD
+  - GBPJPY
   - USDJPY
+  - USDCHF
+  - USDCAD
   - AUDUSD
   - NZDUSD
-  - USDCAD
-  - USDCHF
-  - XAUUSD
-  - XAGUSD
-  - BTCUSD
-  - ETHUSD
-  - NAS100
-  - US30
-  - SPX500
-  - GER40
+  - EURJPY
+  - EURGBP
 
 timeframes:
   - M1

@@ -72,6 +72,16 @@ class ClassificationConfig:
     major_min_atr_multiple: float = 1.2
     major_min_strength: int = 4
     minor_max_atr_multiple: float = 1.2
+    external_score_threshold: float = 0.6
+    internal_score_threshold: float = -0.25
+
+
+@dataclass(frozen=True)
+class ConfidenceConfig:
+    confirmed_bonus: float = 0.15
+    unconfirmed_penalty: float = 0.6
+    major_multiplier: float = 1.1
+    delay_penalty_per_bar: float = 0.02
 
 
 @dataclass(frozen=True)
@@ -104,6 +114,7 @@ class SwingDetectionConfig:
     confirmation: ConfirmationConfig = field(default_factory=ConfirmationConfig)
     strength: StrengthConfig = field(default_factory=StrengthConfig)
     classification: ClassificationConfig = field(default_factory=ClassificationConfig)
+    confidence: ConfidenceConfig = field(default_factory=ConfidenceConfig)
     pip_size: PipSizeConfig = field(default_factory=PipSizeConfig)
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
 
@@ -130,6 +141,7 @@ def _dict_to_config(data: dict[str, Any]) -> SwingDetectionConfig:
             level_thresholds=tuple(data.get("strength", {}).get("level_thresholds", (20, 40, 60, 80))),
         ),
         classification=ClassificationConfig(**data.get("classification", {})),
+        confidence=ConfidenceConfig(**data.get("confidence", {})),
         pip_size=PipSizeConfig(
             default=data.get("pip_size", {}).get("default", 0.0001),
             jpy=data.get("pip_size", {}).get("jpy", 0.01),

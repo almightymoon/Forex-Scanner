@@ -8,7 +8,9 @@ from typing import Iterator
 # Pip/point size per instrument for Dukascopy integer prices
 POINT_VALUES: dict[str, float] = {
     "EURUSD": 0.00001,
-    "GBPUSD": 0.00001,
+    "GBPJPY": 0.001,
+    "EURJPY": 0.001,
+    "EURGBP": 0.00001,
     "USDJPY": 0.001,
     "USDCHF": 0.00001,
     "AUDUSD": 0.00001,
@@ -61,31 +63,27 @@ def parse_bi5_ticks(data: bytes, hour_start: datetime, symbol: str) -> list[tupl
 def ticks_to_candles(
     ticks: list[tuple[datetime, float, float, float]],
     interval_seconds: int,
+    symbol: str = "EURUSD",
 ) -> list[dict]:
-    """Aggregate ticks into OHLC candles."""
+    """Aggregate ticks into OHLC candles via deterministic BarBuilder."""
+    from shared.types.models import Timeframe
+    from services.bar_builder.builder import BarBuilder
+    from services.bar_builder.constants import TF_SECONDS
+
     if not ticks:
         return []
 
-    buckets: dict[datetime, dict] = {}
-    for ts, bid, ask, vol in sorted(ticks, key=lambda x: x[0]):
-        mid = (bid + ask) / 2
-        epoch = int(ts.timestamp())
-        bucket_epoch = epoch - (epoch % interval_seconds)
-        bucket_ts = datetime.fromtimestamp(bucket_epoch, tz=timezone.utc)
-        b = buckets.get(bucket_ts)
-        if b is None:
-            buckets[bucket_ts] = {
-                "timestamp": bucket_ts,
-                "open": mid,
-                "high": mid,
-                "low": mid,
-                "close": mid,
-                "volume": int(vol),
-            }
-        else:
-            b["high"] = max(b["high"], mid)
-            b["low"] = min(b["low"], mid)
-            b["close"] = mid
-            b["volume"] += int(vol)
-
-    return [buckets[k] for k in sorted(buckets.keys())]
+    tf = next((t for t, s in TF_SECONDS.items() if s == interval_seconds), Timeframe.M1)
+    builder = BarBuilder(symbol, tf)
+    bars = builder.from_ticks(ticks)
+    return [
+        {
+            "timestamp": b.candle.timestamp,
+            "open": b.candle.open,
+            "high": b.candle.high,
+            "low": b.candle.low,
+            "close": b.candle.close,
+            "volume": b.candle.volume,
+        }
+        for b in bars
+    ]

@@ -16,11 +16,14 @@ from shared.types.models import Timeframe
 INSTRUMENT_MAP: dict[str, str] = {
     "EURUSD": "EURUSD",
     "GBPUSD": "GBPUSD",
+    "GBPJPY": "GBPJPY",
     "USDJPY": "USDJPY",
+    "USDCHF": "USDCHF",
+    "USDCAD": "USDCAD",
     "AUDUSD": "AUDUSD",
     "NZDUSD": "NZDUSD",
-    "USDCAD": "USDCAD",
-    "USDCHF": "USDCHF",
+    "EURJPY": "EURJPY",
+    "EURGBP": "EURGBP",
     "XAUUSD": "XAUUSD",
     "XAGUSD": "XAGUSD",
     "BTCUSD": "BTCUSD",
@@ -90,7 +93,7 @@ class DukascopyClient:
                 pass
             current += timedelta(hours=1)
 
-        candle_dicts = ticks_to_candles(all_ticks, interval)
+        candle_dicts = ticks_to_candles(all_ticks, interval, symbol=symbol)
         candles: list[RawCandle] = []
         for c in candle_dicts:
             if start_utc <= c["timestamp"] <= end_utc:
@@ -105,3 +108,43 @@ class DukascopyClient:
                     volume=c["volume"],
                 ))
         return candles
+
+    def fetch_ticks_sync(
+        self,
+        symbol: str,
+        start: datetime,
+        end: datetime,
+    ) -> list[tuple[datetime, float, float, float]]:
+        """Download raw ticks (immutable storage source)."""
+        instrument = self.map_symbol(symbol)
+        start_utc = start.astimezone(timezone.utc) if start.tzinfo else start.replace(tzinfo=timezone.utc)
+        end_utc = end.astimezone(timezone.utc) if end.tzinfo else end.replace(tzinfo=timezone.utc)
+
+        all_ticks: list[tuple[datetime, float, float, float]] = []
+        current = start_utc.replace(minute=0, second=0, microsecond=0)
+
+        while current <= end_utc:
+            url = (
+                f"{self.BASE_URL}/{instrument}/"
+                f"{current.year}/{current.month - 1}/{current.day}/"
+                f"{current.hour}h_ticks.bi5"
+            )
+            try:
+                req = Request(url, headers={"User-Agent": "FXNavigators-Collector/1.0"})
+                with urlopen(req, timeout=self.timeout) as resp:
+                    data = resp.read()
+                ticks = parse_bi5_ticks(data, current, symbol)
+                all_ticks.extend(ticks)
+            except (HTTPError, URLError, TimeoutError):
+                pass
+            current += timedelta(hours=1)
+
+        return [(t, b, a, v) for t, b, a, v in all_ticks if start_utc <= t <= end_utc]
+
+    async def fetch_ticks(
+        self,
+        symbol: str,
+        start: datetime,
+        end: datetime,
+    ) -> list[tuple[datetime, float, float, float]]:
+        return await asyncio.to_thread(self.fetch_ticks_sync, symbol, start, end)

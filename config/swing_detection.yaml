@@ -40,6 +40,14 @@ classification:
   major_min_atr_multiple: 1.2
   major_min_strength: 4
   minor_max_atr_multiple: 1.2
+  external_score_threshold: 0.6
+  internal_score_threshold: -0.25
+
+confidence:
+  confirmed_bonus: 0.15
+  unconfirmed_penalty: 0.6
+  major_multiplier: 1.1
+  delay_penalty_per_bar: 0.02
 
 pip_size:
   default: 0.0001
