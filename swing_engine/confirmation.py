@@ -1,10 +1,11 @@
-"""Swing confirmation — no repaint, multiple configurable methods."""
+"""Swing confirmation — rule-based (v1.3) or score-gated (v1.4)."""
 
 from __future__ import annotations
 
 from shared.types.models import Candle
 
 from swing_engine.config import SwingEngineConfig
+from swing_engine.confirmation_score import compute_confirmation_score
 from swing_engine.models import InternalSwing, PivotCandidate, SwingDirection, SwingTier
 from swing_engine.utils import atr_at, log_stage
 
@@ -18,13 +19,20 @@ def confirm_swings(
     n = len(candles)
     swings: list[InternalSwing] = []
     confirmed_count = 0
+    score_gated = config.confirmation_score.enabled
 
     for i, pivot in enumerate(pivots):
         prev_opposite = _prev_opposite(pivots, i)
         prev_same = _prev_same(pivots, i)
-        confirmed, conf_index, delay, reasons = _evaluate_confirmation(
-            pivot, candles, atr_series, config, prev_opposite, prev_same, n
-        )
+        if score_gated:
+            confirmed, conf_index, delay, reasons, meta = _evaluate_score_gated(
+                pivot, candles, atr_series, config, prev_opposite, prev_same, n
+            )
+        else:
+            confirmed, conf_index, delay, reasons = _evaluate_confirmation(
+                pivot, candles, atr_series, config, prev_opposite, prev_same, n
+            )
+            meta = {}
         swings.append(InternalSwing(
             timestamp=pivot.pivot_timestamp,
             price=pivot.price,
@@ -42,6 +50,7 @@ def confirm_swings(
                 "confirmation_reason": reasons[-1] if reasons else "none",
                 "pivot_candle_index": pivot.pivot_index,
                 "confirmation_candle_index": conf_index,
+                **meta,
             },
         ))
         if confirmed:
@@ -49,6 +58,57 @@ def confirm_swings(
 
     log_stage("confirmation", len(pivots), len(swings), confirmed=confirmed_count)
     return swings
+
+
+def _evaluate_score_gated(
+    pivot: PivotCandidate,
+    candles: list[Candle],
+    atr_series: list[float],
+    config: SwingEngineConfig,
+    prev_opposite: PivotCandidate | None,
+    prev_same: PivotCandidate | None,
+    n: int,
+) -> tuple[bool, int | None, int, list[str], dict]:
+    cfg = config.confirmation
+    idx = pivot.pivot_index
+    min_end = idx + cfg.min_candles
+    reasons: list[str] = []
+
+    if min_end >= n:
+        return False, None, 0, ["insufficient_bars_for_min_candles"], {}
+
+    for j in range(1, cfg.min_candles + 1):
+        bar = candles[idx + j]
+        if pivot.direction == SwingDirection.HIGH and bar.high > pivot.price:
+            return False, None, 0, [f"high_violated_at_bar_{idx + j}"], {}
+        if pivot.direction == SwingDirection.LOW and bar.low < pivot.price:
+            return False, None, 0, [f"low_violated_at_bar_{idx + j}"], {}
+
+    conf_index = max(min_end, idx + cfg.delay_bars)
+    if conf_index >= n:
+        return False, None, 0, ["insufficient_bars_for_delay"], {}
+
+    delay = conf_index - idx
+    score, factors, checks = compute_confirmation_score(
+        pivot, candles, atr_series, config,
+        prev_opposite=prev_opposite, prev_same=prev_same,
+        conf_index=conf_index, delay=delay,
+    )
+    threshold = config.confirmation_score.threshold
+    confirmed = score >= threshold
+    reasons.append(f"confirmation_score={score:.1f} threshold={threshold}")
+    if confirmed:
+        reasons.append(f"confirmed_at_bar_{conf_index}")
+    else:
+        reasons.append("below_confirmation_threshold")
+
+    meta = {
+        "confirmation_score": score,
+        "confirmation_threshold": threshold,
+        "confirmation_factors": factors,
+        "confirmation_checks": checks,
+    }
+    return confirmed, conf_index if confirmed else None, delay if confirmed else 0, reasons, meta
 
 
 def _prev_opposite(pivots: list[PivotCandidate], index: int) -> PivotCandidate | None:
@@ -92,7 +152,6 @@ def _evaluate_confirmation(
             return False, None, 0, [f"low_violated_at_bar_{idx + j}"]
 
     reasons.append(f"held_for_{cfg.min_candles}_candles")
-
     atr = atr_at(idx, atr_series, candles)
 
     if cfg.displacement_atr_min > 0:

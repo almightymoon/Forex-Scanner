@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "description": "Swing detection benchmark dataset catalog",
+  "datasets": [
+    {
+      "id": "EURUSD_H1_trend",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "regime": "trend",
+      "bars": 120,
+      "labels_file": "EURUSD_H1.regression.json",
+      "min_f1": 0.88,
+      "description": "Synthetic uptrend — primary FX regression baseline"
+    },
+    {
+      "id": "EURUSD_H1_range",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "regime": "range",
+      "bars": 150,
+      "labels_file": "EURUSD_H1_range.json",
+      "min_f1": 0.75,
+      "description": "Sideways market — tests false positive control"
+    },
+    {
+      "id": "EURUSD_H1_volatile",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "regime": "volatile",
+      "bars": 150,
+      "labels_file": "EURUSD_H1_volatile.json",
+      "min_f1": 0.70,
+      "description": "High noise random walk"
+    },
+    {
+      "id": "EURUSD_H1_news",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "regime": "news",
+      "bars": 80,
+      "labels_file": "EURUSD_H1_news.json",
+      "min_f1": 0.70,
+      "description": "News spike in middle of series"
+    },
+    {
+      "id": "XAUUSD_H1_trend",
+      "symbol": "XAUUSD",
+      "timeframe": "H1",
+      "regime": "trend",
+      "bars": 200,
+      "labels_file": "XAUUSD_H1.manual.json",
+      "min_f1": 0.88,
+      "description": "Gold synthetic trend — primary metals baseline"
+    },
+    {
+      "id": "XAUUSD_H1_range",
+      "symbol": "XAUUSD",
+      "timeframe": "H1",
+      "regime": "range",
+      "bars": 200,
+      "labels_file": "XAUUSD_H1_range.json",
+      "min_f1": 0.75,
+      "description": "Gold ranging market"
+    },
+    {
+      "id": "GBPUSD_H1_trend",
+      "symbol": "GBPUSD",
+      "timeframe": "H1",
+      "regime": "trend",
+      "bars": 150,
+      "labels_file": "GBPUSD_H1_trend.json",
+      "min_f1": 0.85,
+      "description": "Cable synthetic trend"
+    },
+    {
+      "id": "GBPUSD_H1_range",
+      "symbol": "GBPUSD",
+      "timeframe": "H1",
+      "regime": "range",
+      "bars": 150,
+      "labels_file": "GBPUSD_H1_range.json",
+      "min_f1": 0.72,
+      "description": "Cable ranging market"
+    }
+  ]
+}

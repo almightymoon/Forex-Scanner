@@ -80,6 +80,18 @@ def volatile_candles(n: int, seed: int = 42, timeframe: Timeframe = Timeframe.H1
     return out
 
 
+def gold_range_candles(
+    n: int = 200,
+    *,
+    base: float = 2350.0,
+    wave: float = 15.0,
+    period: int = 10,
+    seed: int = 7,
+) -> list[Candle]:
+    """Synthetic XAUUSD ranging market — gold-scale OHLC with zero net trend."""
+    return gold_candles(n, base=base, wave=wave, trend=0.0, period=period, seed=seed)
+
+
 def gold_candles(
     n: int = 200,
     *,

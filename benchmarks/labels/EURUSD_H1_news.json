@@ -1,16 +1,16 @@
 {
   "symbol": "EURUSD",
   "timeframe": "H1",
-  "regime": "trend",
+  "regime": "news",
   "benchmark_version": "1.0",
   "source_engine": "1.4.0",
-  "description": "Synthetic uptrend \u2014 primary FX regression baseline",
+  "description": "News spike in middle of series",
   "generated_at": "2026-07-12T15:29:00",
   "swings": [
     {
       "pivot_index": 6,
       "timestamp": "2025-01-01T06:00:00",
-      "price": 1.1084,
+      "price": 1.1045,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "NEUTRAL"
@@ -18,7 +18,7 @@
     {
       "pivot_index": 12,
       "timestamp": "2025-01-01T12:00:00",
-      "price": 1.103,
+      "price": 1.1012,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "NEUTRAL"
@@ -26,7 +26,7 @@
     {
       "pivot_index": 18,
       "timestamp": "2025-01-01T18:00:00",
-      "price": 1.112,
+      "price": 1.1063,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -34,7 +34,7 @@
     {
       "pivot_index": 24,
       "timestamp": "2025-01-02T00:00:00",
-      "price": 1.1066,
+      "price": 1.103,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "NEUTRAL"
@@ -42,7 +42,7 @@
     {
       "pivot_index": 30,
       "timestamp": "2025-01-02T06:00:00",
-      "price": 1.1156,
+      "price": 1.1081,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -50,15 +50,15 @@
     {
       "pivot_index": 36,
       "timestamp": "2025-01-02T12:00:00",
-      "price": 1.1102,
+      "price": 1.1048,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
     },
     {
-      "pivot_index": 42,
-      "timestamp": "2025-01-02T18:00:00",
-      "price": 1.1192,
+      "pivot_index": 40,
+      "timestamp": "2025-01-02T16:00:00",
+      "price": 1.1236,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -66,31 +66,31 @@
     {
       "pivot_index": 48,
       "timestamp": "2025-01-03T00:00:00",
-      "price": 1.1138,
+      "price": 1.1066,
       "direction": "LOW",
       "tier": "MAJOR",
-      "scope": "INTERNAL"
+      "scope": "NEUTRAL"
     },
     {
       "pivot_index": 54,
       "timestamp": "2025-01-03T06:00:00",
-      "price": 1.1228,
+      "price": 1.1117,
       "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 60,
-      "timestamp": "2025-01-03T12:00:00",
-      "price": 1.1174,
-      "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
     },
     {
+      "pivot_index": 60,
+      "timestamp": "2025-01-03T12:00:00",
+      "price": 1.1084,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
       "pivot_index": 66,
       "timestamp": "2025-01-03T18:00:00",
-      "price": 1.1264,
+      "price": 1.1135,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -98,66 +98,10 @@
     {
       "pivot_index": 72,
       "timestamp": "2025-01-04T00:00:00",
-      "price": 1.121,
+      "price": 1.1102,
       "direction": "LOW",
       "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 78,
-      "timestamp": "2025-01-04T06:00:00",
-      "price": 1.13,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 84,
-      "timestamp": "2025-01-04T12:00:00",
-      "price": 1.1246,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 90,
-      "timestamp": "2025-01-04T18:00:00",
-      "price": 1.1336,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 96,
-      "timestamp": "2025-01-05T00:00:00",
-      "price": 1.1282,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 102,
-      "timestamp": "2025-01-05T06:00:00",
-      "price": 1.1372,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 108,
-      "timestamp": "2025-01-05T12:00:00",
-      "price": 1.1318,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 114,
-      "timestamp": "2025-01-05T18:00:00",
-      "price": 1.1408,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "scope": "NEUTRAL"
     }
   ]
 }

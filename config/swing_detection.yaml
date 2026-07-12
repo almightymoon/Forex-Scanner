@@ -133,6 +133,21 @@ quality:
   sweep_lookback_bars: 10
   sweep_penetration_atr: 0.1
 
+# Sprint 5 — score-gated confirmation (v1.4.0). Soft rules become weighted factors.
+confirmation_score:
+  enabled: false
+  threshold: 72.0
+  weights:
+    hold_quality: 0.15
+    atr_reaction: 0.15
+    displacement: 0.12
+    wick: 0.08
+    structure_break: 0.12
+    trend_alignment: 0.12
+    liquidity_sweep: 0.08
+    volume: 0.08
+    mtf_alignment: 0.10
+
 evaluation:
   price_match_tolerance_pips: 2.0
   index_match_tolerance_bars: 2
@@ -182,6 +197,25 @@ version_profiles:
     confirmation:
       displacement_atr_min: 0.15
       break_internal_structure: false
+    classification:
+      protected_lookback_swings: 4
+    adaptive:
+      enabled: true
+  "1.4.0":
+    pivot:
+      allow_equal_levels: true
+      min_pivot_strength: 8.0
+    noise_filter:
+      volatility_filter_enabled: true
+      insignificant_pullback_atr: 0.20
+    leg:
+      validate_same_direction: true
+    confirmation:
+      displacement_atr_min: 0.0
+      break_internal_structure: false
+    confirmation_score:
+      enabled: true
+      threshold: 70.0
     classification:
       protected_lookback_swings: 4
     adaptive:

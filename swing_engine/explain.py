@@ -43,7 +43,21 @@ def build_swing_explanation(
 ) -> SwingExplanation:
     comp = swing.metadata.get("strength_components", {})
     leg_atr = float(swing.metadata.get("leg_atr", 0.0))
+    conf_score = swing.metadata.get("confirmation_score")
+    conf_checks = swing.metadata.get("confirmation_checks", [])
     factors: list[str] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    if conf_score is not None:
+        factors.append(f"Confirmation score = {conf_score:.1f}/100 (threshold {config.confirmation_score.threshold})")
+
+    for chk in conf_checks:
+        line = f"{chk['label']}: {chk['value']:.2f} (need ≥ {chk['threshold']})"
+        if chk.get("passed"):
+            passed_checks.append(f"✓ {line}")
+        else:
+            failed_checks.append(f"✗ {line}")
 
     factors.append(f"Pivot/strength level {swing.strength}/5 (norm {swing.normalized_score:.0f}/100)")
     factors.append(f"Leg = {leg_atr:.2f}x ATR")
@@ -67,12 +81,19 @@ def build_swing_explanation(
     if sweep >= 70:
         factors.append("Swept prior extreme then reversed (liquidity)")
 
+    factors.extend(passed_checks)
+    if failed_checks:
+        factors.append("--- Rejected checks (non-blocking) ---")
+        factors.extend(failed_checks)
+
     stage_scores = {
         "strength": float(swing.normalized_score),
         "quality": float(swing.quality_score),
         "confidence": float(swing.confidence) * 100.0,
         "leg_atr": leg_atr,
     }
+    if conf_score is not None:
+        stage_scores["confirmation_score"] = float(conf_score)
 
     summary = (
         f"Accepted {swing.tier.value} {swing.scope.value} "

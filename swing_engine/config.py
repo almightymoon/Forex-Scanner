@@ -66,6 +66,27 @@ class ConfirmationConfig:
 
 
 @dataclass(frozen=True)
+class ConfirmationScoreConfig:
+    """Score-gated confirmation (v1.4.0). When enabled, soft rules become weighted factors."""
+
+    enabled: bool = False
+    threshold: float = 72.0
+    weights: dict[str, float] = field(
+        default_factory=lambda: {
+            "hold_quality": 0.15,
+            "atr_reaction": 0.15,
+            "displacement": 0.12,
+            "wick": 0.08,
+            "structure_break": 0.12,
+            "trend_alignment": 0.12,
+            "liquidity_sweep": 0.08,
+            "volume": 0.08,
+            "mtf_alignment": 0.10,
+        }
+    )
+
+
+@dataclass(frozen=True)
 class StrengthConfig:
     weights: dict[str, float] = field(
         default_factory=lambda: {
@@ -183,6 +204,7 @@ class SwingEngineConfig:
     atr: AtrConfig = field(default_factory=AtrConfig)
     leg: LegConfig = field(default_factory=LegConfig)
     confirmation: ConfirmationConfig = field(default_factory=ConfirmationConfig)
+    confirmation_score: ConfirmationScoreConfig = field(default_factory=ConfirmationScoreConfig)
     strength: StrengthConfig = field(default_factory=StrengthConfig)
     classification: ClassificationConfig = field(default_factory=ClassificationConfig)
     confidence: ConfidenceConfig = field(default_factory=ConfidenceConfig)
@@ -217,6 +239,13 @@ def _dict_to_config(data: dict[str, Any]) -> SwingEngineConfig:
         atr=AtrConfig(**data.get("atr", {})),
         leg=LegConfig(**data.get("leg", {})),
         confirmation=ConfirmationConfig(**data.get("confirmation", {})),
+        confirmation_score=ConfirmationScoreConfig(
+            enabled=data.get("confirmation_score", {}).get("enabled", False),
+            threshold=data.get("confirmation_score", {}).get("threshold", 72.0),
+            weights=data.get("confirmation_score", {}).get(
+                "weights", ConfirmationScoreConfig().weights
+            ),
+        ),
         strength=StrengthConfig(
             weights=data.get("strength", {}).get("weights", StrengthConfig().weights),
             level_thresholds=tuple(data.get("strength", {}).get("level_thresholds", (20, 40, 60, 80))),

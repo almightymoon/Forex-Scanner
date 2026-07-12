@@ -1,0 +1,91 @@
+{
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "regime": "volatile",
+  "benchmark_version": "1.0",
+  "source_engine": "1.4.0",
+  "description": "High noise random walk",
+  "generated_at": "2026-07-12T15:29:00",
+  "swings": [
+    {
+      "pivot_index": 40,
+      "timestamp": "2025-01-02T16:00:00",
+      "price": 1.097464,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
+      "pivot_index": 52,
+      "timestamp": "2025-01-03T04:00:00",
+      "price": 1.049094,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
+      "pivot_index": 55,
+      "timestamp": "2025-01-03T07:00:00",
+      "price": 1.062195,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 59,
+      "timestamp": "2025-01-03T11:00:00",
+      "price": 1.051285,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
+      "pivot_index": 65,
+      "timestamp": "2025-01-03T17:00:00",
+      "price": 1.077124,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 81,
+      "timestamp": "2025-01-04T09:00:00",
+      "price": 1.058314,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
+      "pivot_index": 87,
+      "timestamp": "2025-01-04T15:00:00",
+      "price": 1.070045,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
+      "pivot_index": 108,
+      "timestamp": "2025-01-05T12:00:00",
+      "price": 1.05605,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 123,
+      "timestamp": "2025-01-06T03:00:00",
+      "price": 1.079898,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
+      "pivot_index": 123,
+      "timestamp": "2025-01-06T03:00:00",
+      "price": 1.079898,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    }
+  ]
+}

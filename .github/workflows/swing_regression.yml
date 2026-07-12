@@ -9,7 +9,9 @@ on:
       - 'tests/swing_detection/**'
       - 'tests/test_swing_engine_pkg/**'
       - 'benchmarks/labels/**'
+      - 'benchmarks/datasets/**'
       - 'scripts/benchmark_swings.py'
+      - 'scripts/run_benchmark_suite.py'
   pull_request:
     branches: [main]
     paths:
@@ -35,11 +37,14 @@ jobs:
       - name: Run swing tests
         run: PYTHONPATH=. python -m pytest tests/swing_detection tests/test_swing_engine_pkg -q
 
+      - name: Run benchmark dataset suite (v1.4.0)
+        run: PYTHONPATH=. python scripts/run_benchmark_suite.py --version 1.4.0 --fail-fast
+
       - name: Benchmark EURUSD regression
         run: |
           PYTHONPATH=. python scripts/benchmark_swings.py \
             --symbol EURUSD --timeframe H1 --regime trend --bars 120 \
-            --version 1.3.0 \
+            --version 1.4.0 \
             --labels benchmarks/labels/EURUSD_H1.regression.json \
             --min-f1 0.85 --no-history
 
@@ -47,6 +52,6 @@ jobs:
         run: |
           PYTHONPATH=. python scripts/benchmark_swings.py \
             --symbol XAUUSD --timeframe H1 --regime trend --bars 200 \
-            --version 1.3.0 \
+            --version 1.4.0 \
             --labels benchmarks/labels/XAUUSD_H1.manual.json \
             --min-f1 0.85 --no-history

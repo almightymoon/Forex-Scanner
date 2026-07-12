@@ -19,6 +19,15 @@ from swing_engine.rules import build_rule_checks_for_swing, build_rule_checks_fo
 from swing_engine.mtf import detect_mtf_hierarchy, DEFAULT_HIERARCHY
 from swing_engine.replay import SwingReplayEngine, SwingReplaySession, ReplayFrame
 from swing_engine.optimizer import ParamGrid, OptimizationResult, run_optimization, save_optimization_report
+from swing_engine.datasets import (
+    BenchmarkSuiteReport,
+    DatasetSpec,
+    load_manifest,
+    load_labels,
+    run_dataset,
+    run_suite,
+    write_labels,
+)
 from swing_engine.live_validation import PaperSwingLog, LiveValidationResult, compare_against_review
 from swing_engine.regression import append_history, load_history, write_regression_dashboard, write_benchmark_dashboard
 from swing_engine.evaluation import (
@@ -28,7 +37,7 @@ from swing_engine.evaluation import (
 from swing_engine.visualization import SwingVisualizer
 from swing_engine.versions import DEFAULT_VERSION, SUPPORTED_VERSIONS
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 __all__ = [
     "SwingEngine", "SwingDetectionEngine", "detect_swings",
@@ -51,4 +60,6 @@ __all__ = [
     "ParamGrid", "OptimizationResult", "run_optimization", "save_optimization_report",
     "PaperSwingLog", "LiveValidationResult", "compare_against_review",
     "append_history", "load_history", "write_regression_dashboard", "write_benchmark_dashboard",
+    "load_manifest", "load_labels", "write_labels", "run_dataset", "run_suite",
+    "BenchmarkSuiteReport", "DatasetSpec",
 ]

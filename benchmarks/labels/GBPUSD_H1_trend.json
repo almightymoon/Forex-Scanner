@@ -1,16 +1,32 @@
 {
-  "symbol": "XAUUSD",
+  "symbol": "GBPUSD",
   "timeframe": "H1",
   "regime": "trend",
   "benchmark_version": "1.0",
   "source_engine": "1.4.0",
-  "description": "Gold synthetic trend \u2014 primary metals baseline",
-  "generated_at": "2026-07-12T15:29:00",
+  "description": "Cable synthetic trend",
+  "generated_at": "2026-07-12T15:29:01",
   "swings": [
+    {
+      "pivot_index": 6,
+      "timestamp": "2025-01-01T06:00:00",
+      "price": 1.2768,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
+    {
+      "pivot_index": 12,
+      "timestamp": "2025-01-01T12:00:00",
+      "price": 1.2718,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "NEUTRAL"
+    },
     {
       "pivot_index": 18,
       "timestamp": "2025-01-01T18:00:00",
-      "price": 2364.223365,
+      "price": 1.2792,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -18,7 +34,7 @@
     {
       "pivot_index": 24,
       "timestamp": "2025-01-02T00:00:00",
-      "price": 2358.130808,
+      "price": 1.2742,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "NEUTRAL"
@@ -26,23 +42,23 @@
     {
       "pivot_index": 30,
       "timestamp": "2025-01-02T06:00:00",
-      "price": 2369.122262,
+      "price": 1.2816,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
     },
     {
-      "pivot_index": 35,
-      "timestamp": "2025-01-02T11:00:00",
-      "price": 2363.629534,
+      "pivot_index": 36,
+      "timestamp": "2025-01-02T12:00:00",
+      "price": 1.2766,
       "direction": "LOW",
       "tier": "MAJOR",
-      "scope": "INTERNAL"
+      "scope": "NEUTRAL"
     },
     {
       "pivot_index": 42,
       "timestamp": "2025-01-02T18:00:00",
-      "price": 2374.171007,
+      "price": 1.284,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -50,7 +66,7 @@
     {
       "pivot_index": 48,
       "timestamp": "2025-01-03T00:00:00",
-      "price": 2368.667112,
+      "price": 1.279,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
@@ -58,15 +74,23 @@
     {
       "pivot_index": 54,
       "timestamp": "2025-01-03T06:00:00",
-      "price": 2377.943175,
+      "price": 1.2864,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
     },
     {
+      "pivot_index": 60,
+      "timestamp": "2025-01-03T12:00:00",
+      "price": 1.2814,
+      "direction": "LOW",
+      "tier": "MAJOR",
+      "scope": "INTERNAL"
+    },
+    {
       "pivot_index": 66,
       "timestamp": "2025-01-03T18:00:00",
-      "price": 2383.843948,
+      "price": 1.2888,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -74,15 +98,23 @@
     {
       "pivot_index": 72,
       "timestamp": "2025-01-04T00:00:00",
-      "price": 2378.135406,
+      "price": 1.2838,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
     },
     {
+      "pivot_index": 78,
+      "timestamp": "2025-01-04T06:00:00",
+      "price": 1.2912,
+      "direction": "HIGH",
+      "tier": "MAJOR",
+      "scope": "EXTERNAL"
+    },
+    {
       "pivot_index": 84,
       "timestamp": "2025-01-04T12:00:00",
-      "price": 2382.106944,
+      "price": 1.2862,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
@@ -90,7 +122,7 @@
     {
       "pivot_index": 90,
       "timestamp": "2025-01-04T18:00:00",
-      "price": 2392.979104,
+      "price": 1.2936,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -98,7 +130,7 @@
     {
       "pivot_index": 96,
       "timestamp": "2025-01-05T00:00:00",
-      "price": 2387.274034,
+      "price": 1.2886,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
@@ -106,7 +138,7 @@
     {
       "pivot_index": 102,
       "timestamp": "2025-01-05T06:00:00",
-      "price": 2397.273338,
+      "price": 1.296,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -114,7 +146,7 @@
     {
       "pivot_index": 108,
       "timestamp": "2025-01-05T12:00:00",
-      "price": 2392.090806,
+      "price": 1.291,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
@@ -122,7 +154,7 @@
     {
       "pivot_index": 114,
       "timestamp": "2025-01-05T18:00:00",
-      "price": 2402.78192,
+      "price": 1.2984,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -130,7 +162,7 @@
     {
       "pivot_index": 120,
       "timestamp": "2025-01-06T00:00:00",
-      "price": 2396.927806,
+      "price": 1.2934,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
@@ -138,7 +170,7 @@
     {
       "pivot_index": 126,
       "timestamp": "2025-01-06T06:00:00",
-      "price": 2406.834021,
+      "price": 1.3008,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -146,7 +178,7 @@
     {
       "pivot_index": 132,
       "timestamp": "2025-01-06T12:00:00",
-      "price": 2401.262343,
+      "price": 1.2958,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"
@@ -154,7 +186,7 @@
     {
       "pivot_index": 138,
       "timestamp": "2025-01-06T18:00:00",
-      "price": 2411.703612,
+      "price": 1.3032,
       "direction": "HIGH",
       "tier": "MAJOR",
       "scope": "EXTERNAL"
@@ -162,71 +194,7 @@
     {
       "pivot_index": 144,
       "timestamp": "2025-01-07T00:00:00",
-      "price": 2406.645583,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 150,
-      "timestamp": "2025-01-07T06:00:00",
-      "price": 2417.426169,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 155,
-      "timestamp": "2025-01-07T11:00:00",
-      "price": 2411.534564,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 162,
-      "timestamp": "2025-01-07T18:00:00",
-      "price": 2421.317784,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 168,
-      "timestamp": "2025-01-08T00:00:00",
-      "price": 2416.027464,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 174,
-      "timestamp": "2025-01-08T06:00:00",
-      "price": 2427.009333,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 180,
-      "timestamp": "2025-01-08T12:00:00",
-      "price": 2420.344699,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "INTERNAL"
-    },
-    {
-      "pivot_index": 186,
-      "timestamp": "2025-01-08T18:00:00",
-      "price": 2431.999234,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 192,
-      "timestamp": "2025-01-09T00:00:00",
-      "price": 2425.41473,
+      "price": 1.2982,
       "direction": "LOW",
       "tier": "MAJOR",
       "scope": "INTERNAL"

@@ -153,7 +153,28 @@ lower-TF swing (parent trend, external range, alignment score).
 - Performance sweep: `scripts/bench_swing_performance.py`
 - CI regression: `.github/workflows/swing_regression.yml`
 
-See **[Project Roadmap](ROADMAP.md)** for Sprint 5+ (BOS, CHoCH, liquidity, decision engine).
+See **[Project Roadmap](ROADMAP.md)** for Sprint 6+ (BOS, CHoCH, liquidity, decision engine).
+
+## Sprint 5 Additions (v1.4.0 — default)
+
+### 1. Score-Gated Confirmation (`swing_engine/confirmation_score.py`)
+
+Soft confirmation rules become weighted factors (0–100). Hard gates still block on
+pivot violation or insufficient bars. `confirmed = confirmation_score >= threshold`.
+
+### 2. Benchmark Dataset Suite (`swing_engine/datasets.py`)
+
+Eight synthetic datasets across EURUSD, GBPUSD, XAUUSD × trend/range/volatile/news.
+Catalog: `benchmarks/datasets/manifest.json`. Runners:
+
+```bash
+PYTHONPATH=. python scripts/generate_benchmark_labels.py --version 1.4.0
+PYTHONPATH=. python scripts/run_benchmark_suite.py --version 1.4.0
+```
+
+### 3. Explainability v2
+
+`build_swing_explanation()` includes per-factor pass/fail audit from `confirmation_checks`.
 
 ## XAUUSD (Gold) Support
 
