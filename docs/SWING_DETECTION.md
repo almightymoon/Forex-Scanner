@@ -1,4 +1,4 @@
-# Swing Detection Engine — Sprint 1 Technical Documentation
+# Swing Detection Engine — Technical Documentation (Sprint 2)
 
 ## Architecture
 
@@ -39,8 +39,8 @@ Bars → Pivots → Noise Filter → ATR Validation → Leg Validation
 from swing_engine import SwingEngine, SwingVisualizer, SUPPORTED_VERSIONS
 from shared.types.models import Timeframe
 
-# Versioned engine (canonical)
-engine = SwingEngine(version="1.0.0")
+# Versioned engine (default v1.1.0)
+engine = SwingEngine(version="1.1.0")
 result = engine.detect(bars, symbol="EURUSD", timeframe=Timeframe.H1)
 
 result.swings              # List[DetectedSwing]
@@ -57,6 +57,46 @@ result = SwingEngine(version="1.0.0").detect(bars, symbol="EURUSD")
 ```
 
 ### Versioning
+
+| Version | Description |
+|---------|-------------|
+| `1.0.0` | Baseline — strict pivots, legacy defaults |
+| `1.1.0` | **Default** — equal-level pivots, expanded filters, tier scoring, protected levels |
+
+Profiles in `config/swing_detection.yaml` under `version_profiles`.
+
+```python
+from swing_engine import SwingEngine, SUPPORTED_VERSIONS
+
+v1 = SwingEngine(version="1.0.0").detect(bars)
+v11 = SwingEngine(version="1.1.0").detect(bars)
+```
+
+## Algorithm (Sprint 2)
+
+### Pivot Detection
+- Configurable left/right lookback, equal-high/low tolerance, min pivot strength
+- Optional body-extreme mode; pivot strength score (wick + body vs ATR)
+
+### Filtering (independent, configurable)
+- Noise: candle distance, pip distance, ATR movement, spread, volatility
+- Consolidation and insignificant pullback rejection
+- ATR validation and leg validation (optional same-direction legs)
+
+### Confirmation
+- Hold pivot for `min_candles` without violation
+- Optional: displacement ATR, structure break, internal structure break, retracement
+- Outputs: pivot candle, confirmation candle, delay, reasoning
+
+### Strength Scoring
+- Components: leg size, ATR, reaction, duration, volume, wick ratio, displacement, trend quality
+- Returns **raw score** and **normalized score** (0–100)
+
+### Classification
+- **Major/Minor:** weighted tier score (leg ATR, strength, reaction, confirmation, duration)
+- **Internal/External:** protected highs/lows, dealing range midpoint, HH/LL progression
+
+### Versioning (API)
 
 Implementations live under `swing_engine/versions/`. Compare engines without replacing prior logic:
 
@@ -150,29 +190,26 @@ all_tf = BarBuilder.build_all_timeframes("EURUSD", ticks)
 - **Raw ticks** stored append-only in `dc_ticks` (immutable — duplicates ignored)
 - **Dukascopy** provider persists ticks during download via `DataDownloader`
 
-## Benchmark Evaluation
+## Benchmark Evaluation (Sprint 2)
 
 ```bash
-PYTHONPATH=. python scripts/benchmark_swings.py --symbol EURUSD --timeframe H1
-```
+# Single version
+PYTHONPATH=. python scripts/benchmark_swings.py --symbol EURUSD --timeframe H1 --regime trend
 
-```python
-from swing_engine.evaluation import SwingBenchmarkEvaluator, write_json_report, write_csv_report
+# Compare versions
+PYTHONPATH=. python scripts/benchmark_swings.py --compare-versions 1.0.0 1.1.0 --labels benchmarks/labels/EURUSD_H1.regression.json
 
-report = SwingBenchmarkEvaluator().evaluate(predicted, ground_truth, "EURUSD")
-write_json_report(report, Path("benchmarks/reports/eurusd.json"))
-write_csv_report(report, Path("benchmarks/reports/eurusd.csv"))
+# Visual debugger
+PYTHONPATH=. python scripts/render_swing_debug.py --version 1.1.0 --bars 120 --output debug/swing.html
 ```
 
 ### Metrics
+Precision, Recall, F1, FP/FN, detection delay, price/time error, major/external precision/recall, average confidence/strength, repainting rate.
 
-- Precision, Recall, F1
-- False Positives / False Negatives
-- Detection Delay (bars)
-- Price Error (pips)
-- Time Error (bars)
-- Major Swing Precision / Recall
-- External Swing Precision / Recall
+### Reports
+JSON, CSV, Markdown summary, HTML version-comparison charts.
+
+Regression baseline: `benchmarks/labels/EURUSD_H1.regression.json`
 
 ### Ground Truth Format
 
@@ -214,10 +251,28 @@ Per-timeframe overrides under `timeframe_overrides`.
 ```bash
 PYTHONPATH=. python -m unittest discover -s tests/test_swing_engine_pkg -p 'test_*.py' -v
 PYTHONPATH=. python -m unittest discover -s tests/swing_detection -p 'test_*.py' -v
-PYTHONPATH=. python -m unittest discover -s tests/bar_builder -p 'test_*.py' -v
 PYTHONPATH=. python -m unittest discover -s tests/integration -p 'test_*.py' -v
-PYTHONPATH=. ./scripts/test.sh
 ```
+
+Key test modules:
+- `test_scoring.py` — tier/scope/confidence
+- `test_edge_cases.py` — equal highs, gaps, regimes
+- `test_benchmark_regression.py` — committed label regression
+
+## Developer Notes
+
+- **Single implementation:** all swing detection logic lives in `swing_engine/` only
+- **Consumers:** `services/quant_engine/swing_analysis.py` imports swing_engine
+- **No repaint:** confirmed swings depend only on bars through `confirmation_index`
+- **No magic numbers:** all thresholds in YAML (`version_profiles` + `timeframe_overrides`)
+- **Default version:** `1.1.0`
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0.0 | Sprint 1 | Initial pipeline, artifacts, debugger scaffold |
+| 1.1.0 | Sprint 2 | Equal-level pivots, expanded filters/strength, tier scoring, protected scope, decision timeline, benchmark reports |
 
 ## Future Integration
 
@@ -229,18 +284,3 @@ PYTHONPATH=. ./scripts/test.sh
 | Order Blocks | Last opposing candle before major displacement |
 | FVG | Index gaps between confirmed swings |
 | Decision Engine | `strength`, `confidence` as features |
-
-## Developer Notes
-
-- **Single implementation:** all swing detection logic lives in `swing_engine/` only
-- **Consumers:** `services/quant_engine/swing_analysis.py` and `services/scanner_service/` import swing_engine — they do not implement detection
-- **No repaint:** confirmed swings depend only on bars through `confirmation_index`
-- **No magic numbers:** all thresholds in YAML
-- **Version:** `swing_engine.__version__` = `1.0.0`; use `SwingEngine(version=...)` to pin
-
-## Next Priorities (Algorithm Quality)
-
-1. **Baseline algorithm** — pivot detection, confirmation, major/minor, internal/external classification
-2. **Visual debugger** — overlay swings, rejected candidates, confirmation bars, confidence on hover
-3. **Benchmark dataset** — precision, recall, detection delay, false positives vs ground truth labels
-4. **Regression tests** — equal highs/lows, gaps, strong trends, ranging markets (`tests/swing_detection/test_edge_cases.py`)

@@ -3,38 +3,62 @@
 pivot:
   left_lookback: 3
   right_lookback: 3
+  allow_equal_levels: false          # v1.0.0 strict; v1.1.0 enables tolerant equal highs/lows
+  equal_level_tolerance_pips: 1.5
+  min_separation_bars: 1
+  min_pivot_strength: 0.0            # 0 = disabled; reject pivots below this 0-100 score
+  use_body_extreme: false            # use max(open,close) / min(open,close) instead of wick
 
 noise_filter:
   min_candle_distance: 2
-  min_pip_distance: 2.0        # pips (multiplied by pip size)
+  min_pip_distance: 2.0
   min_atr_multiple: 0.25
   dedupe_equal_levels: true
   equal_level_tolerance_pips: 1.5
   ignore_consecutive_same_direction: true
+  spread_filter_enabled: false
+  max_spread_atr_ratio: 0.35
+  volatility_filter_enabled: false
+  min_volatility_atr: 0.0005
+  consolidation_max_bars: 0          # 0 = disabled
+  insignificant_pullback_atr: 0.0
 
 atr:
   period: 14
-  validation_multiplier: 0.35   # reject moves smaller than multiplier × ATR
+  validation_multiplier: 0.35
 
 leg:
   min_pips: 2.0
   min_atr_multiple: 0.35
+  validate_same_direction: false     # v1.1.0: apply leg filter to same-direction pivots
 
 confirmation:
   min_candles: 2
   delay_bars: 2
   require_structure_break: false
   required_retracement_atr: 0.0
+  displacement_atr_min: 0.0
+  displacement_bars: 1
+  break_internal_structure: false
 
 strength:
   weights:
-    leg_size: 0.25
-    atr_multiple: 0.25
-    reaction_size: 0.20
-    duration: 0.15
-    volume: 0.15
-  # Composite score 0–100 mapped to strength 1–5
+    leg_size: 0.20
+    atr_multiple: 0.15
+    reaction_size: 0.15
+    duration: 0.10
+    volume: 0.10
+    wick_ratio: 0.10
+    displacement: 0.10
+    trend_quality: 0.10
   level_thresholds: [20, 40, 60, 80]
+  reaction_bars: 4
+  duration_cap: 20
+  leg_atr_divisor: 2.5
+  atr_divisor: 2.0
+  reaction_divisor: 1.5
+  displacement_divisor: 2.0
+  normalized_max: 100.0
 
 classification:
   major_min_atr_multiple: 1.2
@@ -42,6 +66,13 @@ classification:
   minor_max_atr_multiple: 1.2
   external_score_threshold: 0.6
   internal_score_threshold: -0.25
+  protected_lookback_swings: 3
+  tier_weights:
+    leg_atr: 0.35
+    strength: 0.25
+    reaction: 0.15
+    confirmation: 0.15
+    duration: 0.10
 
 confidence:
   confirmed_bonus: 0.15
@@ -64,6 +95,24 @@ pip_size:
 evaluation:
   price_match_tolerance_pips: 2.0
   index_match_tolerance_bars: 2
+  min_f1_regression: 0.90
+
+# Per-engine-version config overrides (merged on top of base + timeframe)
+version_profiles:
+  "1.1.0":
+    pivot:
+      allow_equal_levels: true
+      min_pivot_strength: 8.0
+    noise_filter:
+      volatility_filter_enabled: true
+      insignificant_pullback_atr: 0.20
+    leg:
+      validate_same_direction: true
+    confirmation:
+      displacement_atr_min: 0.15
+      break_internal_structure: false
+    classification:
+      protected_lookback_swings: 4
 
 timeframe_overrides:
   M1:

@@ -14,12 +14,14 @@ class TestPivotDetection(unittest.TestCase):
         pivots = detect_pivot_candidates(cs, cfg)
         self.assertGreater(len(pivots), 4)
 
-    def test_alternating_directions(self):
-        cs = swing_candles(100)
-        cfg = get_config(cs[0].timeframe)
+    def test_equal_levels_when_enabled(self):
+        from dataclasses import replace
+        cs = trend_candles(80)
+        cfg = replace(get_config(cs[0].timeframe), pivot=replace(
+            get_config(cs[0].timeframe).pivot, allow_equal_levels=True,
+        ))
         pivots = detect_pivot_candidates(cs, cfg)
-        for i in range(1, len(pivots)):
-            self.assertNotEqual(pivots[i - 1].direction, pivots[i].direction)
+        self.assertGreater(len(pivots), 0)
 
 
 if __name__ == "__main__":

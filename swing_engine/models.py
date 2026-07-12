@@ -36,6 +36,8 @@ class PivotCandidate:
     pivot_timestamp: datetime
     price: float
     direction: SwingDirection
+    strength: float = 0.0
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -43,6 +45,8 @@ class PivotCandidate:
             "timestamp": self.pivot_timestamp.isoformat(),
             "price": self.price,
             "direction": self.direction.value,
+            "strength": round(self.strength, 2),
+            "metadata": to_dict(self.metadata),
         }
 
 
@@ -72,6 +76,7 @@ class InternalSwing:
     confirmation_delay: int = 0
     strength: int = 1
     score: float = 0.0
+    normalized_score: float = 0.0
     tier: SwingTier = SwingTier.MINOR
     reasoning: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -93,6 +98,7 @@ class DetectedSwing:
     confirmation_delay: int = 0
     strength: int = 1
     score: float = 0.0
+    normalized_score: float = 0.0
     confidence: float = 0.0
     reasoning: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -121,6 +127,7 @@ class DetectedSwing:
             "confirmation_delay": self.confirmation_delay,
             "strength": self.strength,
             "score": round(self.score, 2),
+            "normalized_score": round(self.normalized_score, 2),
             "confidence": round(self.confidence, 4),
             "reasoning": list(self.reasoning),
             "metadata": to_dict(self.metadata),
@@ -140,6 +147,7 @@ class PipelineArtifacts:
     leg_rejected: list[RejectedCandidate] = field(default_factory=list)
     confirmed_swings: list[InternalSwing] = field(default_factory=list)
     unconfirmed_swings: list[InternalSwing] = field(default_factory=list)
+    decision_timeline: list[dict[str, Any]] = field(default_factory=list)
     atr_series: list[float] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -244,6 +252,9 @@ class EvaluationReport:
     major_recall: float = 0.0
     external_precision: float = 0.0
     external_recall: float = 0.0
+    average_confidence: float = 0.0
+    average_strength: float = 0.0
+    repainting_rate: float = 0.0
     matched_pairs: list[dict[str, Any]] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -262,6 +273,9 @@ class EvaluationReport:
             "major_recall": round(self.major_recall, 4),
             "external_precision": round(self.external_precision, 4),
             "external_recall": round(self.external_recall, 4),
+            "average_confidence": round(self.average_confidence, 4),
+            "average_strength": round(self.average_strength, 2),
+            "repainting_rate": round(self.repainting_rate, 4),
             "matched_pairs": self.matched_pairs,
             "metadata": self.metadata,
         }

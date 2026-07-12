@@ -119,13 +119,14 @@ class TestPerformance(unittest.TestCase):
 class TestVersioning(unittest.TestCase):
     def test_default_version(self):
         engine = SwingEngine()
-        self.assertEqual(engine.version, "1.0.0")
+        self.assertEqual(engine.version, "1.1.0")
 
     def test_explicit_version(self):
         from swing_engine import SUPPORTED_VERSIONS
         self.assertIn("1.0.0", SUPPORTED_VERSIONS)
-        result = SwingEngine(version="1.0.0").detect(trend_candles(50))
-        self.assertEqual(result.version, "1.0.0")
+        self.assertIn("1.1.0", SUPPORTED_VERSIONS)
+        result = SwingEngine(version="1.1.0").detect(trend_candles(50))
+        self.assertEqual(result.version, "1.1.0")
 
 
 class TestDebugHtml(unittest.TestCase):

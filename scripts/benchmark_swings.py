@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run swing benchmark evaluation and write JSON/CSV reports."""
+"""Run swing benchmark evaluation with version comparison and reports."""
 
 from __future__ import annotations
 
@@ -13,12 +13,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shared.types.models import Timeframe
 
-from swing_engine import SwingEngine, SwingBenchmarkEvaluator, get_config, write_csv_report, write_json_report
+from swing_engine import (
+    SwingEngine,
+    SwingBenchmarkEvaluator,
+    get_config,
+    write_comparison_charts,
+    write_csv_report,
+    write_json_report,
+    write_markdown_report,
+)
 from swing_engine.models import BenchmarkLabel, SwingDirection, SwingScope, SwingTier
-from tests.swing_detection.fixtures import trend_candles
+from swing_engine.versions import SUPPORTED_VERSIONS
+from tests.swing_detection.fixtures import range_candles, trend_candles, volatile_candles
 
 
-def load_labels(path: Path) -> list[BenchmarkLabel]:
+def load_labels(path: Path) -> tuple[list[BenchmarkLabel], str, str]:
     data = json.loads(path.read_text(encoding="utf-8"))
     labels = []
     for item in data.get("swings", []):
@@ -30,7 +39,15 @@ def load_labels(path: Path) -> list[BenchmarkLabel]:
             tier=SwingTier(item.get("tier", "MAJOR")),
             scope=SwingScope(item.get("scope", "EXTERNAL")),
         ))
-    return labels
+    return labels, data.get("symbol", "EURUSD"), data.get("benchmark_version", "1.0")
+
+
+def load_bars(regime: str, n: int, timeframe: Timeframe):
+    if regime == "range":
+        return range_candles(n, timeframe=timeframe)
+    if regime == "volatile":
+        return volatile_candles(n, timeframe=timeframe)
+    return trend_candles(n, timeframe=timeframe)
 
 
 def main() -> int:
@@ -39,31 +56,60 @@ def main() -> int:
     parser.add_argument("--timeframe", default="H1")
     parser.add_argument("--labels", type=Path, help="Ground truth JSON file")
     parser.add_argument("--output-dir", type=Path, default=Path("benchmarks/reports"))
+    parser.add_argument("--version", default="1.1.0")
+    parser.add_argument("--compare-versions", nargs="*", help="Compare multiple versions")
+    parser.add_argument("--bars", type=int, default=120)
+    parser.add_argument("--regime", choices=["trend", "range", "volatile"], default="trend")
+    parser.add_argument("--min-f1", type=float, default=None)
     args = parser.parse_args()
 
     tf = Timeframe(args.timeframe)
-    bars = trend_candles(120)
-    engine = SwingEngine(get_config(tf))
-    result = engine.detect(bars, symbol=args.symbol, timeframe=tf)
+    bars = load_bars(args.regime, args.bars, tf)
+    versions = args.compare_versions or [args.version]
 
-    if args.labels and args.labels.exists():
-        ground_truth = load_labels(args.labels)
-    else:
-        ground_truth = [
-            BenchmarkLabel(s.pivot_index, s.timestamp, s.price, SwingDirection(s.direction.value), s.tier, s.scope)
-            for s in result.confirmed_swings
-        ]
+    reports = {}
+    for ver in versions:
+        if ver not in SUPPORTED_VERSIONS:
+            print(f"Unknown version: {ver}", file=sys.stderr)
+            return 1
+        engine = SwingEngine(get_config(tf, version=ver), version=ver)
+        result = engine.detect(bars, symbol=args.symbol, timeframe=tf)
+        runtime = result.performance.runtime_ms if result.performance else None
 
-    report = SwingBenchmarkEvaluator(get_config(tf)).evaluate(result.confirmed_swings, ground_truth, args.symbol)
+        if args.labels and args.labels.exists():
+            ground_truth, sym, bench_ver = load_labels(args.labels)
+        else:
+            ground_truth = [
+                BenchmarkLabel(s.pivot_index, s.timestamp, s.price, s.direction, s.tier, s.scope)
+                for s in result.confirmed_swings
+            ]
+            sym, bench_ver = args.symbol, "self"
+
+        report = SwingBenchmarkEvaluator(get_config(tf, version=ver)).evaluate(
+            result.confirmed_swings, ground_truth, sym,
+            engine_version=ver, benchmark_version=bench_ver, regime=args.regime, runtime_ms=runtime,
+        )
+        reports[ver] = report
 
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    base = args.output_dir / f"{args.symbol}_{args.timeframe}_{ts}"
-    json_path = write_json_report(report, base.with_suffix(".json"))
-    csv_path = write_csv_report(report, base.with_suffix(".csv"))
+    base = args.output_dir / f"{args.symbol}_{args.timeframe}_{args.regime}_{ts}"
+    primary = reports[versions[-1]]
 
-    print(f"JSON: {json_path}")
-    print(f"CSV:  {csv_path}")
-    print(f"F1={report.f1_score:.4f} P={report.precision:.4f} R={report.recall:.4f}")
+    write_json_report(primary, base.with_suffix(".json"))
+    write_csv_report(primary, base.with_suffix(".csv"))
+    write_markdown_report(primary, base.with_suffix(".md"))
+    if len(reports) > 1:
+        write_comparison_charts(reports, base.with_name(base.name + "_comparison").with_suffix(".html"))
+
+    print(f"JSON: {base.with_suffix('.json')}")
+    print(f"MD:   {base.with_suffix('.md')}")
+    for ver, r in reports.items():
+        print(f"[{ver}] F1={r.f1_score:.4f} P={r.precision:.4f} R={r.recall:.4f} FP={r.false_positives} FN={r.false_negatives}")
+
+    min_f1 = args.min_f1 or get_config(tf).evaluation.min_f1_regression
+    if primary.f1_score < min_f1:
+        print(f"FAIL: F1 {primary.f1_score:.4f} < {min_f1}", file=sys.stderr)
+        return 1
     return 0
 
 

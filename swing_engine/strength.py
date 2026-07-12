@@ -1,11 +1,11 @@
-"""Internal strength scoring (1–5) before final classification."""
+"""Internal strength scoring (1–5) with raw and normalized scores."""
 
 from __future__ import annotations
 
 from shared.types.models import Candle
 
 from swing_engine.config import SwingEngineConfig
-from swing_engine.models import InternalSwing, SwingDirection, SwingTier
+from swing_engine.models import InternalSwing, SwingDirection
 from swing_engine.utils import atr_at, log_stage
 
 
@@ -16,40 +16,48 @@ def calculate_strength(
     prev_opposite: InternalSwing | None,
     config: SwingEngineConfig,
 ) -> InternalSwing:
-    weights = config.strength.weights
+    sc = config.strength
+    weights = sc.weights
     atr = atr_at(swing.pivot_index, atr_series, candles)
     leg_size = abs(swing.price - prev_opposite.price) if prev_opposite else atr
     leg_atr = leg_size / atr if atr > 0 else 0.0
-    reaction = _reaction_size(candles, swing)
+    reaction = _reaction_size(candles, swing, sc.reaction_bars)
     reaction_atr = reaction / atr if atr > 0 else 0.0
     duration = swing.pivot_index - prev_opposite.pivot_index if prev_opposite else 1
-    duration_score = min(1.0, duration / 20.0)
+    duration_score = min(1.0, duration / sc.duration_cap)
     volume_score = _volume_score(candles, swing)
+    wick_score = _wick_ratio_score(candles, swing)
+    displacement = _displacement_score(candles, swing, atr, sc.displacement_divisor)
+    trend_q = _trend_quality_score(candles, swing, prev_opposite)
 
-    leg_c = min(1.0, leg_atr / 2.5) * 100
-    atr_c = min(1.0, leg_atr / 2.0) * 100
-    react_c = min(1.0, reaction_atr / 1.5) * 100
-    dur_c = duration_score * 100
-    vol_c = volume_score * 100
-
-    score = (
-        leg_c * weights.get("leg_size", 0.25)
-        + atr_c * weights.get("atr_multiple", 0.25)
-        + react_c * weights.get("reaction_size", 0.20)
-        + dur_c * weights.get("duration", 0.15)
-        + vol_c * weights.get("volume", 0.15)
-    )
-    if not swing.confirmed:
-        score *= 0.85
-
-    swing.score = round(score, 2)
-    swing.strength = _score_to_level(score, config)
-    swing.reasoning.extend([
-        f"leg_atr={leg_atr:.2f}", f"composite_score={score:.1f}", f"strength={swing.strength}",
-    ])
-    swing.metadata["strength_components"] = {
-        "leg": round(leg_c, 2), "atr": round(atr_c, 2), "reaction": round(react_c, 2),
+    components = {
+        "leg_size": min(1.0, leg_atr / sc.leg_atr_divisor) * 100,
+        "atr_multiple": min(1.0, leg_atr / sc.atr_divisor) * 100,
+        "reaction_size": min(1.0, reaction_atr / sc.reaction_divisor) * 100,
+        "duration": duration_score * 100,
+        "volume": volume_score * 100,
+        "wick_ratio": wick_score * 100,
+        "displacement": displacement * 100,
+        "trend_quality": trend_q * 100,
     }
+
+    raw = sum(components[k] * weights.get(k, 0.0) for k in components)
+    if not swing.confirmed:
+        raw *= 0.85
+
+    normalized = min(sc.normalized_max, raw)
+    swing.score = round(raw, 2)
+    swing.normalized_score = round(normalized, 2)
+    swing.strength = _score_to_level(normalized, config)
+    swing.reasoning.extend([
+        f"leg_atr={leg_atr:.2f}",
+        f"raw_score={raw:.1f}",
+        f"normalized_score={normalized:.1f}",
+        f"strength={swing.strength}",
+    ])
+    swing.metadata["strength_components"] = {k: round(v, 2) for k, v in components.items()}
+    swing.metadata["raw_score"] = round(raw, 2)
+    swing.metadata["normalized_score"] = round(normalized, 2)
     return swing
 
 
@@ -69,8 +77,8 @@ def score_all_swings(
     return scored
 
 
-def _reaction_size(candles: list[Candle], swing: InternalSwing) -> float:
-    end = min(len(candles), swing.pivot_index + 4)
+def _reaction_size(candles: list[Candle], swing: InternalSwing, bars: int) -> float:
+    end = min(len(candles), swing.pivot_index + bars + 1)
     if swing.pivot_index + 1 >= end:
         return 0.0
     seg = candles[swing.pivot_index + 1 : end]
@@ -85,6 +93,39 @@ def _volume_score(candles: list[Candle], swing: InternalSwing) -> float:
         return 0.5
     window = [candles[j].volume for j in range(max(0, idx - 10), idx) if candles[j].volume]
     return min(1.0, candles[idx].volume / (sum(window) / len(window))) if window else 0.5
+
+
+def _wick_ratio_score(candles: list[Candle], swing: InternalSwing) -> float:
+    c = candles[swing.pivot_index]
+    body = max(abs(c.close - c.open), 1e-12)
+    if swing.direction == SwingDirection.HIGH:
+        wick = c.high - max(c.open, c.close)
+    else:
+        wick = min(c.open, c.close) - c.low
+    return min(1.0, wick / body)
+
+
+def _displacement_score(candles: list[Candle], swing: InternalSwing, atr: float, divisor: float) -> float:
+    if swing.confirmation_index is None or atr <= 0:
+        return 0.5
+    c = candles[swing.confirmation_index]
+    if swing.direction == SwingDirection.HIGH:
+        disp = swing.price - c.low
+    else:
+        disp = c.high - swing.price
+    return min(1.0, (disp / atr) / divisor)
+
+
+def _trend_quality_score(
+    candles: list[Candle],
+    swing: InternalSwing,
+    prev_opposite: InternalSwing | None,
+) -> float:
+    if not prev_opposite:
+        return 0.5
+    if swing.direction == SwingDirection.HIGH:
+        return 1.0 if swing.price > prev_opposite.price else 0.3
+    return 1.0 if swing.price < prev_opposite.price else 0.3
 
 
 def _score_to_level(score: float, config: SwingEngineConfig) -> int:

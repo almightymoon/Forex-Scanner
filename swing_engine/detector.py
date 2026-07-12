@@ -35,7 +35,10 @@ class SwingEngine:
         timeframe: Timeframe | None = None,
         config: SwingEngineConfig | None = None,
     ) -> DetectionResult:
-        cfg = config or self._config or get_config(timeframe or (bars[0].timeframe if bars else None))
+        cfg = config or self._config or get_config(
+            timeframe or (bars[0].timeframe if bars else None),
+            version=self._version,
+        )
         return self._detect(bars, symbol=symbol, timeframe=timeframe, config=cfg)
 
 
@@ -46,7 +49,7 @@ def detect_swings(
     **config_overrides: Any,
 ) -> list[DetectedSwing]:
     tf = timeframe or (bars[0].timeframe if bars else Timeframe.H1)
-    cfg = get_config(tf, **config_overrides) if config_overrides else get_config(tf)
+    cfg = get_config(tf, version=version, **config_overrides) if config_overrides else get_config(tf, version=version)
     return SwingEngine(cfg, version=version).detect(bars, timeframe=tf).swings
 
 

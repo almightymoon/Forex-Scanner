@@ -82,7 +82,24 @@ def build_zigzag_swings(
         atr=replace(base.atr, validation_multiplier=min_atr_mult),
     )
     result = SwingEngine(cfg).detect(candles)
-    return [_swing_to_point(s) for s in result.swings]
+    points = [_swing_to_point(s) for s in result.swings]
+    return _zigzag_alternate(points)
+
+
+def _zigzag_alternate(points: list[SwingPoint]) -> list[SwingPoint]:
+    """Ensure alternating high/low sequence for zigzag consumers."""
+    if not points:
+        return []
+    out = [points[0]]
+    for p in points[1:]:
+        if p.kind == out[-1].kind:
+            if p.kind == "high" and p.price >= out[-1].price:
+                out[-1] = p
+            elif p.kind == "low" and p.price <= out[-1].price:
+                out[-1] = p
+        else:
+            out.append(p)
+    return out
 
 
 def find_swings(candles: list[Candle], lookback: int = 3) -> tuple[list[SwingPoint], list[SwingPoint]]:
