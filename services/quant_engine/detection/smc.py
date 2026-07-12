@@ -1,6 +1,6 @@
 """Smart Money Concepts detection engine — uses shared swing analysis."""
 
-from services.quant_engine.swing.analysis import (
+from services.quant_engine.swing_analysis import (
     MarketStructureState,
     analyze_market_structure,
     build_zigzag_swings,

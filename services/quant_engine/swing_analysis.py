@@ -1,8 +1,8 @@
 """
-Market structure helpers built on scanner.swing_detection.
+Market structure helpers that consume swing_engine.
 
-BOS/CHoCH classification remains here for backward compatibility until
-market_structure sprint extracts it.
+BOS/CHoCH classification lives here — not in swing_engine. Swing detection
+is delegated entirely to SwingEngine; this module only interprets results.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from swing_engine.models import DetectedSwing, SwingDirection
 
 @dataclass
 class SwingPoint:
-    """Legacy swing point — maps from production Swing model."""
+    """Legacy swing point — maps from DetectedSwing."""
 
     index: int
     price: float
@@ -69,7 +69,7 @@ def build_zigzag_swings(
     lookback: int = 3,
     min_atr_mult: float = 0.35,
 ) -> list[SwingPoint]:
-    """Backward-compatible zigzag swings via SwingDetectionEngine."""
+    """Build zigzag swing points via SwingEngine."""
     if not candles:
         return []
 

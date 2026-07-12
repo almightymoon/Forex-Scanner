@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from services.quant_engine.swing.analysis import MarketStructureState, TrendContext
+from services.quant_engine.swing_analysis import MarketStructureState, TrendContext
 from shared.types.models import IndicatorValues, SMCPattern, TrendDirection
 
 

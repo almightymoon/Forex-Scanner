@@ -7,7 +7,7 @@ from services.quant_engine.features.types import MarketFeatures
 
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.decision.pattern_scoring import filter_patterns
-from services.quant_engine.swing.analysis import detect_session_liquidity
+from services.quant_engine.swing_analysis import detect_session_liquidity
 
 _LIQUIDITY_TYPES = {"liquidity_sweep", "equal_highs", "equal_lows"}
 

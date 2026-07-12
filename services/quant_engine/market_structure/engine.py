@@ -8,7 +8,7 @@ from services.quant_engine.features.types import MarketFeatures
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.decision.pattern_scoring import filter_patterns
 from services.quant_engine.market_structure.scoring import quality_label, score_structure_event
-from services.quant_engine.swing.analysis import classify_bos, find_swings
+from services.quant_engine.swing_analysis import classify_bos, find_swings
 
 _STRUCTURE_TYPES = {"bos", "choch"}
 

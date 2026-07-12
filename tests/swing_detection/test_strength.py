@@ -2,23 +2,25 @@
 
 import unittest
 
-from scanner.swing_detection.confirmation import confirm_swings
-from scanner.swing_detection.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
-from scanner.swing_detection.pivots import detect_pivot_candidates
-from scanner.swing_detection.strength import classify_swings, score_all_swings
-from scanner.swing_detection.utils import compute_atr_series, get_swing_detection_config
-from scanner.swing_detection.models import SwingClassification
+from swing_engine.confirmation import confirm_swings
+from swing_engine.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
+from swing_engine.pivots import detect_pivot_candidates
+from swing_engine.scoring import score_and_classify
+from swing_engine.strength import score_all_swings
+from swing_engine import get_config
+from swing_engine.utils import compute_atr_series
+from swing_engine.models import SwingClassification
 from tests.swing_detection.fixtures import swing_candles, trend_candles
 
 
 class TestStrength(unittest.TestCase):
     def _full_swings(self, cs):
-        cfg = get_swing_detection_config(cs[0].timeframe)
+        cfg = get_config(cs[0].timeframe)
         atr = compute_atr_series(cs, cfg.atr.period)
         raw = detect_pivot_candidates(cs, cfg)
-        filtered, _ = apply_noise_filters(raw, cs, atr, cfg)
-        atr_v, _ = validate_atr_movement(filtered, cs, atr, cfg)
-        leg_v, _ = validate_minimum_leg(atr_v, cs, atr, cfg)
+        filtered, _rej, _stats = apply_noise_filters(raw, cs, atr, cfg)
+        atr_v, _atr_rej = validate_atr_movement(filtered, cs, atr, cfg)
+        leg_v, _leg_rej = validate_minimum_leg(atr_v, cs, atr, cfg)
         swings = confirm_swings(leg_v, cs, atr, cfg)
         return score_all_swings(swings, cs, atr, cfg), cs, atr, cfg
 
@@ -34,7 +36,7 @@ class TestStrength(unittest.TestCase):
 
     def test_classification_major_minor(self):
         swings, cs, atr, cfg = self._full_swings(trend_candles(150))
-        classified = classify_swings(swings, cs, atr, cfg)
+        classified = score_and_classify(swings, cs, atr, cfg)
         tiers = {s.classification for s in classified}
         self.assertTrue(tiers.issubset({SwingClassification.MAJOR, SwingClassification.MINOR}))
 

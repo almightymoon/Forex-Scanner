@@ -2,21 +2,22 @@
 
 import unittest
 
-from scanner.swing_detection.confirmation import confirm_swings
-from scanner.swing_detection.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
-from scanner.swing_detection.pivots import detect_pivot_candidates
-from scanner.swing_detection.utils import compute_atr_series, get_swing_detection_config
+from swing_engine.confirmation import confirm_swings
+from swing_engine.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
+from swing_engine.pivots import detect_pivot_candidates
+from swing_engine import get_config
+from swing_engine.utils import compute_atr_series
 from tests.swing_detection.fixtures import swing_candles, trend_candles
 
 
 class TestConfirmation(unittest.TestCase):
     def _pipeline_pivots(self, cs):
-        cfg = get_swing_detection_config(cs[0].timeframe)
+        cfg = get_config(cs[0].timeframe)
         atr = compute_atr_series(cs, cfg.atr.period)
         raw = detect_pivot_candidates(cs, cfg)
-        filtered, _ = apply_noise_filters(raw, cs, atr, cfg)
-        atr_v, _ = validate_atr_movement(filtered, cs, atr, cfg)
-        leg_v, _ = validate_minimum_leg(atr_v, cs, atr, cfg)
+        filtered, _rej, _stats = apply_noise_filters(raw, cs, atr, cfg)
+        atr_v, _atr_rej = validate_atr_movement(filtered, cs, atr, cfg)
+        leg_v, _leg_rej = validate_minimum_leg(atr_v, cs, atr, cfg)
         return leg_v, cs, atr, cfg
 
     def test_confirmed_swings_have_timestamp(self):
@@ -42,7 +43,6 @@ class TestConfirmation(unittest.TestCase):
         cs = trend_candles(30)
         pivots, _, atr, cfg = self._pipeline_pivots(cs)
         swings = confirm_swings(pivots, cs, atr, cfg)
-        # Short series may yield all confirmed or empty after pipeline
         self.assertIsInstance(swings, list)
 
 

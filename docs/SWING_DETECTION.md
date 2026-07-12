@@ -21,9 +21,9 @@ flowchart TD
 |--------|------|----------------|
 | Data Collector | `services/data_collector/` | Download, validate, persist ticks + candles |
 | Bar Builder | `services/bar_builder/` | Deterministic UTC bar aggregation + rollup |
-| Swing Engine | `swing_engine/` | **Single source of truth** — versioned pipeline, artifacts, metrics |
-| Legacy shim | `scanner/swing_detection/` | Thin re-exports + backward-compatible `detect_swings()` |
-| Quant shim | `services/quant_engine/swing/` | Thin re-exports + `analysis.py` (BOS/CHoCH helpers) |
+| Swing Engine | `swing_engine/` | **Only swing detection implementation** (versioned) |
+| Market structure consumer | `services/quant_engine/swing_analysis.py` | Consumes `SwingEngine` for BOS/CHoCH/trend context |
+| Scanner service | `services/scanner_service/` | Pipeline orchestration — imports swing_engine |
 | Config | `config/swing_detection.yaml` | All thresholds |
 
 ## Swing Engine Pipeline
@@ -52,9 +52,8 @@ result.stage_logs          # Per-stage counts for debugging
 from swing_engine import detect_swings
 swings = detect_swings(bars)
 
-# Legacy shim (returns full DetectionResult)
-from scanner.swing_detection import detect_swings as detect_swings_legacy
-legacy_result = detect_swings_legacy(bars)
+# Full result with artifacts + metrics
+result = SwingEngine(version="1.0.0").detect(bars, symbol="EURUSD")
 ```
 
 ### Versioning
@@ -233,8 +232,15 @@ PYTHONPATH=. ./scripts/test.sh
 
 ## Developer Notes
 
-- **Single implementation:** all logic in `swing_engine/`; other paths are thin shims
+- **Single implementation:** all swing detection logic lives in `swing_engine/` only
+- **Consumers:** `services/quant_engine/swing_analysis.py` and `services/scanner_service/` import swing_engine — they do not implement detection
 - **No repaint:** confirmed swings depend only on bars through `confirmation_index`
 - **No magic numbers:** all thresholds in YAML
-- **Backward compat:** `scanner.swing_detection` and `services.quant_engine.swing` remain functional
 - **Version:** `swing_engine.__version__` = `1.0.0`; use `SwingEngine(version=...)` to pin
+
+## Next Priorities (Algorithm Quality)
+
+1. **Baseline algorithm** — pivot detection, confirmation, major/minor, internal/external classification
+2. **Visual debugger** — overlay swings, rejected candidates, confirmation bars, confidence on hover
+3. **Benchmark dataset** — precision, recall, detection delay, false positives vs ground truth labels
+4. **Regression tests** — equal highs/lows, gaps, strong trends, ranging markets (`tests/swing_detection/test_edge_cases.py`)

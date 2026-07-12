@@ -1,3 +1,3 @@
-"""Backward-compatible shim — use services.quant_engine.swing.analysis."""
+"""Market structure analysis — consumes swing_engine, does not implement detection."""
 
-from services.quant_engine.swing.analysis import *  # noqa: F403
+from services.quant_engine.swing_analysis import *  # noqa: F403

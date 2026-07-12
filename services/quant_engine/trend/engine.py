@@ -7,7 +7,7 @@ from services.quant_engine.features.types import MarketFeatures
 
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.trend.models import TrendAnalysis
-from services.quant_engine.swing.analysis import analyze_trend_context
+from services.quant_engine.swing_analysis import analyze_trend_context
 
 
 class TrendEngine:

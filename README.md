@@ -30,12 +30,11 @@ docker compose up -d
 
 ```
 fx-navigators/
-├── swing_engine/            # Single source of truth — versioned swing detection
-├── scanner/swing_detection/ # Thin shim (backward-compatible API)
+├── swing_engine/            # Single source of truth — swing detection only
 ├── services/
 │   ├── bar_builder/         # Deterministic M1–D1 bar generation
 │   ├── data_collector/      # Market data ingestion + raw tick storage
-│   ├── quant_engine/        # Quant modules (swing shim + analysis helpers)
+│   ├── quant_engine/        # Consumers (market_structure uses swing_engine)
 │   └── scanner_service/     # Pipeline orchestration
 ├── config/
 │   ├── swing_detection.yaml

@@ -2,7 +2,7 @@
 
 from services.quant_engine.features.types import FVGFeatures, MarketFeatures, OrderBlockFeatures
 from services.quant_engine.decision.session import current_session
-from services.quant_engine.swing.analysis import (
+from services.quant_engine.swing_analysis import (
     analyze_market_structure,
     analyze_trend_context,
     detect_session_liquidity,
