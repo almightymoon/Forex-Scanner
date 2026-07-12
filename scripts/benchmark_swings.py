@@ -59,7 +59,7 @@ def main() -> int:
     parser.add_argument("--timeframe", default="H1")
     parser.add_argument("--labels", type=Path, help="Ground truth JSON file")
     parser.add_argument("--output-dir", type=Path, default=Path("benchmarks/reports"))
-    parser.add_argument("--version", default="1.2.0")
+    parser.add_argument("--version", default="1.3.0")
     parser.add_argument("--compare-versions", nargs="*", help="Compare multiple versions")
     parser.add_argument("--bars", type=int, default=120)
     parser.add_argument("--regime", choices=["trend", "range", "volatile"], default="trend")
@@ -95,6 +95,10 @@ def main() -> int:
             result.confirmed_swings, ground_truth, sym,
             engine_version=ver, benchmark_version=bench_ver, regime=args.regime, runtime_ms=runtime,
         )
+        if result.artifacts.repainting_stats:
+            report.repainting_rate = result.artifacts.repainting_stats.get(
+                "repainting_rate", report.repainting_rate
+            )
         reports[ver] = report
 
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")

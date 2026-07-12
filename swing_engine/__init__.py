@@ -4,16 +4,23 @@ from swing_engine.detector import SwingEngine, SwingDetectionEngine, detect_swin
 from swing_engine.config import SwingEngineConfig, SwingDetectionConfig, get_config, get_swing_detection_config
 from swing_engine.models import (
     BenchmarkLabel, BenchmarkSwing, DetectedSwing, DetectionResult,
-    EvaluationReport, InternalSwing, MarketContext, PivotCandidate, PipelineArtifacts,
+    EvaluationReport, InternalSwing, MTFHierarchyResult, MTFSwingContext,
+    MarketContext, PivotCandidate, PipelineArtifacts,
     PerformanceMetrics, RejectedCandidate, StructureRegime, Swing, SwingClassification,
-    SwingDetectionOutput, SwingDirection, SwingExplanation, SwingScope, SwingTier,
-    TradingSession, VolatilityRegime,
+    SwingDetectionOutput, SwingDirection, SwingExplanation, SwingLifecycleState,
+    SwingLifecycleEvent, SwingRuleCheck, SwingScope, SwingTier, SwingTrackedCandidate,
+    TradingSession, TrendBias, VolatilityRegime,
 )
 from swing_engine.context import adapt_config, compute_market_context
 from swing_engine.quality import compute_quality_score
 from swing_engine.explain import build_swing_explanation, build_rejection_explanation
+from swing_engine.lifecycle import build_lifecycle, compute_repainting_stats
+from swing_engine.rules import build_rule_checks_for_swing, build_rule_checks_for_rejection
+from swing_engine.mtf import detect_mtf_hierarchy, DEFAULT_HIERARCHY
+from swing_engine.replay import SwingReplayEngine, SwingReplaySession, ReplayFrame
+from swing_engine.optimizer import ParamGrid, OptimizationResult, run_optimization, save_optimization_report
 from swing_engine.live_validation import PaperSwingLog, LiveValidationResult, compare_against_review
-from swing_engine.regression import append_history, load_history, write_regression_dashboard
+from swing_engine.regression import append_history, load_history, write_regression_dashboard, write_benchmark_dashboard
 from swing_engine.evaluation import (
     SwingBenchmarkEvaluator, SwingEvaluator,
     write_csv_report, write_json_report, write_markdown_report, write_comparison_charts,
@@ -21,7 +28,7 @@ from swing_engine.evaluation import (
 from swing_engine.visualization import SwingVisualizer
 from swing_engine.versions import DEFAULT_VERSION, SUPPORTED_VERSIONS
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 __all__ = [
     "SwingEngine", "SwingDetectionEngine", "detect_swings",
@@ -33,8 +40,15 @@ __all__ = [
     "SwingVisualizer", "PipelineArtifacts", "PerformanceMetrics", "RejectedCandidate",
     "PivotCandidate", "DEFAULT_VERSION", "SUPPORTED_VERSIONS",
     "MarketContext", "SwingExplanation", "VolatilityRegime", "StructureRegime", "TradingSession",
+    "SwingLifecycleState", "SwingLifecycleEvent", "SwingTrackedCandidate", "SwingRuleCheck",
+    "MTFSwingContext", "MTFHierarchyResult", "TrendBias",
     "compute_market_context", "adapt_config", "compute_quality_score",
     "build_swing_explanation", "build_rejection_explanation",
+    "build_lifecycle", "compute_repainting_stats",
+    "build_rule_checks_for_swing", "build_rule_checks_for_rejection",
+    "detect_mtf_hierarchy", "DEFAULT_HIERARCHY",
+    "SwingReplayEngine", "SwingReplaySession", "ReplayFrame",
+    "ParamGrid", "OptimizationResult", "run_optimization", "save_optimization_report",
     "PaperSwingLog", "LiveValidationResult", "compare_against_review",
-    "append_history", "load_history", "write_regression_dashboard",
+    "append_history", "load_history", "write_regression_dashboard", "write_benchmark_dashboard",
 ]

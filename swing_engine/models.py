@@ -49,6 +49,135 @@ class TradingSession(str, Enum):
     OFF = "OFF"
 
 
+class SwingLifecycleState(str, Enum):
+    """Explicit swing candidate lifecycle (Sprint 4)."""
+
+    CANDIDATE = "CANDIDATE"
+    POSSIBLE = "POSSIBLE"
+    WAITING_CONFIRMATION = "WAITING_CONFIRMATION"
+    CONFIRMED = "CONFIRMED"
+    INVALIDATED = "INVALIDATED"
+    REJECTED = "REJECTED"
+
+
+class TrendBias(str, Enum):
+    BULLISH = "BULLISH"
+    BEARISH = "BEARISH"
+    RANGING = "RANGING"
+
+
+@dataclass
+class SwingLifecycleEvent:
+    bar_index: int
+    state: SwingLifecycleState
+    reason: str
+    rule_id: str = ""
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "bar_index": self.bar_index,
+            "state": self.state.value,
+            "reason": self.reason,
+            "rule_id": self.rule_id,
+            "metadata": to_dict(self.metadata),
+        }
+
+
+@dataclass
+class SwingTrackedCandidate:
+    """A pivot tracked through its full lifecycle."""
+
+    swing_id: str
+    pivot_index: int
+    direction: SwingDirection
+    price: float
+    state: SwingLifecycleState = SwingLifecycleState.CANDIDATE
+    events: list[SwingLifecycleEvent] = field(default_factory=list)
+    final_swing: "DetectedSwing | None" = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "swing_id": self.swing_id,
+            "pivot_index": self.pivot_index,
+            "direction": self.direction.value,
+            "price": self.price,
+            "state": self.state.value,
+            "events": [e.to_dict() for e in self.events],
+            "final_swing": self.final_swing.to_dict() if self.final_swing else None,
+        }
+
+
+@dataclass
+class SwingRuleCheck:
+    """Single rule pass/fail for the Visualization Studio inspector."""
+
+    rule_id: str
+    label: str
+    passed: bool
+    value: str = ""
+    threshold: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "rule_id": self.rule_id,
+            "label": self.label,
+            "passed": self.passed,
+            "value": self.value,
+            "threshold": self.threshold,
+        }
+
+
+@dataclass
+class MTFSwingContext:
+    """Parent structure context for a lower-timeframe swing (Sprint 4)."""
+
+    parent_timeframe: str | None = None
+    parent_swing_id: str | None = None
+    parent_trend: TrendBias = TrendBias.RANGING
+    parent_external_high: float | None = None
+    parent_external_low: float | None = None
+    parent_dealing_range: tuple[float, float] | None = None
+    parent_liquidity_high: float | None = None
+    parent_liquidity_low: float | None = None
+    alignment_score: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        dr = self.parent_dealing_range
+        return {
+            "parent_timeframe": self.parent_timeframe,
+            "parent_swing_id": self.parent_swing_id,
+            "parent_trend": self.parent_trend.value,
+            "parent_external_high": self.parent_external_high,
+            "parent_external_low": self.parent_external_low,
+            "parent_dealing_range": list(dr) if dr else None,
+            "parent_liquidity_high": self.parent_liquidity_high,
+            "parent_liquidity_low": self.parent_liquidity_low,
+            "alignment_score": round(self.alignment_score, 3),
+        }
+
+
+@dataclass
+class MTFHierarchyResult:
+    """Full multi-timeframe swing map for a symbol."""
+
+    symbol: str
+    hierarchy: list[str]
+    swings_by_timeframe: dict[str, list["DetectedSwing"]]
+    contexts: dict[str, MTFSwingContext]  # key: "TF:pivot_index:direction"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "symbol": self.symbol,
+            "hierarchy": self.hierarchy,
+            "swings_by_timeframe": {
+                tf: [s.to_dict() for s in swings]
+                for tf, swings in self.swings_by_timeframe.items()
+            },
+            "contexts": {k: v.to_dict() for k, v in self.contexts.items()},
+        }
+
+
 @dataclass(frozen=True)
 class MarketContext:
     """Snapshot of market conditions used for adaptive detection."""
@@ -168,6 +297,9 @@ class DetectedSwing:
     quality_score: float = 0.0
     quality_factors: dict[str, float] = field(default_factory=dict)
     explanation: "SwingExplanation | None" = None
+    rule_checks: list[SwingRuleCheck] = field(default_factory=list)
+    lifecycle_state: SwingLifecycleState | None = None
+    mtf_context: "MTFSwingContext | None" = None
     reasoning: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -200,6 +332,9 @@ class DetectedSwing:
             "quality_score": round(self.quality_score, 1),
             "quality_factors": {k: round(v, 1) for k, v in self.quality_factors.items()},
             "explanation": self.explanation.to_dict() if self.explanation else None,
+            "rule_checks": [r.to_dict() for r in self.rule_checks],
+            "lifecycle_state": self.lifecycle_state.value if self.lifecycle_state else None,
+            "mtf_context": self.mtf_context.to_dict() if self.mtf_context else None,
             "reasoning": list(self.reasoning),
             "metadata": to_dict(self.metadata),
         }
@@ -219,6 +354,8 @@ class PipelineArtifacts:
     confirmed_swings: list[InternalSwing] = field(default_factory=list)
     unconfirmed_swings: list[InternalSwing] = field(default_factory=list)
     decision_timeline: list[dict[str, Any]] = field(default_factory=list)
+    lifecycle_tracks: list[SwingTrackedCandidate] = field(default_factory=list)
+    repainting_stats: dict[str, float] = field(default_factory=dict)
     atr_series: list[float] = field(default_factory=list)
     market_context: "MarketContext | None" = None
 
@@ -233,6 +370,8 @@ class PipelineArtifacts:
             "leg_rejected": [r.to_dict() for r in self.leg_rejected],
             "confirmed_swings": len(self.confirmed_swings),
             "unconfirmed_swings": len(self.unconfirmed_swings),
+            "lifecycle_tracks": len(self.lifecycle_tracks),
+            "repainting_stats": self.repainting_stats,
             "market_context": self.market_context.to_dict() if self.market_context else None,
         }
 

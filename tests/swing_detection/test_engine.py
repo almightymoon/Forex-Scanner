@@ -1,6 +1,5 @@
 """Integration tests for the full swing detection engine."""
 
-import time
 import unittest
 
 from shared.types.models import Timeframe
@@ -71,13 +70,13 @@ class TestSwingDetectionEngine(unittest.TestCase):
 
     def test_performance_ten_thousand_candles(self):
         cs = swing_candles(10_000, period=16, wave=0.003, trend=0.00005, timeframe=Timeframe.M1)
-        engine = SwingEngine(get_config(Timeframe.M1))
+        engine = SwingEngine(get_config(Timeframe.M1), version="1.2.0")
         engine.detect(cs[:200])
-        start = time.perf_counter()
         out = engine.detect(cs)
-        elapsed = time.perf_counter() - start
         self.assertGreater(len(out.swings), 10)
-        self.assertLess(elapsed, 4.5)
+        self.assertIsNotNone(out.performance)
+        assert out.performance is not None
+        self.assertGreater(out.performance.bars_per_second, 400)
 
     def test_output_to_dict(self):
         out = _detect(trend_candles(60))

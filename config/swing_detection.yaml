@@ -170,6 +170,22 @@ version_profiles:
       protected_lookback_swings: 4
     adaptive:
       enabled: true
+  "1.3.0":
+    pivot:
+      allow_equal_levels: true
+      min_pivot_strength: 8.0
+    noise_filter:
+      volatility_filter_enabled: true
+      insignificant_pullback_atr: 0.20
+    leg:
+      validate_same_direction: true
+    confirmation:
+      displacement_atr_min: 0.15
+      break_internal_structure: false
+    classification:
+      protected_lookback_swings: 4
+    adaptive:
+      enabled: true
 
 # Per-symbol overrides (merged after version + timeframe). Gold trades wider.
 symbol_overrides:

@@ -12,9 +12,11 @@ from swing_engine.confirmation import confirm_swings
 from swing_engine.context import adapt_config, compute_market_context
 from swing_engine.explain import build_rejection_explanation
 from swing_engine.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
-from swing_engine.models import DetectionResult, PipelineArtifacts, RejectedCandidate
+from swing_engine.lifecycle import build_lifecycle, compute_repainting_stats
+from swing_engine.models import DetectionResult, PipelineArtifacts, RejectedCandidate, SwingLifecycleState
 from swing_engine.performance import measure_performance
 from swing_engine.pivots import detect_pivot_candidates
+from swing_engine.rules import build_rule_checks_for_swing
 from swing_engine.scoring import score_and_classify
 from swing_engine.utils import compute_atr_series, log_stage
 
@@ -78,6 +80,19 @@ def run_pipeline(
         })
 
         detected = score_and_classify(confirmed, bars, atr_series, cfg)
+
+        if _sprint4_enabled(version):
+            artifacts.lifecycle_tracks = build_lifecycle(artifacts, detected)
+            artifacts.repainting_stats = compute_repainting_stats(artifacts.lifecycle_tracks)
+            track_map = {t.swing_id: t for t in artifacts.lifecycle_tracks}
+            for s in detected:
+                sid = f"{s.direction.value}:{s.pivot_index}"
+                track = track_map.get(sid)
+                s.lifecycle_state = track.state if track else (
+                    SwingLifecycleState.CONFIRMED if s.confirmed else SwingLifecycleState.WAITING_CONFIRMATION
+                )
+                s.rule_checks = build_rule_checks_for_swing(s, artifacts, cfg)
+
         perf_ctx["swing_count"] = len(detected)
         stage_logs.append({"stage": "scoring", "count": len(detected)})
         stage_logs.append({"stage": "complete", "count": len(detected), "version": version})
@@ -101,8 +116,13 @@ def run_pipeline(
             "commit_hash": _git_commit_hash(),
             "adaptive": cfg.adaptive.enabled,
             "market_context": artifacts.market_context.to_dict() if artifacts.market_context else None,
+            "repainting_stats": artifacts.repainting_stats,
         },
     )
+
+
+def _sprint4_enabled(version: str) -> bool:
+    return version in ("1.3.0",)
 
 
 def _build_timeline(artifacts: PipelineArtifacts) -> list[dict[str, Any]]:

@@ -32,7 +32,7 @@ def main() -> int:
     parser.add_argument("--bars", type=int, default=200)
     parser.add_argument("--regime", choices=["trend", "range", "volatile"], default="trend")
     parser.add_argument("--output", type=Path, default=Path("debug/swing_debug.html"))
-    parser.add_argument("--version", default="1.2.0")
+    parser.add_argument("--version", default="1.3.0")
     args = parser.parse_args()
 
     tf = Timeframe(args.timeframe)

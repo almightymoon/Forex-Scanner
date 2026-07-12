@@ -99,64 +99,85 @@ def write_regression_dashboard(
     path: Path,
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(_dashboard_html(entries), encoding="utf-8")
+    path.write_text(_benchmark_dashboard_html(entries), encoding="utf-8")
     return path
 
 
-def _dashboard_html(entries: list[dict[str, Any]]) -> str:
+def write_benchmark_dashboard(entries: list[dict[str, Any]], path: Path) -> Path:
+    """Alias for the filterable benchmark dashboard (Sprint 4)."""
+    return write_regression_dashboard(entries, path)
+
+
+def _benchmark_dashboard_html(entries: list[dict[str, Any]]) -> str:
     data_js = json.dumps(entries)
     return (
         """<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>Swing Engine — Regression Dashboard</title>
+<title>Swing Benchmark Dashboard</title>
 <style>
-body{font-family:system-ui,-apple-system,sans-serif;background:#0b1220;color:#e2e8f0;margin:0;padding:24px}
-h1{font-size:20px;margin:0 0 4px}p.sub{color:#94a3b8;margin:0 0 20px;font-size:13px}
-table{border-collapse:collapse;width:100%;font-size:13px}
-th,td{padding:8px 12px;text-align:right;border-bottom:1px solid #1e293b}
-th{color:#94a3b8;font-weight:600;text-align:right;position:sticky;top:0;background:#0b1220}
-td:first-child,th:first-child,td:nth-child(2),th:nth-child(2),td:nth-child(3),th:nth-child(3){text-align:left}
-tr:hover{background:#111a2e}
-.up{color:#22c55e}.down{color:#ef4444}.flat{color:#64748b}
-.badge{background:#1e293b;padding:2px 8px;border-radius:6px;font-family:monospace}
-.f1{font-weight:700;color:#38bdf8}
+body{font-family:system-ui,sans-serif;background:#0b1220;color:#e2e8f0;margin:0;padding:20px}
+h1{font-size:18px;margin:0 0 4px}.sub{color:#94a3b8;font-size:12px;margin:0 0 16px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:12px}
+.filters select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.card{background:#111a2e;border:1px solid #1e293b;border-radius:8px;padding:12px}
+.card .label{color:#94a3b8;font-size:11px}.card .val{font-size:20px;font-weight:700;margin-top:4px}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid #1e293b}
+th{color:#94a3b8;position:sticky;top:0;background:#0b1220}
+td:first-child,th:first-child,td:nth-child(2),th:nth-child(2){text-align:left}
+.up{color:#22c55e}.down{color:#ef4444}.badge{background:#1e293b;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:11px}
 </style></head><body>
-<h1>Swing Detection Engine — Historical Regression</h1>
-<p class="sub">Each row is a benchmark run. Arrows compare against the previous run of the same symbol+regime.</p>
-<table id="tbl"><thead><tr>
-<th>Timestamp</th><th>Version</th><th>Symbol / Regime</th>
-<th>Precision</th><th>Recall</th><th>F1</th><th>Delay (bars)</th><th>Price err (pips)</th><th>Repaint</th><th>Commit</th>
-</tr></thead><tbody></tbody></table>
+<h1>Swing Benchmark Dashboard</h1>
+<p class="sub">Filter by symbol, regime, version. Aggregates precision, recall, delay, repainting, confidence.</p>
+<div class="filters">
+  <label>Symbol <select id="fSymbol"><option value="">All</option></select></label>
+  <label>Regime <select id="fRegime"><option value="">All</option></select></label>
+  <label>Version <select id="fVersion"><option value="">All</option></select></label>
+</div>
+<div class="cards" id="cards"></div>
+<table><thead><tr>
+<th>Time</th><th>Symbol</th><th>Version</th><th>Regime</th>
+<th>Precision</th><th>Recall</th><th>F1</th><th>Delay</th><th>Repaint</th><th>Commit</th>
+</tr></thead><tbody id="tbody"></tbody></table>
 <script>
-const DATA = """
+const ALL = """
         + data_js
         + """;
-function arrow(cur, prev, invert=false){
-  if(prev===undefined||prev===null) return '';
-  const d = cur - prev; const eps=1e-6;
-  if(Math.abs(d)<eps) return ' <span class="flat">→</span>';
-  let good = d>0; if(invert) good=d<0;
-  return good? ' <span class="up">↑</span>' : ' <span class="down">↓</span>';
+function uniq(arr, key){ return [...new Set(arr.map(e=>e[key]).filter(Boolean))].sort(); }
+function fillSelect(id, values){ const s=document.getElementById(id); values.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);}); }
+fillSelect('fSymbol', uniq(ALL,'symbol'));
+fillSelect('fRegime', uniq(ALL,'regime'));
+fillSelect('fVersion', uniq(ALL,'engine_version'));
+function filtered(){
+  const sym=document.getElementById('fSymbol').value;
+  const reg=document.getElementById('fRegime').value;
+  const ver=document.getElementById('fVersion').value;
+  return ALL.filter(e=>(!sym||e.symbol===sym)&&(!reg||e.regime===reg)&&(!ver||e.engine_version===ver));
 }
-const prevByKey = {};
-const tbody = document.querySelector('#tbl tbody');
-DATA.forEach(e=>{
-  const key = e.symbol+'|'+e.regime;
-  const p = prevByKey[key];
-  const tr = document.createElement('tr');
-  tr.innerHTML =
-    '<td>'+(e.timestamp||'')+'</td>'+
-    '<td><span class="badge">v'+e.engine_version+'</span></td>'+
-    '<td>'+e.symbol+' / '+e.regime+'</td>'+
-    '<td>'+e.precision.toFixed(3)+arrow(e.precision, p&&p.precision)+'</td>'+
-    '<td>'+e.recall.toFixed(3)+arrow(e.recall, p&&p.recall)+'</td>'+
-    '<td class="f1">'+e.f1_score.toFixed(3)+arrow(e.f1_score, p&&p.f1_score)+'</td>'+
-    '<td>'+e.average_detection_delay_bars.toFixed(2)+arrow(e.average_detection_delay_bars, p&&p.average_detection_delay_bars, true)+'</td>'+
-    '<td>'+e.average_price_error_pips.toFixed(2)+arrow(e.average_price_error_pips, p&&p.average_price_error_pips, true)+'</td>'+
-    '<td>'+e.repainting_rate.toFixed(3)+arrow(e.repainting_rate, p&&p.repainting_rate, true)+'</td>'+
-    '<td><span class="badge">'+(e.commit_hash||'-')+'</span></td>';
-  tbody.appendChild(tr);
-  prevByKey[key] = e;
-});
-if(!DATA.length){ tbody.innerHTML='<tr><td colspan="10" style="color:#64748b;text-align:center;padding:40px">No history yet. Run scripts/benchmark_swings.py to populate.</td></tr>'; }
+function render(){
+  const rows=filtered();
+  const n=rows.length||1;
+  const avg=k=>rows.reduce((s,e)=>s+(e[k]||0),0)/n;
+  document.getElementById('cards').innerHTML=[
+    ['Precision',avg('precision').toFixed(3)],
+    ['Recall',avg('recall').toFixed(3)],
+    ['F1',avg('f1_score').toFixed(3)],
+    ['Delay',avg('average_detection_delay_bars').toFixed(2)+' bars'],
+    ['Repaint',avg('repainting_rate').toFixed(3)],
+    ['Runs',rows.length],
+  ].map(([l,v])=>'<div class="card"><div class="label">'+l+'</div><div class="val">'+v+'</div></div>').join('');
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  rows.slice().reverse().forEach(e=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+(e.timestamp||'')+'</td><td>'+e.symbol+'</td><td><span class="badge">v'+e.engine_version+'</span></td><td>'+e.regime+'</td>'
+      +'<td>'+e.precision.toFixed(3)+'</td><td>'+e.recall.toFixed(3)+'</td><td>'+e.f1_score.toFixed(3)+'</td>'
+      +'<td>'+e.average_detection_delay_bars.toFixed(2)+'</td><td>'+e.repainting_rate.toFixed(3)+'</td>'
+      +'<td><span class="badge">'+(e.commit_hash||'-')+'</span></td>';
+    tb.appendChild(tr);
+  });
+  if(!rows.length) tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:#64748b;padding:32px">No data — run scripts/benchmark_swings.py</td></tr>';
+}
+['fSymbol','fRegime','fVersion'].forEach(id=>document.getElementById(id).onchange=render);
+render();
 </script></body></html>"""
     )

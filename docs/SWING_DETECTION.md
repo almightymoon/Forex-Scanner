@@ -122,6 +122,39 @@ JSONL log. `compare_against_review()` scores the log against a human/benchmark
 review file to report *live* precision, recall, and detection delay separately
 from historical backtests. Runner: `scripts/paper_validate_swings.py`.
 
+## Sprint 4 Additions (v1.3.0 — default)
+
+### 1. Candidate Lifecycle (`swing_engine/lifecycle.py`)
+
+States: `CANDIDATE → POSSIBLE → WAITING_CONFIRMATION → CONFIRMED → INVALIDATED | REJECTED`
+
+Each pivot is tracked with a full event log. `repainting_stats` on every run measures
+unconfirmed and invalidated rates.
+
+### 2. Swing Replay (`swing_engine/replay.py`)
+
+`SwingReplayEngine.build_session()` steps bar-by-bar and records state transitions.
+Runner: `scripts/replay_swings.py --studio debug/studio.html`
+
+### 3. Visualization Studio (`swing_engine/visualization.py` + `rules.py`)
+
+Click any swing → inspector panel shows rule pass/fail checklist, quality, confidence,
+lifecycle state, and version.
+
+### 4. MTF Swing Hierarchy (`swing_engine/mtf.py`)
+
+`detect_mtf_hierarchy()` maps D1→H4→H1→M15→M5 and attaches `MTFSwingContext` to each
+lower-TF swing (parent trend, external range, alignment score).
+
+### 5. Benchmark Dashboard + Optimizer + CI
+
+- Filterable dashboard: `benchmarks/reports/regression_dashboard.html`
+- Parameter grid search: `scripts/optimize_swings.py`
+- Performance sweep: `scripts/bench_swing_performance.py`
+- CI regression: `.github/workflows/swing_regression.yml`
+
+See **[Project Roadmap](ROADMAP.md)** for Sprint 5+ (BOS, CHoCH, liquidity, decision engine).
+
 ## XAUUSD (Gold) Support
 
 - Gold pip size is `0.1` via `pip_size.symbol_overrides.XAUUSD` (silver `XAGUSD` = `0.001`).

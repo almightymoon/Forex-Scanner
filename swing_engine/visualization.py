@@ -68,11 +68,14 @@ class SwingVisualizer:
         show_rejected: bool = True,
         show_atr: bool = True,
         show_timeline: bool = True,
+        replay_frames: list[dict] | None = None,
     ) -> Path:
         data = self.build(
             bars, result.swings, artifacts=result.artifacts,
             include_unconfirmed=True, include_rejected=show_rejected,
         )
+        data["lifecycle"] = [t.to_dict() for t in result.artifacts.lifecycle_tracks]
+        data["repainting_stats"] = result.artifacts.repainting_stats
         data["meta"] = {
             "symbol": result.symbol,
             "timeframe": result.timeframe.value,
@@ -80,7 +83,10 @@ class SwingVisualizer:
             "performance": result.performance.to_dict() if result.performance else None,
             "show_atr": show_atr,
             "show_timeline": show_timeline,
+            "studio": True,
         }
+        if replay_frames:
+            data["replay"] = replay_frames
         html = _HTML_TEMPLATE.replace("__DATA__", json.dumps(data))
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html, encoding="utf-8")
@@ -122,6 +128,9 @@ class SwingVisualizer:
             "confirmation_index": s.confirmation_index,
             "reasoning": s.reasoning,
             "explanation": s.explanation.to_dict() if s.explanation else None,
+            "rule_checks": [r.to_dict() for r in s.rule_checks],
+            "lifecycle_state": s.lifecycle_state.value if s.lifecycle_state else None,
+            "mtf_context": s.mtf_context.to_dict() if s.mtf_context else None,
             "color": self._color(s), "label": f"{s.tier.value} {s.scope.value} {s.direction.value}",
         }
 
@@ -170,7 +179,12 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
   #header{padding:10px 16px;border-bottom:1px solid #334155;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px}
   #main{display:flex;flex:1;overflow:hidden}
   #chart{flex:1;min-width:0}
-  #sidebar{width:320px;border-left:1px solid #334155;overflow-y:auto;font-size:11px;padding:8px}
+  #sidebar{width:360px;border-left:1px solid #334155;overflow-y:auto;font-size:11px;padding:8px;display:flex;flex-direction:column;gap:8px}
+  #inspector{background:#111a2e;border:1px solid #1e293b;border-radius:8px;padding:10px;min-height:120px}
+  .rule-pass{color:#22c55e}.rule-fail{color:#ef4444}
+  .rule-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #1e293b;font-size:11px}
+  #replayBar{display:none;gap:8px;align-items:center;padding:6px 16px;border-bottom:1px solid #334155;font-size:12px}
+  #replayBar input{flex:1}
   .legend{display:flex;gap:8px;flex-wrap:wrap}
   .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
   label{cursor:pointer}
@@ -197,16 +211,33 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
   <label><input type="checkbox" id="showATR" checked> ATR</label>
   <label><input type="checkbox" id="showZigzag" checked> Zigzag</label>
 </div>
+<div id="replayBar"><button id="replayPrev">◀</button><input type="range" id="replaySlider" min="0" value="0"><button id="replayNext">▶</button><span id="replayLabel"></span></div>
 <div id="main">
   <div id="chart"></div>
-  <div id="sidebar"><div id="context"></div><h3>Decision Timeline</h3><div id="timeline"></div></div>
+  <div id="sidebar">
+    <div id="inspector"><h3>Swing Inspector</h3><p style="color:#64748b">Click a swing marker to inspect rules.</p></div>
+    <div id="context"></div>
+    <h3>Decision Timeline</h3><div id="timeline"></div>
+  </div>
 </div>
 <div id="tooltip"></div>
 <script>
 const DATA = __DATA__;
 document.getElementById('meta').textContent =
-  `${DATA.meta?.symbol||''} ${DATA.meta?.timeframe||''} v${DATA.meta?.version||''}` +
+  `Studio · ${DATA.meta?.symbol||''} ${DATA.meta?.timeframe||''} v${DATA.meta?.version||''}` +
   (DATA.meta?.performance ? ` | ${DATA.meta.performance.runtime_ms}ms` : '');
+
+function showInspector(s){
+  const el=document.getElementById('inspector');
+  if(!s){ el.innerHTML='<h3>Swing Inspector</h3><p style="color:#64748b">Click a swing marker.</p>'; return; }
+  const rules=(s.rule_checks||[]).map(r=>'<div class="rule-row"><span class="'+(r.passed?'rule-pass':'rule-fail')+'">'+(r.passed?'✓':'✗')+' '+r.label+'</span><span>'+r.value+(r.threshold?' / '+r.threshold:'')+'</span></div>').join('');
+  const exp=s.explanation||{};
+  el.innerHTML='<h3>'+s.label+'</h3>'
+    +'<div>Quality <b>'+(s.quality_score||0).toFixed(0)+'</b> · Confidence <b>'+((s.confidence||0)*100).toFixed(0)+'%</b> · Strength <b>'+s.strength+'</b></div>'
+    +'<div style="margin:6px 0;color:#94a3b8">State: '+(s.lifecycle_state||'-')+' · Delay: '+s.confirmation_delay+' bars</div>'
+    +'<div style="margin-bottom:6px;font-size:10px;color:#64748b">'+(exp.summary||'')+'</div>'
+    +'<div><b>Rules</b></div>'+rules;
+}
 
 const chart = LightweightCharts.createChart(document.getElementById('chart'), {
   layout:{background:{color:'#0f172a'},textColor:'#94a3b8'},
@@ -281,11 +312,8 @@ chart.subscribeCrosshairMove(param=>{
     tip.style.left=(param.point?.x||0)+12+'px';
     tip.style.top=(param.point?.y||0)+12+'px';
     const q=(s.quality_score!=null)?s.quality_score.toFixed(0):'-';
-    const factors=(s.explanation&&s.explanation.factors)?s.explanation.factors:(s.reasoning||[]).slice(0,3);
-    tip.innerHTML=`<b>${s.label}</b><br>`+
-      `Quality: <b>${q}/100</b> | Confidence: ${(s.confidence*100).toFixed(0)}%<br>`+
-      `Strength: ${s.strength} | Score: ${s.normalized_score} | Delay: ${s.confirmation_delay} bars<br>`+
-      `<span style="color:#94a3b8">${factors.map(f=>'• '+f).join('<br>')}</span>`;
+    tip.innerHTML=`<b>${s.label}</b><br>Quality: ${q}/100 · Click to inspect rules`;
+    showInspector(s);
   } else {tip.style.display='none';}
 });
 
@@ -311,4 +339,19 @@ const tl=document.getElementById('timeline');
 });
 
 chart.timeScale().fitContent();
+
+if(DATA.replay&&DATA.replay.length){
+  const bar=document.getElementById('replayBar'); bar.style.display='flex';
+  const slider=document.getElementById('replaySlider');
+  slider.max=DATA.replay.length-1;
+  const label=document.getElementById('replayLabel');
+  function setReplay(i){
+    const f=DATA.replay[i]; if(!f) return;
+    slider.value=i; label.textContent='Bar '+f.bar_index+' / '+f.bar_count+' · swings '+f.swing_count+' · events '+f.new_events.length;
+  }
+  slider.oninput=()=>setReplay(+slider.value);
+  document.getElementById('replayPrev').onclick=()=>setReplay(Math.max(0,+slider.value-1));
+  document.getElementById('replayNext').onclick=()=>setReplay(Math.min(DATA.replay.length-1,+slider.value+1));
+  setReplay(DATA.replay.length-1);
+}
 </script></body></html>"""
