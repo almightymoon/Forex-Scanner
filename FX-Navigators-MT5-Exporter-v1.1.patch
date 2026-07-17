@@ -1,0 +1,246 @@
+--- a/tools/mt5/ExportXAUUSDH1Benchmark.mq5
++++ b/tools/mt5/ExportXAUUSDH1Benchmark.mq5
+@@ -3,69 +3,57 @@
+ //| Copy into MQL5/Scripts, compile in MetaEditor, run on any chart. |
+ //+------------------------------------------------------------------+
+ #property copyright "FX Navigators"
+-#property version   "1.00"
++#property version   "1.10"
+ #property script_show_inputs
+ 
+-input string          InpSymbol       = "XAUUSD.vx";
+-input ENUM_TIMEFRAMES InpTimeframe    = PERIOD_H1;
+-input datetime        InpStart        = D'2022.01.01 00:00:00';
+-input datetime        InpEnd          = D'2025.12.31 23:59:59';
+-input string          InpOutputFile   = "FXNavigators_XAUUSD_H1.csv";
+-input bool            InpCommonFolder = true;
++input string          InpSymbol             = "XAUUSD.vx";
++input ENUM_TIMEFRAMES InpTimeframe          = PERIOD_H1;
++input datetime        InpStart              = D'2022.01.01 00:00:00';
++input datetime        InpEnd                = D'2025.12.31 23:59:59';
++input string          InpOutputFile         = "FXNavigators_XAUUSD_H1.csv";
++
++// The terminal-local folder is visible through:
++// MT5 -> File -> Open Data Folder -> MQL5 -> Files
++input bool            InpWriteTerminalFiles = true;
++
++// Optional second copy. Under macOS/Wine this folder can be difficult to find,
++// so it is disabled by default.
++input bool            InpWriteCommonFiles   = false;
+ 
+-void OnStart()
++string OutputPath(const bool common_folder)
+ {
+-   if(InpEnd <= InpStart)
+-   {
+-      Print("Export failed: end time must be after start time.");
+-      return;
+-   }
+-
+-   if(!SymbolSelect(InpSymbol, true))
+-   {
+-      PrintFormat("Export failed: could not select symbol %s. Error=%d", InpSymbol, GetLastError());
+-      return;
+-   }
+-
+-   MqlRates rates[];
+-   ArraySetAsSeries(rates, false);
++   if(common_folder)
++      return TerminalInfoString(TERMINAL_COMMONDATA_PATH) + "\\Files\\";
+ 
+-   int copied = -1;
+-   for(int attempt = 0; attempt < 20; attempt++)
+-   {
+-      ResetLastError();
+-      copied = CopyRates(InpSymbol, InpTimeframe, InpStart, InpEnd, rates);
+-      if(copied > 0)
+-         break;
+-      Sleep(500);
+-   }
+-
+-   if(copied <= 0)
+-   {
+-      PrintFormat(
+-         "Export failed: CopyRates returned %d for %s. Error=%d. Open an H1 chart, scroll back, then run again.",
+-         copied,
+-         InpSymbol,
+-         GetLastError()
+-      );
+-      return;
+-   }
++   return TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Files\\";
++}
+ 
++bool WriteCsv(
++   const string file_name,
++   const bool common_folder,
++   const MqlRates &rates[],
++   const int copied,
++   const int digits,
++   const double point
++)
++{
+    int flags = FILE_WRITE | FILE_CSV | FILE_ANSI | FILE_SHARE_READ;
+-   if(InpCommonFolder)
++   if(common_folder)
+       flags |= FILE_COMMON;
+ 
+    ResetLastError();
+-   int handle = FileOpen(InpOutputFile, flags, ',');
++   int handle = FileOpen(file_name, flags, ',');
+    if(handle == INVALID_HANDLE)
+    {
+-      PrintFormat("Export failed: could not open %s. Error=%d", InpOutputFile, GetLastError());
+-      return;
++      PrintFormat(
++         "Export failed: could not open %s%s. Error=%d",
++         OutputPath(common_folder),
++         file_name,
++         GetLastError()
++      );
++      return false;
+    }
+ 
+-   int digits = (int)SymbolInfoInteger(InpSymbol, SYMBOL_DIGITS);
+-   double point = SymbolInfoDouble(InpSymbol, SYMBOL_POINT);
+-
+    FileWrite(
+       handle,
+       "timestamp",
+@@ -101,10 +89,106 @@
+    FileFlush(handle);
+    FileClose(handle);
+ 
+-   string base_path = InpCommonFolder
+-      ? TerminalInfoString(TERMINAL_COMMONDATA_PATH) + "\\Files\\"
+-      : TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Files\\";
++   PrintFormat(
++      "Export complete: %d bars written to %s%s",
++      copied,
++      OutputPath(common_folder),
++      file_name
++   );
++   return true;
++}
++
++void OnStart()
++{
++   if(!InpWriteTerminalFiles && !InpWriteCommonFiles)
++   {
++      Print("Export failed: enable at least one output destination.");
++      Alert("FX Navigators export failed: no output destination enabled");
++      return;
++   }
++
++   if(InpEnd <= InpStart)
++   {
++      Print("Export failed: end time must be after start time.");
++      Alert("FX Navigators export failed: invalid date range");
++      return;
++   }
++
++   if(!SymbolSelect(InpSymbol, true))
++   {
++      PrintFormat(
++         "Export failed: could not select symbol %s. Error=%d",
++         InpSymbol,
++         GetLastError()
++      );
++      Alert("FX Navigators export failed: symbol not available");
++      return;
++   }
++
++   MqlRates rates[];
++   ArraySetAsSeries(rates, false);
++
++   int copied = -1;
++   for(int attempt = 0; attempt < 20; attempt++)
++   {
++      ResetLastError();
++      copied = CopyRates(InpSymbol, InpTimeframe, InpStart, InpEnd, rates);
++      if(copied > 0)
++         break;
++      Sleep(500);
++   }
++
++   if(copied <= 0)
++   {
++      PrintFormat(
++         "Export failed: CopyRates returned %d for %s. Error=%d. Open an H1 chart, scroll back, then run again.",
++         copied,
++         InpSymbol,
++         GetLastError()
++      );
++      Alert("FX Navigators export failed: no bars copied");
++      return;
++   }
++
++   int digits = (int)SymbolInfoInteger(InpSymbol, SYMBOL_DIGITS);
++   double point = SymbolInfoDouble(InpSymbol, SYMBOL_POINT);
++
++   bool local_ok = false;
++   bool common_ok = false;
++
++   if(InpWriteTerminalFiles)
++      local_ok = WriteCsv(InpOutputFile, false, rates, copied, digits, point);
+ 
+-   PrintFormat("Export complete: %d bars written to %s%s", copied, base_path, InpOutputFile);
+-   Alert("FX Navigators export complete: ", copied, " bars");
++   if(InpWriteCommonFiles)
++      common_ok = WriteCsv(InpOutputFile, true, rates, copied, digits, point);
++
++   if(!local_ok && !common_ok)
++   {
++      Alert("FX Navigators export failed: see Experts log");
++      return;
++   }
++
++   PrintFormat(
++      "Exported range: %s through %s (%s, %s)",
++      TimeToString(rates[0].time, TIME_DATE | TIME_SECONDS),
++      TimeToString(rates[copied - 1].time, TIME_DATE | TIME_SECONDS),
++      InpSymbol,
++      EnumToString(InpTimeframe)
++   );
++
++   if(local_ok)
++   {
++      Alert(
++         "FX Navigators export complete: ", copied,
++         " bars. Open File > Open Data Folder > MQL5 > Files > ",
++         InpOutputFile
++      );
++   }
++   else
++   {
++      Alert(
++         "FX Navigators export complete: ", copied,
++         " bars in Common Files. See Experts log for the exact path."
++      );
++   }
+ }
+--- a/tools/mt5/README.md
++++ b/tools/mt5/README.md
+@@ -9,10 +9,19 @@
+ 4. In MT5, drag the script onto any chart.
+ 5. Set the broker symbol exactly, for example `XAUUSD.vx`.
+ 6. Keep H1 and the requested date range, then run it.
+-7. Read the Experts log for the output folder.
++7. In MT5 select **File -> Open Data Folder -> MQL5 -> Files**.
++8. Upload `FXNavigators_XAUUSD_H1.csv`.
+ 
+-With `InpCommonFolder=true`, MT5 writes to its Common `Files` directory. The
+-CSV timestamps are broker-server timestamps. When preparing the benchmark,
++The script now writes to the terminal-local `MQL5/Files` folder by default.
++That destination is easier to reach on macOS/Wine than MetaTrader's shared
++Common folder.
++
++Inputs:
++
++- `InpWriteTerminalFiles=true`: recommended; writes to `MQL5/Files`.
++- `InpWriteCommonFiles=false`: optional backup copy in Common `Files`.
++
++The CSV timestamps are broker-server timestamps. When preparing the benchmark,
+ pass the broker timezone explicitly, for example:
+ 
+ ```bash
