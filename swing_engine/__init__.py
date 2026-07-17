@@ -24,9 +24,25 @@ from swing_engine.datasets import (
     DatasetSpec,
     load_manifest,
     load_labels,
+    load_real_bars,
     run_dataset,
     run_suite,
     write_labels,
+)
+from swing_engine.benchmark_data import (
+    BenchmarkDataError,
+    canonicalise_csv,
+    load_candles_csv,
+    sha256_file,
+    write_canonical_candles_csv,
+)
+from swing_engine.benchmark_sampling import BenchmarkWindow, select_calibration_windows
+from swing_engine.annotations import (
+    AnnotationIssue,
+    labels_from_document,
+    load_annotation_document,
+    validate_annotation_document,
+    write_human_annotation_template,
 )
 from swing_engine.live_validation import PaperSwingLog, LiveValidationResult, compare_against_review
 from swing_engine.regression import append_history, load_history, write_regression_dashboard, write_benchmark_dashboard
@@ -64,8 +80,12 @@ __all__ = [
     "ParamGrid", "OptimizationResult", "run_optimization", "save_optimization_report",
     "PaperSwingLog", "LiveValidationResult", "compare_against_review",
     "append_history", "load_history", "write_regression_dashboard", "write_benchmark_dashboard",
-    "load_manifest", "load_labels", "write_labels", "run_dataset", "run_suite",
+    "load_manifest", "load_labels", "load_real_bars", "write_labels", "run_dataset", "run_suite",
     "BenchmarkSuiteReport", "DatasetSpec",
+    "BenchmarkDataError", "canonicalise_csv", "load_candles_csv", "sha256_file",
+    "write_canonical_candles_csv", "BenchmarkWindow", "select_calibration_windows",
+    "AnnotationIssue", "labels_from_document", "load_annotation_document",
+    "validate_annotation_document", "write_human_annotation_template",
     "calibrate_confidence", "CalibrationReport",
     "compute_score_breakdown",
     "labels_from_synthetic_bars", "synthetic_pivot_indices", "write_ground_truth_file",

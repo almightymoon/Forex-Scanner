@@ -50,6 +50,24 @@ fx-navigators/
 └── docs/SWING_DETECTION.md
 ```
 
+## Real XAUUSD H1 Benchmark
+
+Synthetic labels are retained only for deterministic software regression. Build
+the trader-grade benchmark from an immutable real H1 CSV:
+
+```bash
+python scripts/prepare_xauusd_h1_benchmark.py \
+  --input /path/to/XAUUSD_H1.csv \
+  --source WEALTHTEX_MT5 \
+  --source-timezone Europe/Helsinki
+
+python scripts/annotate_swings.py benchmarks/labels/XAUUSD_H1.human.json
+python scripts/validate_human_benchmark.py
+```
+
+See `docs/XAUUSD_H1_BENCHMARK.md`. MT5 for macOS users can export history with
+`tools/mt5/ExportXAUUSDH1Benchmark.mq5`.
+
 ## Market Data (Phase 1)
 
 Provider priority:
@@ -87,6 +105,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Architecture](docs/ARCHITECTURE.md) — System design
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
 - [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0: human-review benchmarks, score breakdown studio, calibration)
+- [XAUUSD H1 Benchmark](docs/XAUUSD_H1_BENCHMARK.md) — real-data prepare/annotate/validate workflow
 - [Project Roadmap](docs/ROADMAP.md) — master plan to production (BOS, CHoCH, liquidity, decision engine)
 
 ## License

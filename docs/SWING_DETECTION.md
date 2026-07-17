@@ -207,7 +207,8 @@ Every confirmed swing stores `swing_id`, `leg_id`, `prev_opposite_swing_id`, `tr
 - `symbol_overrides.XAUUSD` widens `leg.min_pips` / `noise_filter.min_pip_distance` to 5.0.
 - Synthetic gold fixture: `tests.swing_detection.fixtures.gold_candles` (price ~2350).
 - Benchmark: `python scripts/benchmark_swings.py --symbol XAUUSD --compare-versions 1.0.0 1.1.0 1.2.0`
-- Labels: `benchmarks/labels/XAUUSD_H1.manual.json` (regenerate from human review).
+- Labels: `benchmarks/labels/bootstrap/XAUUSD_H1.synthetic.v1_4.json` (engine bootstrap; not human ground truth).
+- Real-data human benchmark: see [`docs/XAUUSD_H1_BENCHMARK.md`](XAUUSD_H1_BENCHMARK.md) and `scripts/prepare_xauusd_h1_benchmark.py` / `scripts/annotate_swings.py`.
 
 ## Algorithm (Sprint 2)
 
@@ -347,7 +348,7 @@ PYTHONPATH=. python scripts/render_swing_debug.py --symbol XAUUSD --version 1.2.
 
 # Paper-mode validation
 PYTHONPATH=. python scripts/paper_validate_swings.py --symbol XAUUSD --record
-PYTHONPATH=. python scripts/paper_validate_swings.py --symbol XAUUSD --review benchmarks/labels/XAUUSD_H1.manual.json
+PYTHONPATH=. python scripts/paper_validate_swings.py --symbol XAUUSD --review benchmarks/labels/bootstrap/XAUUSD_H1.synthetic.v1_4.json
 ```
 
 ### Metrics

@@ -188,7 +188,11 @@ PYTHONPATH=. python scripts/replay_swings.py --symbol XAUUSD --studio debug/stud
 PYTHONPATH=. python scripts/bench_swing_performance.py
 
 # Parameter search
-PYTHONPATH=. python scripts/optimize_swings.py --labels benchmarks/labels/XAUUSD_H1.manual.json
+PYTHONPATH=. python scripts/optimize_swings.py --labels benchmarks/labels/bootstrap/XAUUSD_H1.synthetic.v1_4.json
+
+# Real XAUUSD H1 human benchmark (see docs/XAUUSD_H1_BENCHMARK.md)
+PYTHONPATH=. python scripts/prepare_xauusd_h1_benchmark.py --input /path/to/XAUUSD_H1.csv
+PYTHONPATH=. python scripts/annotate_swings.py benchmarks/labels/XAUUSD_H1.human.json
 
 # Tests
 PYTHONPATH=. python -m pytest tests/swing_detection -q

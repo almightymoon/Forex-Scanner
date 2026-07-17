@@ -438,12 +438,33 @@ class DetectionResult:
 
 @dataclass(frozen=True)
 class BenchmarkLabel:
+    """Human or bootstrap ground-truth swing annotation.
+
+    The first six fields preserve the v1 benchmark API.  The optional fields
+    make labels confirmation-aware and auditable without breaking historical
+    synthetic fixtures.
+    """
+
     pivot_index: int
     timestamp: datetime
     price: float
     direction: SwingDirection
     tier: SwingTier = SwingTier.MAJOR
     scope: SwingScope = SwingScope.EXTERNAL
+    label_id: str | None = None
+    sample_id: str | None = None
+    source_bar_index: int | None = None
+    price_field: str | None = None
+    confirmation_status: str = "CONFIRMED"
+    confirmed_at_index: int | None = None
+    confirmed_at_timestamp: datetime | None = None
+    strength: int | None = None
+    quality_score: float | None = None
+    confidence: float | None = None
+    tags: tuple[str, ...] = ()
+    notes: str = ""
+    annotator_id: str | None = None
+    review_status: str = "RAW"
 
 
 BenchmarkSwing = BenchmarkLabel
@@ -464,6 +485,13 @@ class EvaluationReport:
     major_recall: float = 0.0
     external_precision: float = 0.0
     external_recall: float = 0.0
+    major_external_precision: float = 0.0
+    major_external_recall: float = 0.0
+    major_external_f1: float = 0.0
+    tier_accuracy: float = 0.0
+    scope_accuracy: float = 0.0
+    false_positives_per_1000_bars: float = 0.0
+    average_relative_detection_delay_bars: float = 0.0
     average_confidence: float = 0.0
     average_strength: float = 0.0
     repainting_rate: float = 0.0
@@ -485,6 +513,13 @@ class EvaluationReport:
             "major_recall": round(self.major_recall, 4),
             "external_precision": round(self.external_precision, 4),
             "external_recall": round(self.external_recall, 4),
+            "major_external_precision": round(self.major_external_precision, 4),
+            "major_external_recall": round(self.major_external_recall, 4),
+            "major_external_f1": round(self.major_external_f1, 4),
+            "tier_accuracy": round(self.tier_accuracy, 4),
+            "scope_accuracy": round(self.scope_accuracy, 4),
+            "false_positives_per_1000_bars": round(self.false_positives_per_1000_bars, 4),
+            "average_relative_detection_delay_bars": round(self.average_relative_detection_delay_bars, 2),
             "average_confidence": round(self.average_confidence, 4),
             "average_strength": round(self.average_strength, 2),
             "repainting_rate": round(self.repainting_rate, 4),

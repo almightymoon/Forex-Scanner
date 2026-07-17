@@ -49,3 +49,41 @@ class TestSwingEvaluator(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_semantic_metrics_and_human_confirmation_delay():
+    from swing_engine.models import DetectedSwing, SwingScope, SwingTier
+
+    cfg = get_config()
+    predicted = [
+        DetectedSwing(
+            timestamp=datetime(2025, 1, 1),
+            price=1.10,
+            direction=SwingDirection.HIGH,
+            tier=SwingTier.MINOR,
+            scope=SwingScope.INTERNAL,
+            pivot_index=10,
+            confirmed=True,
+            confirmation_index=14,
+            confirmation_delay=4,
+        )
+    ]
+    truth = [
+        BenchmarkLabel(
+            pivot_index=10,
+            timestamp=datetime(2025, 1, 1),
+            price=1.10,
+            direction=SwingDirection.HIGH,
+            tier=SwingTier.MAJOR,
+            scope=SwingScope.EXTERNAL,
+            confirmed_at_index=12,
+        )
+    ]
+    report = SwingBenchmarkEvaluator(cfg).evaluate(
+        predicted, truth, "EURUSD", bar_count=100
+    )
+    assert report.f1_score == 1.0  # pivot location/direction matched
+    assert report.major_external_f1 == 0.0  # structural classification did not
+    assert report.tier_accuracy == 0.0
+    assert report.scope_accuracy == 0.0
+    assert report.average_relative_detection_delay_bars == 2.0

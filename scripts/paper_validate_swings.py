@@ -11,7 +11,7 @@ Usage:
 
     # Score the paper log against a review file
     python scripts/paper_validate_swings.py --symbol XAUUSD \\
-        --review benchmarks/labels/XAUUSD_H1.manual.json
+        --review benchmarks/labels/bootstrap/XAUUSD_H1.synthetic.v1_4.json
 """
 
 from __future__ import annotations

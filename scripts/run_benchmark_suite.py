@@ -12,7 +12,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shared.types.models import Timeframe
 
-from swing_engine.datasets import DASHBOARD_PATH, HISTORY_PATH, load_manifest, run_suite
+from swing_engine.datasets import (
+    DASHBOARD_PATH,
+    HISTORY_PATH,
+    load_manifest,
+    load_real_bars,
+    run_suite,
+)
 from tests.swing_detection.fixtures import (
     gold_candles,
     gold_range_candles,
@@ -24,7 +30,9 @@ from tests.swing_detection.fixtures import (
 )
 
 
-def load_bars(spec) -> list:
+def load_bars(spec, *, manifest_path: Path | None = None) -> list:
+    if spec.source_type in {"file", "real"}:
+        return load_real_bars(spec, manifest_path=manifest_path or Path("benchmarks/datasets/manifest.json"))
     tf = Timeframe(spec.timeframe)
     sym = spec.symbol
     n = spec.bars
@@ -57,6 +65,7 @@ def load_bars(spec) -> list:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run swing benchmark dataset suite")
     parser.add_argument("--version", default="2.0.0")
+    parser.add_argument("--manifest", type=Path, default=Path("benchmarks/datasets/manifest.json"))
     parser.add_argument("--dataset", help="Run single dataset id only")
     parser.add_argument("--human-only", action="store_true", help="Run human-review datasets only")
     parser.add_argument("--output", type=Path, default=Path("benchmarks/reports/suite_report.json"))
@@ -64,7 +73,7 @@ def main() -> int:
     parser.add_argument("--fail-fast", action="store_true")
     args = parser.parse_args()
 
-    specs = load_manifest()
+    specs = load_manifest(args.manifest)
     if args.dataset:
         specs = [s for s in specs if s.id == args.dataset]
     elif args.human_only:
@@ -74,9 +83,12 @@ def main() -> int:
         return 1
 
     suite = run_suite(
-        specs, load_bars, version=args.version,
+        specs,
+        lambda spec: load_bars(spec, manifest_path=args.manifest),
+        version=args.version,
         append_to_history=not args.no_history,
         write_dashboard=not args.no_history,
+        manifest_path=args.manifest,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(suite.to_dict(), indent=2), encoding="utf-8")

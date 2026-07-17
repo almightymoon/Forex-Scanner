@@ -1,0 +1,16 @@
+{
+  "symbol": "XAUUSD",
+  "timeframe": "H1",
+  "source_file": "FXNavigators_XAUUSD_H1.csv",
+  "source_file_sha256": "fe8a7f95c7d2b90cef759a7e23b11679b7f84e4928fb2fd67111fe89fb318d4c",
+  "source_timezone": "Europe/Helsinki",
+  "accepted_source_start_timestamp": "2024.07.15 10:00:00",
+  "excluded_source_rows": 15416,
+  "bar_count": 8683,
+  "first_timestamp": "2024-07-15T07:00:00+00:00",
+  "last_timestamp": "2025-12-31T21:00:00+00:00",
+  "data_file": "benchmarks/data/real/XAUUSD/H1/XAUUSD_H1.real.csv.gz",
+  "data_sha256": "c867fa45a6ac6d520d488025256d636364524b3630fb783dc21805e12e211362",
+  "price_basis": "BID",
+  "source": "WEALTHTEX_MT5_XAUUSD_VX"
+}

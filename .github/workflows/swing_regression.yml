@@ -46,6 +46,13 @@ jobs:
       - name: Run human-review benchmark gate
         run: PYTHONPATH=. python scripts/run_benchmark_suite.py --version 2.0.0 --human-only --fail-fast --no-history
 
+      - name: Validate human annotation pack (optional)
+        continue-on-error: true
+        run: |
+          if [ -f benchmarks/labels/XAUUSD_H1.human.json ]; then
+            PYTHONPATH=. python scripts/validate_human_benchmark.py || true
+          fi
+
       - name: Benchmark EURUSD regression
         run: |
           PYTHONPATH=. python scripts/benchmark_swings.py \

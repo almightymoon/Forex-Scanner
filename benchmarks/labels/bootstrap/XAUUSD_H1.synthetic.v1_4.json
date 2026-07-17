@@ -4,7 +4,7 @@
   "regime": "trend",
   "benchmark_version": "1.0",
   "source_engine": "1.4.0",
-  "description": "DEPRECATED engine-generated synthetic labels; not human ground truth.",
+  "description": "Gold synthetic trend \u2014 software regression only, not human ground truth",
   "generated_at": "2026-07-12T15:29:00",
   "swings": [
     {
@@ -232,7 +232,5 @@
       "scope": "INTERNAL"
     }
   ],
-  "label_origin": "ENGINE_BOOTSTRAP",
-  "deprecated": true,
-  "replacement": "bootstrap/XAUUSD_H1.synthetic.v1_4.json"
+  "label_origin": "ENGINE_BOOTSTRAP"
 }

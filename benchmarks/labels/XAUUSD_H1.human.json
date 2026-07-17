@@ -1,268 +1,337 @@
 {
-  "symbol": "XAUUSD",
-  "timeframe": "H1",
-  "regime": "human",
-  "benchmark_version": "2.0",
-  "label_source": "fractal_truth",
-  "source_engine": "independent",
-  "description": "Independent mathematical pivots \u2014 gold H1 human-review benchmark",
-  "generated_at": "2026-07-12T15:41:56",
-  "swings": [
+  "benchmark_id": "XAUUSD_H1_HUMAN_V1",
+  "benchmark_version": "1.0.0-draft",
+  "label_policy_version": "SWING_POLICY_1.0",
+  "label_origin": "HUMAN_DRAFT",
+  "status": "LABELING_IN_PROGRESS",
+  "dataset": {
+    "dataset_id": "XAUUSD_H1_REAL_V1",
+    "symbol": "XAUUSD",
+    "timeframe": "H1",
+    "timezone": "UTC",
+    "price_basis": "BID",
+    "source": "WEALTHTEX_MT5_XAUUSD_VX",
+    "data_file": "../data/real/XAUUSD/H1/XAUUSD_H1.real.csv.gz",
+    "data_sha256": "c867fa45a6ac6d520d488025256d636364524b3630fb783dc21805e12e211362",
+    "bar_count": 8683,
+    "first_timestamp": "2024-07-15T07:00:00+00:00",
+    "last_timestamp": "2025-12-31T21:00:00+00:00",
+    "source_file_sha256": "fe8a7f95c7d2b90cef759a7e23b11679b7f84e4928fb2fd67111fe89fb318d4c",
+    "source_timezone": "Europe/Helsinki",
+    "accepted_source_start_timestamp": "2024.07.15 10:00:00",
+    "excluded_source_rows": 15416
+  },
+  "samples": [
     {
-      "pivot_index": 6,
-      "timestamp": "2025-01-01T06:00:00",
-      "price": 2367.592798,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_001",
+      "source_start_index": 48,
+      "source_end_index": 447,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "TREND_REVERSAL",
+      "regime_tags": [
+        "TREND_REVERSAL",
+        "LIQUIDITY_SWEEP_CANDIDATE",
+        "REVERSAL_CANDIDATE"
+      ],
+      "features": {
+        "atr": 6.0,
+        "volatility_ratio": 0.002492,
+        "efficiency_ratio": 0.031756,
+        "net_move_atr": -7.421667,
+        "absolute_move_atr": 7.421667,
+        "reversal_score": 23.668333,
+        "liquidity_sweeps": 41.0,
+        "range_atr": 21.755
+      },
+      "start_timestamp": "2024-07-17T09:00:00+00:00",
+      "end_timestamp": "2024-08-09T17:00:00+00:00"
     },
     {
-      "pivot_index": 12,
-      "timestamp": "2025-01-01T12:00:00",
-      "price": 2353.779231,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_002",
+      "source_start_index": 672,
+      "source_end_index": 1071,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "LOW_VOLATILITY",
+      "regime_tags": [
+        "LOW_VOLATILITY",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 4.54,
+        "volatility_ratio": 0.001806,
+        "efficiency_ratio": 0.070384,
+        "net_move_atr": 16.019824,
+        "absolute_move_atr": 16.019824,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 55.0,
+        "range_atr": 25.936123
+      },
+      "start_timestamp": "2024-08-23T12:00:00+00:00",
+      "end_timestamp": "2024-09-17T23:00:00+00:00"
     },
     {
-      "pivot_index": 18,
-      "timestamp": "2025-01-01T18:00:00",
-      "price": 2373.223365,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_003",
+      "source_start_index": 1632,
+      "source_end_index": 2031,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "STRONG_BEARISH_TREND",
+      "regime_tags": [
+        "STRONG_BEARISH_TREND",
+        "LIQUIDITY_SWEEP_CANDIDATE",
+        "REVERSAL_CANDIDATE"
+      ],
+      "features": {
+        "atr": 6.02,
+        "volatility_ratio": 0.002202,
+        "efficiency_ratio": 0.111518,
+        "net_move_atr": -26.898671,
+        "absolute_move_atr": 26.898671,
+        "reversal_score": 28.569767,
+        "liquidity_sweeps": 38.0,
+        "range_atr": 42.071429
+      },
+      "start_timestamp": "2024-10-22T08:00:00+00:00",
+      "end_timestamp": "2024-11-14T17:00:00+00:00"
     },
     {
-      "pivot_index": 24,
-      "timestamp": "2025-01-02T00:00:00",
-      "price": 2358.130808,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_004",
+      "source_start_index": 2256,
+      "source_end_index": 2655,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "TREND_REVERSAL",
+      "regime_tags": [
+        "TREND_REVERSAL",
+        "LIQUIDITY_SWEEP_CANDIDATE",
+        "REVERSAL_CANDIDATE"
+      ],
+      "features": {
+        "atr": 5.69,
+        "volatility_ratio": 0.00215,
+        "efficiency_ratio": 0.022819,
+        "net_move_atr": -5.367311,
+        "absolute_move_atr": 5.367311,
+        "reversal_score": 20.931459,
+        "liquidity_sweeps": 35.0,
+        "range_atr": 25.207381
+      },
+      "start_timestamp": "2024-11-28T12:00:00+00:00",
+      "end_timestamp": "2024-12-23T23:00:00+00:00"
     },
     {
-      "pivot_index": 30,
-      "timestamp": "2025-01-02T06:00:00",
-      "price": 2378.122262,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_005",
+      "source_start_index": 2832,
+      "source_end_index": 3231,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "LOW_VOLATILITY",
+      "regime_tags": [
+        "LOW_VOLATILITY",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 4.695,
+        "volatility_ratio": 0.001734,
+        "efficiency_ratio": 0.115996,
+        "net_move_atr": 26.345048,
+        "absolute_move_atr": 26.345048,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 51.0,
+        "range_atr": 32.600639
+      },
+      "start_timestamp": "2025-01-06T17:00:00+00:00",
+      "end_timestamp": "2025-01-30T04:00:00+00:00"
     },
     {
-      "pivot_index": 36,
-      "timestamp": "2025-01-02T12:00:00",
-      "price": 2363.78864,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_006",
+      "source_start_index": 3408,
+      "source_end_index": 3807,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "RANGE",
+      "regime_tags": [
+        "RANGE",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 6.785,
+        "volatility_ratio": 0.002328,
+        "efficiency_ratio": 0.001626,
+        "net_move_atr": 0.378777,
+        "absolute_move_atr": 0.378777,
+        "reversal_score": 5.902727,
+        "liquidity_sweeps": 41.0,
+        "range_atr": 18.207811
+      },
+      "start_timestamp": "2025-02-10T20:00:00+00:00",
+      "end_timestamp": "2025-03-06T07:00:00+00:00"
     },
     {
-      "pivot_index": 42,
-      "timestamp": "2025-01-02T18:00:00",
-      "price": 2383.171007,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_007",
+      "source_start_index": 4176,
+      "source_end_index": 4575,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "HIGH_VOLATILITY",
+      "regime_tags": [
+        "HIGH_VOLATILITY",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 12.98,
+        "volatility_ratio": 0.004143,
+        "efficiency_ratio": 0.06425,
+        "net_move_atr": 15.494607,
+        "absolute_move_atr": 15.494607,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 55.0,
+        "range_atr": 41.867488
+      },
+      "start_timestamp": "2025-03-28T07:00:00+00:00",
+      "end_timestamp": "2025-04-23T15:00:00+00:00"
     },
     {
-      "pivot_index": 48,
-      "timestamp": "2025-01-03T00:00:00",
-      "price": 2368.667112,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_008",
+      "source_start_index": 4656,
+      "source_end_index": 5055,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "RANGE",
+      "regime_tags": [
+        "RANGE",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 11.82,
+        "volatility_ratio": 0.003613,
+        "efficiency_ratio": 0.001709,
+        "net_move_atr": -0.43824,
+        "absolute_move_atr": 0.43824,
+        "reversal_score": 3.135364,
+        "liquidity_sweeps": 49.0,
+        "range_atr": 26.903553
+      },
+      "start_timestamp": "2025-04-29T04:00:00+00:00",
+      "end_timestamp": "2025-05-22T12:00:00+00:00"
     },
     {
-      "pivot_index": 54,
-      "timestamp": "2025-01-03T06:00:00",
-      "price": 2386.943175,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_009",
+      "source_start_index": 5424,
+      "source_end_index": 5823,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "STRONG_BEARISH_TREND",
+      "regime_tags": [
+        "STRONG_BEARISH_TREND",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 8.27,
+        "volatility_ratio": 0.002476,
+        "efficiency_ratio": 0.074296,
+        "net_move_atr": -16.215236,
+        "absolute_move_atr": 16.215236,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 38.0,
+        "range_atr": 24.698912
+      },
+      "start_timestamp": "2025-06-13T14:00:00+00:00",
+      "end_timestamp": "2025-07-09T04:00:00+00:00"
     },
     {
-      "pivot_index": 60,
-      "timestamp": "2025-01-03T12:00:00",
-      "price": 2373.700764,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_010",
+      "source_start_index": 6432,
+      "source_end_index": 6831,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "STRONG_BULLISH_TREND",
+      "regime_tags": [
+        "STRONG_BULLISH_TREND",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 6.285,
+        "volatility_ratio": 0.001856,
+        "efficiency_ratio": 0.203862,
+        "net_move_atr": 48.649165,
+        "absolute_move_atr": 48.649165,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 40.0,
+        "range_atr": 54.574383
+      },
+      "start_timestamp": "2025-08-14T15:00:00+00:00",
+      "end_timestamp": "2025-09-09T02:00:00+00:00"
     },
     {
-      "pivot_index": 66,
-      "timestamp": "2025-01-03T18:00:00",
-      "price": 2392.843948,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_011",
+      "source_start_index": 7008,
+      "source_end_index": 7407,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "STRONG_BULLISH_TREND",
+      "regime_tags": [
+        "STRONG_BULLISH_TREND",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 11.385,
+        "volatility_ratio": 0.00295,
+        "efficiency_ratio": 0.208913,
+        "net_move_atr": 45.843654,
+        "absolute_move_atr": 45.843654,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 41.0,
+        "range_atr": 46.896794
+      },
+      "start_timestamp": "2025-09-18T18:00:00+00:00",
+      "end_timestamp": "2025-10-14T03:00:00+00:00"
     },
     {
-      "pivot_index": 72,
-      "timestamp": "2025-01-04T00:00:00",
-      "price": 2378.135406,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 78,
-      "timestamp": "2025-01-04T06:00:00",
-      "price": 2396.336101,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 84,
-      "timestamp": "2025-01-04T12:00:00",
-      "price": 2382.106944,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 90,
-      "timestamp": "2025-01-04T18:00:00",
-      "price": 2401.979104,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 96,
-      "timestamp": "2025-01-05T00:00:00",
-      "price": 2387.274034,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 102,
-      "timestamp": "2025-01-05T06:00:00",
-      "price": 2406.273338,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 108,
-      "timestamp": "2025-01-05T12:00:00",
-      "price": 2392.090806,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 114,
-      "timestamp": "2025-01-05T18:00:00",
-      "price": 2411.78192,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 120,
-      "timestamp": "2025-01-06T00:00:00",
-      "price": 2396.927806,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 126,
-      "timestamp": "2025-01-06T06:00:00",
-      "price": 2415.834021,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 132,
-      "timestamp": "2025-01-06T12:00:00",
-      "price": 2401.262343,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 138,
-      "timestamp": "2025-01-06T18:00:00",
-      "price": 2420.703612,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 144,
-      "timestamp": "2025-01-07T00:00:00",
-      "price": 2406.645583,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 150,
-      "timestamp": "2025-01-07T06:00:00",
-      "price": 2426.426169,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 156,
-      "timestamp": "2025-01-07T12:00:00",
-      "price": 2411.569076,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 162,
-      "timestamp": "2025-01-07T18:00:00",
-      "price": 2430.317784,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 168,
-      "timestamp": "2025-01-08T00:00:00",
-      "price": 2416.027464,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 174,
-      "timestamp": "2025-01-08T06:00:00",
-      "price": 2436.009333,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 180,
-      "timestamp": "2025-01-08T12:00:00",
-      "price": 2420.344699,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 186,
-      "timestamp": "2025-01-08T18:00:00",
-      "price": 2440.999234,
-      "direction": "HIGH",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
-    },
-    {
-      "pivot_index": 192,
-      "timestamp": "2025-01-09T00:00:00",
-      "price": 2425.41473,
-      "direction": "LOW",
-      "tier": "MAJOR",
-      "scope": "EXTERNAL"
+      "sample_id": "XAUUSD_H1_012",
+      "source_start_index": 7488,
+      "source_end_index": 7887,
+      "labelable_start_index": 50,
+      "labelable_end_index": 349,
+      "split": "TRAIN",
+      "primary_regime": "HIGH_VOLATILITY",
+      "regime_tags": [
+        "HIGH_VOLATILITY",
+        "LIQUIDITY_SWEEP_CANDIDATE",
+        "REVERSAL_CANDIDATE"
+      ],
+      "features": {
+        "atr": 17.425,
+        "volatility_ratio": 0.004337,
+        "efficiency_ratio": 0.026127,
+        "net_move_atr": -6.078049,
+        "absolute_move_atr": 6.078049,
+        "reversal_score": 23.876614,
+        "liquidity_sweeps": 31.0,
+        "range_atr": 28.38967
+      },
+      "start_timestamp": "2025-10-17T15:00:00+00:00",
+      "end_timestamp": "2025-11-12T01:00:00+00:00"
     }
-  ]
+  ],
+  "swings": [],
+  "review": {
+    "required_annotators": 2,
+    "adjudicator": null,
+    "adjudicated_at": null,
+    "notes": "Real data is frozen and 12 calibration windows are ready. Swing annotations have not yet been adjudicated. See the data-quality report for the broker-history cutoff."
+  }
 }

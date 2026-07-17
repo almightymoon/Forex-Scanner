@@ -48,7 +48,7 @@
       "timeframe": "H1",
       "regime": "trend",
       "bars": 200,
-      "labels_file": "XAUUSD_H1.manual.json",
+      "labels_file": "bootstrap/XAUUSD_H1.synthetic.v1_4.json",
       "min_f1": 0.88,
       "description": "Gold synthetic trend — primary metals baseline"
     },
@@ -88,14 +88,14 @@
       "timeframe": "H1",
       "regime": "human",
       "bars": 200,
-      "labels_file": "XAUUSD_H1.human.json",
+      "labels_file": "bootstrap/XAUUSD_H1.fractal_v2.json",
       "human_review": true,
       "label_source": "fractal_truth",
       "evaluation_tolerance_bars": 2,
       "min_major_f1": 0.80,
       "min_major_precision": 0.75,
       "min_major_recall": 0.75,
-      "description": "Independent mathematical pivots — gold H1 human-review benchmark"
+      "description": "Independent mathematical pivots — gold H1 human-review benchmark (synthetic fixture). Real-data draft: XAUUSD_H1.human.json"
     },
     {
       "id": "EURUSD_H1_human",
