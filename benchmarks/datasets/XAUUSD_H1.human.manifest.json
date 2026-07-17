@@ -1,9 +1,9 @@
 {
-  "version": "2.0",
-  "description": "Real XAUUSD H1 human swing benchmark calibration pack",
+  "version": "2.1",
+  "description": "Real XAUUSD H1 AI-assisted expert calibration draft; pending independent human adjudication",
   "dataset_id": "XAUUSD_H1_REAL_V1",
   "data_sha256": "c867fa45a6ac6d520d488025256d636364524b3630fb783dc21805e12e211362",
-  "status": "LABELING_IN_PROGRESS",
+  "status": "READY_FOR_HUMAN_ADJUDICATION",
   "datasets": [
     {
       "id": "XAUUSD_H1_001",
@@ -23,8 +23,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_001",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_002",
@@ -44,8 +47,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_002",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_003",
@@ -65,8 +71,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_003",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_004",
@@ -86,8 +95,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_004",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_005",
@@ -107,8 +119,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_005",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_006",
@@ -128,8 +143,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_006",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_007",
@@ -149,8 +167,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_007",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_008",
@@ -170,8 +191,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_008",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_009",
@@ -191,8 +215,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_009",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_010",
@@ -212,8 +239,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_010",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_011",
@@ -233,8 +263,11 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_011",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     },
     {
       "id": "XAUUSD_H1_012",
@@ -254,10 +287,14 @@
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_012",
       "split": "TRAIN",
-      "label_origin": "HUMAN_DRAFT",
-      "enabled": true
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+      "enabled": true,
+      "label_source": "ai_assisted_expert_draft",
+      "human_review": true,
+      "evaluation_tolerance_bars": 2
     }
   ],
   "source_timezone": "Europe/Helsinki",
-  "data_quality_report": "data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json"
+  "data_quality_report": "data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json",
+  "label_origin": "AI_ASSISTED_EXPERT_DRAFT"
 }

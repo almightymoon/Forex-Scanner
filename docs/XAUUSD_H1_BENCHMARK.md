@@ -12,6 +12,24 @@ The benchmark is a three-part immutable unit:
 2. Human swing annotations tied to exact candle indexes and prices.
 3. A manifest tying samples and labels to the candle file checksum.
 
+
+## Current calibration release
+
+`benchmarks/labels/XAUUSD_H1.human.json` currently contains the first
+AI-assisted expert draft across all 12 calibration windows. Its declared origin
+is `AI_ASSISTED_EXPERT_DRAFT`, and its status is
+`READY_FOR_HUMAN_ADJUDICATION`. It is suitable for development calibration,
+error analysis, and parameter experiments, but it must not be represented as an
+independently adjudicated human test set.
+
+The draft contains 171 confirmed swing labels with exact pivot and confirmation
+candles. The frozen engine-v2 baseline is stored in:
+
+```text
+benchmarks/baselines/XAUUSD_H1_ai_draft_v1_baseline.json
+benchmarks/baselines/XAUUSD_H1_ai_draft_v1_summary.md
+```
+
 ## 1. Prepare the real candle file
 
 Use an H1 CSV export containing timestamp, open, high, low, close, and
@@ -53,7 +71,8 @@ python scripts/annotate_swings.py benchmarks/labels/XAUUSD_H1.human.json
 ```
 
 The local annotation studio opens at `http://127.0.0.1:8765`. It does not show
-algorithm predictions. Select the pivot candle, select the first confirmation
+algorithm predictions. It can review both human drafts and the protected
+AI-assisted expert draft. Select the pivot candle, select the first confirmation
 candle, classify the swing, and save the draft.
 
 Each annotation records:

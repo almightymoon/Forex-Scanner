@@ -10,7 +10,7 @@ from typing import Any, Callable
 
 from shared.types.models import Candle, Timeframe
 
-from swing_engine.annotations import HUMAN_ORIGINS, labels_from_document, load_annotation_document
+from swing_engine.annotations import PROTECTED_ANNOTATION_ORIGINS, labels_from_document, load_annotation_document
 from swing_engine.benchmark_data import BenchmarkDataError, load_candles_csv
 from swing_engine.calibration import CalibrationReport, calibrate_confidence
 from swing_engine.config import get_config
@@ -226,7 +226,7 @@ def write_labels(
         raise PermissionError(f"Refusing to write engine labels into human benchmark: {path}")
     if path.exists() and not allow_human_overwrite:
         existing = json.loads(path.read_text(encoding="utf-8"))
-        if existing.get("label_origin") in HUMAN_ORIGINS:
+        if existing.get("label_origin") in PROTECTED_ANNOTATION_ORIGINS:
             raise PermissionError(f"Refusing to overwrite human benchmark: {path}")
 
     path.parent.mkdir(parents=True, exist_ok=True)

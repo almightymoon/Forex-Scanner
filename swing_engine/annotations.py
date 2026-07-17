@@ -16,6 +16,7 @@ from swing_engine.models import BenchmarkLabel, SwingDirection, SwingScope, Swin
 
 
 HUMAN_ORIGINS = {"HUMAN", "HUMAN_DRAFT", "HUMAN_ADJUDICATED"}
+PROTECTED_ANNOTATION_ORIGINS = HUMAN_ORIGINS | {"AI_ASSISTED_EXPERT_DRAFT"}
 
 
 @dataclass(frozen=True)
@@ -128,7 +129,7 @@ def write_human_annotation_template(
     path = Path(path)
     if path.exists():
         existing = load_annotation_document(path)
-        if existing.get("label_origin") in HUMAN_ORIGINS and existing.get("swings"):
+        if existing.get("label_origin") in PROTECTED_ANNOTATION_ORIGINS and existing.get("swings"):
             raise FileExistsError(f"Refusing to overwrite non-empty human labels: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     window_list = list(windows)

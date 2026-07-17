@@ -1,0 +1,31 @@
+[
+  {
+    "id": "trend-momentum",
+    "name": "Trend + Momentum",
+    "rules": [
+      {
+        "field": "ema20.ema50",
+        "operator": "cross_above",
+        "value": null,
+        "label": "EMA20 > EMA50"
+      },
+      {
+        "field": "rsi",
+        "operator": "gt",
+        "value": 60,
+        "label": "RSI > 60"
+      },
+      {
+        "field": "smc.bos",
+        "operator": "present",
+        "value": "buy",
+        "label": "Bullish BOS"
+      }
+    ],
+    "combinator": "AND",
+    "action": "buy",
+    "active": true,
+    "symbols": [],
+    "min_score": 0
+  }
+]

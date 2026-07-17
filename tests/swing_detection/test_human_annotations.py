@@ -130,3 +130,29 @@ def test_engine_bootstrap_cannot_overwrite_human_file(tmp_path: Path):
         pass
     else:
         raise AssertionError("human label protection did not fire")
+
+
+def test_ai_assisted_draft_is_protected_from_engine_overwrite(tmp_path: Path):
+    labels_path = tmp_path / "draft.json"
+    labels_path.write_text(
+        json.dumps(
+            {
+                "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+                "swings": [{"label_id": "draft-label"}],
+            }
+        )
+    )
+
+    try:
+        write_labels(
+            labels_path,
+            symbol="XAUUSD",
+            timeframe="H1",
+            regime="trend",
+            swings=[],
+            source_version="2.0.0",
+        )
+    except PermissionError:
+        pass
+    else:
+        raise AssertionError("AI-assisted label protection did not fire")

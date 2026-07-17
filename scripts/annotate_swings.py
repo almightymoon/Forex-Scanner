@@ -99,8 +99,8 @@ class App:
         return result
 
     def save(self, document: dict) -> str:
-        if document.get("label_origin") not in {"HUMAN_DRAFT", "HUMAN"}:
-            raise ValueError("The annotation studio only edits human draft files")
+        if document.get("label_origin") not in {"HUMAN_DRAFT", "HUMAN", "AI_ASSISTED_EXPERT_DRAFT"}:
+            raise ValueError("The annotation studio only edits protected draft annotation files")
         if document.get("dataset", {}).get("data_sha256") != self.document.get("dataset", {}).get("data_sha256"):
             raise ValueError("Dataset checksum cannot be changed in the annotation studio")
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
