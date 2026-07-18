@@ -1,0 +1,16 @@
+{
+  "dataset_id": "XAUUSD_H1_2026H1_LOCKED_TEST_V1",
+  "state": "COMPLETED",
+  "started_at": "2026-07-18T17:04:15+00:00",
+  "frozen_commit": "a543e5e04b136d7d1279742925a93c5392113289",
+  "engine_version": "2.2.0",
+  "hierarchy_reversal_atr": 5.0,
+  "provisional_prominence_atr": 5.0,
+  "labels_sha256": "fadb30f95562158e0c447cd32c0cf8e16178fc5977b5ae43902b8c725947ade3",
+  "data_sha256": "539b9e028fc226eba8b1ea3503f773d06a00d25464e4513992e5f4e9be27ec44",
+  "sample_count": 6,
+  "policy": "One-time locked TEST evaluation. No parameter selection or tuning.",
+  "completed_at": "2026-07-18T17:04:16+00:00",
+  "report": "benchmarks/reports/XAUUSD_H1_2026H1_v2_2_locked_test.json",
+  "report_sha256": "b71e0f1c546fc52bac0595901a705bd6ff44658b2537a62d96652b65dd9a7937"
+}
