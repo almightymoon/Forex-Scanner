@@ -1,0 +1,21 @@
+{
+  "dataset_id": "XAUUSD_H1_2026H1_LOCKED_TEST_V1",
+  "frozen_at": "2026-07-18T16:48:18+00:00",
+  "label_policy_version": "SWING_POLICY_1.0",
+  "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+  "status": "FROZEN_AI_DRAFT",
+  "prediction_visibility": "HIDDEN_DURING_LABELING",
+  "total_labels": 80,
+  "labels_by_sample": {
+    "XAUUSD_H1_2026H1_001": 10,
+    "XAUUSD_H1_2026H1_002": 12,
+    "XAUUSD_H1_2026H1_003": 15,
+    "XAUUSD_H1_2026H1_004": 13,
+    "XAUUSD_H1_2026H1_005": 15,
+    "XAUUSD_H1_2026H1_006": 15
+  },
+  "data_sha256": "539b9e028fc226eba8b1ea3503f773d06a00d25464e4513992e5f4e9be27ec44",
+  "labels_sha256": "fadb30f95562158e0c447cd32c0cf8e16178fc5977b5ae43902b8c725947ade3",
+  "bars_helper_sha256": "a4ca200a1d3b8587528c16f2d2cc95ed87a74e33619dd7be5af88689ec12c357",
+  "requires_human_adjudication": true
+}

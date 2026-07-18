@@ -3,7 +3,7 @@
   "description": "Locked out-of-sample XAUUSD H1 benchmark \u2014 January through June 2026",
   "dataset_id": "XAUUSD_H1_2026H1_LOCKED_TEST_V1",
   "data_sha256": "539b9e028fc226eba8b1ea3503f773d06a00d25464e4513992e5f4e9be27ec44",
-  "status": "LABELING_IN_PROGRESS",
+  "status": "FROZEN_AI_DRAFT",
   "datasets": [
     {
       "id": "XAUUSD_H1_2026H1_001",
@@ -23,7 +23,7 @@
       "labelable_end_index": 259,
       "sample_id": "XAUUSD_H1_2026H1_001",
       "split": "TEST",
-      "label_origin": "HUMAN_DRAFT",
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true
     },
     {
@@ -44,7 +44,7 @@
       "labelable_end_index": 259,
       "sample_id": "XAUUSD_H1_2026H1_002",
       "split": "TEST",
-      "label_origin": "HUMAN_DRAFT",
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true
     },
     {
@@ -65,7 +65,7 @@
       "labelable_end_index": 259,
       "sample_id": "XAUUSD_H1_2026H1_003",
       "split": "TEST",
-      "label_origin": "HUMAN_DRAFT",
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true
     },
     {
@@ -86,7 +86,7 @@
       "labelable_end_index": 259,
       "sample_id": "XAUUSD_H1_2026H1_004",
       "split": "TEST",
-      "label_origin": "HUMAN_DRAFT",
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true
     },
     {
@@ -107,7 +107,7 @@
       "labelable_end_index": 259,
       "sample_id": "XAUUSD_H1_2026H1_005",
       "split": "TEST",
-      "label_origin": "HUMAN_DRAFT",
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true
     },
     {
@@ -128,7 +128,7 @@
       "labelable_end_index": 259,
       "sample_id": "XAUUSD_H1_2026H1_006",
       "split": "TEST",
-      "label_origin": "HUMAN_DRAFT",
+      "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true
     }
   ]
