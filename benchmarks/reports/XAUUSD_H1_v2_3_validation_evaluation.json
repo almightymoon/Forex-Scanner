@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-07-18T19:47:36+00:00",
+  "candidate_commit": "3fd5d7c74b82c3728d7badaa6cd72044bdd6bd1d",
+  "candidate_tag": "v2.3.0-rc1",
+  "policy": {
+    "loaded_sample_material": [
+      "XAUUSD_H1_009",
+      "XAUUSD_H1_010",
+      "XAUUSD_H1_011",
+      "XAUUSD_H1_012"
+    ],
+    "train_material_loaded": false,
+    "historical_locked_test_loaded": false,
+    "candidate_was_frozen_before_evaluation": true,
+    "future_tuning_on_these_samples_permitted": false
+  },
+  "baseline": {
+    "datasets": 4,
+    "predicted": 57,
+    "ground_truth": 67,
+    "hierarchy_states": {
+      "CONFIRMED_MAJOR": 18,
+      "INTERNAL": 27,
+      "PENDING": 1,
+      "PROVISIONAL_MAJOR": 1,
+      "SUPERSEDED": 10
+    },
+    "location": {
+      "true_positives": 54,
+      "false_positives": 3,
+      "false_negatives": 13,
+      "precision": 0.947368,
+      "recall": 0.80597,
+      "f1": 0.870968
+    },
+    "semantic": {
+      "true_positives": 45,
+      "false_positives": 12,
+      "false_negatives": 22,
+      "precision": 0.789474,
+      "recall": 0.671642,
+      "f1": 0.725806,
+      "macro_sample_f1": 0.729,
+      "worst_sample_f1": 0.6207,
+      "tier_accuracy_on_location_matches": 0.83335,
+      "scope_accuracy_on_location_matches": 0.851869
+    },
+    "major_external": {
+      "true_positives": 18,
+      "predicted": 19,
+      "ground_truth": 27,
+      "precision": 0.947368,
+      "recall": 0.666667,
+      "f1": 0.782609
+    }
+  },
+  "candidate": {
+    "datasets": 4,
+    "predicted": 62,
+    "ground_truth": 67,
+    "hierarchy_states": {
+      "CONFIRMED_MAJOR": 18,
+      "INTERNAL": 31,
+      "PENDING": 1,
+      "PROVISIONAL_MAJOR": 1,
+      "SUPERSEDED": 11
+    },
+    "location": {
+      "true_positives": 59,
+      "false_positives": 3,
+      "false_negatives": 8,
+      "precision": 0.951613,
+      "recall": 0.880597,
+      "f1": 0.914729
+    },
+    "semantic": {
+      "true_positives": 50,
+      "false_positives": 12,
+      "false_negatives": 17,
+      "precision": 0.806452,
+      "recall": 0.746269,
+      "f1": 0.775194,
+      "macro_sample_f1": 0.779025,
+      "worst_sample_f1": 0.6286,
+      "tier_accuracy_on_location_matches": 0.847453,
+      "scope_accuracy_on_location_matches": 0.864402
+    },
+    "major_external": {
+      "true_positives": 18,
+      "predicted": 19,
+      "ground_truth": 27,
+      "precision": 0.947368,
+      "recall": 0.666667,
+      "f1": 0.782609
+    }
+  },
+  "delta": {
+    "predicted": 5,
+    "location_true_positives": 5,
+    "location_false_positives": 0,
+    "location_false_negatives": -5,
+    "location_precision": 0.004245,
+    "location_recall": 0.074627,
+    "location_f1": 0.043761,
+    "semantic_true_positives": 5,
+    "semantic_f1": 0.049388,
+    "tier_accuracy": 0.014103,
+    "scope_accuracy": 0.012533,
+    "major_external_true_positives": 0,
+    "major_external_predicted": 0,
+    "major_external_f1": 0.0
+  },
+  "per_sample": [
+    {
+      "sample_id": "XAUUSD_H1_009",
+      "regime": "STRONG_BEARISH_TREND",
+      "delta": {
+        "predicted": 0,
+        "true_positives": 0,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "location_f1": 0.0,
+        "semantic_f1": 0.0
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_010",
+      "regime": "STRONG_BULLISH_TREND",
+      "delta": {
+        "predicted": 3,
+        "true_positives": 3,
+        "false_positives": 0,
+        "false_negatives": -3,
+        "location_f1": 0.116379,
+        "semantic_f1": 0.12931
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_011",
+      "regime": "STRONG_BULLISH_TREND",
+      "delta": {
+        "predicted": 2,
+        "true_positives": 2,
+        "false_positives": 0,
+        "false_negatives": -2,
+        "location_f1": 0.066667,
+        "semantic_f1": 0.070833
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_012",
+      "regime": "HIGH_VOLATILITY",
+      "delta": {
+        "predicted": 0,
+        "true_positives": 0,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "location_f1": 0.0,
+        "semantic_f1": 0.0
+      }
+    }
+  ]
+}
