@@ -7,8 +7,9 @@ from swing_engine.models import (
     EvaluationReport, InternalSwing, MTFHierarchyResult, MTFSwingContext,
     MarketContext, PivotCandidate, PipelineArtifacts,
     PerformanceMetrics, RejectedCandidate, StructureRegime, Swing, SwingClassification,
-    SwingDetectionOutput, SwingDirection, SwingExplanation, SwingLifecycleState,
-    SwingLifecycleEvent, SwingRuleCheck, SwingScope, SwingTier, SwingTrackedCandidate,
+    SwingDetectionOutput, SwingDirection, SwingExplanation, SwingHierarchyState,
+    SwingLifecycleState, SwingLifecycleEvent, SwingRuleCheck, SwingScope, SwingTier,
+    SwingTrackedCandidate,
     TradingSession, TrendBias, VolatilityRegime,
 )
 from swing_engine.context import adapt_config, compute_market_context
@@ -54,10 +55,11 @@ from swing_engine.calibration import CalibrationReport, calibrate_confidence
 from swing_engine.confirmation_score import compute_score_breakdown
 from swing_engine.ground_truth import labels_from_synthetic_bars, synthetic_pivot_indices, write_ground_truth_file
 from swing_engine.structure_metadata import enrich_structure_metadata, swing_id
+from swing_engine.hierarchy import apply_recursive_hierarchy
 from swing_engine.visualization import SwingVisualizer
 from swing_engine.versions import DEFAULT_VERSION, LATEST_VERSION, SUPPORTED_VERSIONS
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 __all__ = [
     "SwingEngine", "SwingDetectionEngine", "detect_swings",
@@ -69,7 +71,8 @@ __all__ = [
     "SwingVisualizer", "PipelineArtifacts", "PerformanceMetrics", "RejectedCandidate",
     "PivotCandidate", "DEFAULT_VERSION", "LATEST_VERSION", "SUPPORTED_VERSIONS",
     "MarketContext", "SwingExplanation", "VolatilityRegime", "StructureRegime", "TradingSession",
-    "SwingLifecycleState", "SwingLifecycleEvent", "SwingTrackedCandidate", "SwingRuleCheck",
+    "SwingHierarchyState", "SwingLifecycleState", "SwingLifecycleEvent",
+    "SwingTrackedCandidate", "SwingRuleCheck",
     "MTFSwingContext", "MTFHierarchyResult", "TrendBias",
     "compute_market_context", "adapt_config", "compute_quality_score",
     "build_swing_explanation", "build_rejection_explanation",
@@ -89,6 +92,6 @@ __all__ = [
     "calibrate_confidence", "CalibrationReport",
     "compute_score_breakdown",
     "labels_from_synthetic_bars", "synthetic_pivot_indices", "write_ground_truth_file",
-    "enrich_structure_metadata", "swing_id",
+    "enrich_structure_metadata", "swing_id", "apply_recursive_hierarchy",
     "SwingVisualizer",
 ]

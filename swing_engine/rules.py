@@ -8,6 +8,7 @@ from swing_engine.models import (
     PipelineArtifacts,
     PivotCandidate,
     RejectedCandidate,
+    SwingHierarchyState,
     SwingRuleCheck,
     SwingTier,
 )
@@ -26,6 +27,39 @@ def build_rule_checks_for_swing(
     pivot = _find_pivot(artifacts.pivot_candidates, swing.pivot_index, swing.direction.value)
     leg_atr = float(swing.metadata.get("leg_atr", 0.0))
     comp = swing.metadata.get("strength_components", {})
+
+    major_value = swing.tier.value
+    major_threshold = (
+        f"atr>={config.classification.major_min_atr_multiple}"
+    )
+    if config.classification.hierarchy_enabled:
+        state = swing.hierarchy_state
+        major_value = (
+            f"{swing.tier.value}; hierarchy="
+            f"{state.value if state is not None else 'UNKNOWN'}"
+        )
+        if state is SwingHierarchyState.CONFIRMED_MAJOR:
+            major_value += (
+                f"; reversal_atr="
+                f"{float(swing.metadata.get('hierarchy_reversal_atr', 0.0)):.2f}"
+            )
+            major_threshold = (
+                "hierarchy_reversal_atr>="
+                f"{config.classification.hierarchy_reversal_atr}"
+            )
+        elif state is SwingHierarchyState.PROVISIONAL_MAJOR:
+            major_value += (
+                f"; prominence_atr="
+                f"{float(swing.metadata.get('structural_prominence_atr', 0.0)):.2f}"
+            )
+            major_threshold = (
+                "provisional_prominence_atr>="
+                f"{config.classification.hierarchy_provisional_prominence_atr}"
+            )
+        else:
+            major_threshold = (
+                "confirmed/provisional recursive hierarchy major"
+            )
 
     return [
         SwingRuleCheck(
@@ -65,8 +99,8 @@ def build_rule_checks_for_swing(
             rule_id="major_tier",
             label="Major tier",
             passed=swing.tier == SwingTier.MAJOR,
-            value=swing.tier.value,
-            threshold=f"atr>={config.classification.major_min_atr_multiple}",
+            value=major_value,
+            threshold=major_threshold,
         ),
         SwingRuleCheck(
             rule_id="quality",

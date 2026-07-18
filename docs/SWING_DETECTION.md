@@ -33,8 +33,8 @@ flowchart TD
 
 ```
 Bars → Market Context (adaptive) → Pivots → Noise Filter → ATR Validation
-     → Leg Validation → Confirmation → Scoring → Scope/Tier/Confidence
-     → Quality Score → Explanation → Output
+     → Leg Validation → Confirmation → Scoring → Optional Recursive Hierarchy
+     → Scope/Tier/Confidence → Quality Score → Explanation → Output
 ```
 
 ### Public API
@@ -43,8 +43,8 @@ Bars → Market Context (adaptive) → Pivots → Noise Filter → ATR Validatio
 from swing_engine import SwingEngine, SwingVisualizer, SUPPORTED_VERSIONS
 from shared.types.models import Timeframe
 
-# Versioned engine. The frozen default is v2.0.0; v2.1.0 is an opt-in tuned candidate.
-engine = SwingEngine(version="2.1.0")
+# Versioned engine. The frozen default is v2.0.0; v2.2.0 is an opt-in hierarchy candidate.
+engine = SwingEngine(version="2.2.0")
 result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
 
 result.swings                        # List[DetectedSwing] (+ quality_score, explanation)
@@ -68,7 +68,8 @@ swings = detect_swings(bars)
 | `1.3.0` | Candidate lifecycle, replay, MTF hierarchy |
 | `1.4.0` | Score-gated confirmation and dataset suite |
 | `2.0.0` | **Frozen default** — causal multi-detector production baseline |
-| `2.1.0` | **Opt-in candidate** — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
+| `2.1.0` | **Opt-in location candidate** — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
+| `2.2.0` | **Opt-in hierarchy candidate** — recursive, revision-aware Major/Minor structure over frozen v2.1 pivots |
 
 Profiles in `config/swing_detection.yaml` under `version_profiles`. Per-symbol
 overrides (e.g. `XAUUSD`) live under `symbol_overrides` and are passed via
@@ -233,7 +234,7 @@ Use it explicitly:
 ```python
 from swing_engine import LATEST_VERSION, SwingEngine
 
-engine = SwingEngine(version=LATEST_VERSION)  # currently 2.1.0
+engine = SwingEngine(version="2.1.0")
 result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
 ```
 
@@ -246,6 +247,55 @@ PYTHONPATH=. python scripts/tune_xauusd_h1.py
 The tuner selects on chronological TRAIN windows and evaluates VALIDATION only
 after parameter selection. No locked test set currently exists, so v2.1.0 must
 remain opt-in.
+
+## v2.2.0 Recursive Hierarchy Candidate
+
+v2.2.0 freezes the v2.1 first-level pivot sequence and adds a second,
+revision-aware directional-change layer. It improves structural classification
+without adding or removing swing locations.
+
+Core rules:
+
+- Preserve every v2.1 pivot index, price, direction, and confirmation candle.
+- Track one pending higher-order extreme over the alternating first-level swing
+  sequence.
+- Confirm a higher-order Major swing only after an opposite confirmed swing
+  moves at least 5.00 ATR from that pending extreme.
+- Replace a pending extreme only when a later same-direction pivot is more
+  extreme.
+- Expose a final pointwise-prominent extreme as `PROVISIONAL_MAJOR`, explicitly
+  marking it as revisable.
+- Record `hierarchy_confirmation_index` for confirmed Major swings and
+  `hierarchy_revision_index` for superseded candidates.
+- Keep `2.0.0` as the frozen default.
+
+Hierarchy states:
+
+`INTERNAL`, `PENDING`, `PROVISIONAL_MAJOR`, `CONFIRMED_MAJOR`, `SUPERSEDED`.
+
+Use it explicitly:
+
+```python
+from swing_engine import SwingEngine
+
+engine = SwingEngine(version="2.2.0")
+result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
+```
+
+Reproduce the TRAIN-only hierarchy search:
+
+```bash
+PYTHONPATH=. python scripts/tune_xauusd_h1_hierarchy.py
+```
+
+The v2.2 search requires a TRAIN Major External precision floor and a
+worst-sample semantic F1 floor before maximizing TRAIN full-semantic F1.
+Chronological VALIDATION is evaluated only after both hierarchy thresholds are
+frozen.
+
+A downstream BOS/CHoCH module must distinguish `CONFIRMED_MAJOR` from
+`PROVISIONAL_MAJOR`; a provisional hierarchy point is not a frozen structural
+anchor.
 
 ## XAUUSD (Gold) Support
 

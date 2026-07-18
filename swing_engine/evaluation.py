@@ -104,6 +104,15 @@ class SwingBenchmarkEvaluator:
                     "ground_truth_tier": truth.tier.value,
                     "predicted_scope": pred.scope.value,
                     "ground_truth_scope": truth.scope.value,
+                    "predicted_hierarchy_state": (
+                        pred.hierarchy_state.value
+                        if pred.hierarchy_state is not None
+                        else None
+                    ),
+                    "predicted_hierarchy_confirmation_index": (
+                        pred.hierarchy_confirmation_index
+                    ),
+                    "predicted_hierarchy_revision_index": pred.hierarchy_revision_index,
                     "label_id": truth.label_id,
                     "sample_id": truth.sample_id,
                 }
@@ -115,6 +124,15 @@ class SwingBenchmarkEvaluator:
         precision = tp / (tp + fp) if (tp + fp) else 0.0
         recall = tp / (tp + fn) if (tp + fn) else 0.0
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
+
+        semantic_tp = sum(1 for pair in pairs if pair["full_semantic_match"])
+        semantic_precision = (
+            semantic_tp / len(confirmed) if confirmed else 0.0
+        )
+        semantic_recall = (
+            semantic_tp / len(ground_truth) if ground_truth else 0.0
+        )
+        semantic_f1 = _f1(semantic_precision, semantic_recall)
 
         major = self._semantic_subset_metrics(
             confirmed, ground_truth, pair_indexes, "tier", SwingTier.MAJOR
@@ -161,6 +179,10 @@ class SwingBenchmarkEvaluator:
             major_external_precision=major_external[0],
             major_external_recall=major_external[1],
             major_external_f1=major_external_f1,
+            semantic_precision=semantic_precision,
+            semantic_recall=semantic_recall,
+            semantic_f1=semantic_f1,
+            semantic_true_positives=semantic_tp,
             tier_accuracy=tier_accuracy,
             scope_accuracy=scope_accuracy,
             false_positives_per_1000_bars=(
@@ -352,6 +374,7 @@ def write_comparison_charts(reports: dict[str, EvaluationReport], path: Path) ->
         "precision",
         "recall",
         "f1_score",
+        "semantic_f1",
         "major_external_f1",
         "major_precision",
         "external_precision",
@@ -391,6 +414,10 @@ def _markdown_summary(report: EvaluationReport) -> str:
         f"| Major External F1 | {report.major_external_f1:.4f} |",
         f"| Major External Precision | {report.major_external_precision:.4f} |",
         f"| Major External Recall | {report.major_external_recall:.4f} |",
+        f"| Full Semantic F1 | {report.semantic_f1:.4f} |",
+        f"| Full Semantic Precision | {report.semantic_precision:.4f} |",
+        f"| Full Semantic Recall | {report.semantic_recall:.4f} |",
+        f"| Full Semantic True Positives | {report.semantic_true_positives} |",
         f"| Major Precision | {report.major_precision:.4f} |",
         f"| Major Recall | {report.major_recall:.4f} |",
         f"| External Precision | {report.external_precision:.4f} |",

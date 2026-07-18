@@ -138,6 +138,15 @@ class ClassificationConfig:
     structural_reversal_weight: float = 0.30
     structural_scope_from_tier: bool = False
 
+    # v2.2 recursive hierarchy. The first-level pivot detector remains frozen;
+    # this second directional-change pass determines structural importance from
+    # the sequence of already-confirmed swings.
+    hierarchy_enabled: bool = False
+    hierarchy_reversal_atr: float = 5.0
+    hierarchy_include_provisional: bool = False
+    hierarchy_provisional_prominence_atr: float = 5.0
+    hierarchy_scope_policy: str = "major_external"
+
 
 @dataclass(frozen=True)
 class ConfidenceConfig:

@@ -272,6 +272,43 @@ version_profiles:
       protected_lookback_swings: 4
     adaptive:
       enabled: false
+  "2.2.0":
+    # Preserve the tuned v2.1 first-level pivot detector exactly. Only the
+    # hierarchy layer changes.
+    pivot:
+      allow_equal_levels: true
+      min_pivot_strength: 8.0
+    noise_filter:
+      volatility_filter_enabled: true
+      insignificant_pullback_atr: 0.20
+      prevent_duplicate_replacements: true
+    leg:
+      min_atr_multiple: 2.80
+      validate_same_direction: true
+      enforce_alternation: true
+      require_reversal_confirmation: true
+      confirmation_price: wick
+    confirmation:
+      displacement_atr_min: 0.0
+      break_internal_structure: false
+      enforce_candidate_availability: true
+      validate_until_confirmation: true
+    confirmation_score:
+      enabled: false
+    classification:
+      major_min_atr_multiple: 5.00
+      minor_max_atr_multiple: 5.00
+      structural_leg_weight: 0.70
+      structural_reversal_weight: 0.30
+      structural_scope_from_tier: false
+      hierarchy_enabled: true
+      hierarchy_reversal_atr: 5.00
+      hierarchy_include_provisional: true
+      hierarchy_provisional_prominence_atr: 5.00
+      hierarchy_scope_policy: major_external
+      protected_lookback_swings: 4
+    adaptive:
+      enabled: false
 
 # Per-symbol overrides (merged after version + timeframe). Gold trades wider.
 symbol_overrides:

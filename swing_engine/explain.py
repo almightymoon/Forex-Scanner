@@ -19,6 +19,7 @@ from swing_engine.models import (
     DetectedSwing,
     RejectedCandidate,
     SwingExplanation,
+    SwingHierarchyState,
     SwingTier,
 )
 
@@ -67,8 +68,31 @@ def build_swing_explanation(
     else:
         factors.append("Not yet confirmed")
 
-    if swing.tier == SwingTier.MAJOR:
-        factors.append(f"Major threshold met (>= {config.classification.major_min_atr_multiple}x ATR)")
+    if swing.hierarchy_state is SwingHierarchyState.CONFIRMED_MAJOR:
+        hierarchy_reversal = float(
+            swing.metadata.get("hierarchy_reversal_atr", 0.0)
+        )
+        factors.append(
+            "Higher-order hierarchy confirmed "
+            f"after {hierarchy_reversal:.2f}x ATR reversal"
+        )
+        factors.append(
+            "Hierarchy confirmation bar "
+            f"{swing.hierarchy_confirmation_index}"
+        )
+    elif swing.hierarchy_state is SwingHierarchyState.PROVISIONAL_MAJOR:
+        factors.append(
+            "Provisional higher-order extreme; hierarchy may revise"
+        )
+    elif swing.hierarchy_state is not None:
+        factors.append(
+            f"Recursive hierarchy state: {swing.hierarchy_state.value}"
+        )
+    elif swing.tier == SwingTier.MAJOR:
+        factors.append(
+            "Major threshold met "
+            f"(>= {config.classification.major_min_atr_multiple}x ATR)"
+        )
     else:
         factors.append("Classified minor")
 

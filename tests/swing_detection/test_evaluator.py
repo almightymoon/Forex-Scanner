@@ -84,6 +84,10 @@ def test_semantic_metrics_and_human_confirmation_delay():
     )
     assert report.f1_score == 1.0  # pivot location/direction matched
     assert report.major_external_f1 == 0.0  # structural classification did not
+    assert report.semantic_true_positives == 0
+    assert report.semantic_precision == 0.0
+    assert report.semantic_recall == 0.0
+    assert report.semantic_f1 == 0.0
     assert report.tier_accuracy == 0.0
     assert report.scope_accuracy == 0.0
     assert report.average_relative_detection_delay_bars == 2.0

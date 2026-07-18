@@ -209,3 +209,57 @@ Compared with frozen v2.0 on the same 12 windows, false positives fell from
 of suppressing local fractal noise. These values must not be promoted to
 production acceptance thresholds until independent adjudication and a new
 locked test set are complete.
+
+## 7. Tune the v2.2 recursive hierarchy
+
+v2.2 keeps the v2.1 location detector unchanged and tunes only the second-level
+Major/Minor hierarchy:
+
+```bash
+python scripts/tune_xauusd_h1_hierarchy.py
+```
+
+Selection uses TRAIN samples only. A profile is eligible only when:
+
+```text
+TRAIN Major External precision >= 0.90
+Worst TRAIN sample semantic F1 >= 0.50
+```
+
+The eligible profile with the highest aggregate TRAIN full-semantic F1 is
+selected. VALIDATION is evaluated exactly once after the hierarchy and
+provisional thresholds are frozen.
+
+Selected profile:
+
+```text
+First-level reversal threshold:  2.80 ATR (frozen v2.1)
+Hierarchy reversal threshold:    5.00 ATR
+Provisional prominence:          5.00 ATR
+Scope policy:                    higher-order major -> external
+```
+
+Report:
+
+```text
+benchmarks/reports/XAUUSD_H1_v2_2_hierarchy_search.json
+benchmarks/reports/XAUUSD_H1_v2_2_hierarchy_summary.md
+```
+
+### Hierarchy result
+
+| Validation metric | v2.1 | v2.2 |
+|---|---:|---:|
+| Location F1 | 0.8710 | 0.8710 |
+| Full semantic F1 | 0.5806 | 0.7258 |
+| Tier accuracy | 0.6852 | 0.8334 |
+| Scope accuracy | 0.6667 | 0.8519 |
+| Major External precision | 0.6296 | 0.9474 |
+| Major External F1 | 0.6296 | 0.7826 |
+
+The location prediction count, false positives, and false negatives are
+identical. The gain comes entirely from recursive hierarchy classification.
+
+`PROVISIONAL_MAJOR` labels are intentionally revisable. Only
+`CONFIRMED_MAJOR` labels have a `hierarchy_confirmation_index` and should be
+treated as frozen higher-order structure by downstream modules.

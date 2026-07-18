@@ -1,0 +1,2066 @@
+diff --git a/README.md b/README.md
+index cc45f60..45c3e79 100644
+--- a/README.md
++++ b/README.md
+@@ -30,7 +30,7 @@ docker compose up -d
+ 
+ ```
+ fx-navigators/
+-├── swing_engine/            # Single source of truth — swing detection (v2.0.0 frozen default; v2.1.0 opt-in tuned candidate)
++├── swing_engine/            # Single source of truth — swing detection (v2.0.0 frozen default; v2.2.0 opt-in hierarchy candidate)
+ ├── services/
+ │   ├── bar_builder/         # Deterministic M1–D1 bar generation
+ │   ├── data_collector/      # Market data ingestion + raw tick storage
+@@ -65,14 +65,15 @@ python scripts/annotate_swings.py benchmarks/labels/XAUUSD_H1.human.json
+ python scripts/validate_human_benchmark.py
+ ```
+ 
+-Run the holdout-aware v2.1 tuning harness with:
++Reproduce the frozen v2.1 location search and the v2.2 hierarchy search with:
+ 
+ ```bash
+ python scripts/tune_xauusd_h1.py
++python scripts/tune_xauusd_h1_hierarchy.py
+ ```
+ 
+ See `docs/XAUUSD_H1_BENCHMARK.md`. MT5 for macOS users can export history with
+-`tools/mt5/ExportXAUUSDH1Benchmark.mq5`. The v2.1 profile remains opt-in until
++`tools/mt5/ExportXAUUSDH1Benchmark.mq5`. The v2.2 profile remains opt-in until
+ labels are independently adjudicated and a locked test set exists.
+ 
+ ## Market Data (Phase 1)
+@@ -111,7 +112,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
+ - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
+ - [Architecture](docs/ARCHITECTURE.md) — System design
+ - [API Specification](docs/API.md) — REST + WebSocket endpoints
+-- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0 frozen default; v2.1.0 structural tuning candidate)
++- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0 frozen default; v2.2.0 hierarchy candidate)
+ - [XAUUSD H1 Benchmark](docs/XAUUSD_H1_BENCHMARK.md) — real-data prepare/annotate/validate workflow
+ - [Project Roadmap](docs/ROADMAP.md) — master plan to production (BOS, CHoCH, liquidity, decision engine)
+ 
+diff --git a/config/swing_detection.yaml b/config/swing_detection.yaml
+index 8cd8ecf..26971fc 100644
+--- a/config/swing_detection.yaml
++++ b/config/swing_detection.yaml
+@@ -272,6 +272,43 @@ version_profiles:
+       protected_lookback_swings: 4
+     adaptive:
+       enabled: false
++  "2.2.0":
++    # Preserve the tuned v2.1 first-level pivot detector exactly. Only the
++    # hierarchy layer changes.
++    pivot:
++      allow_equal_levels: true
++      min_pivot_strength: 8.0
++    noise_filter:
++      volatility_filter_enabled: true
++      insignificant_pullback_atr: 0.20
++      prevent_duplicate_replacements: true
++    leg:
++      min_atr_multiple: 2.80
++      validate_same_direction: true
++      enforce_alternation: true
++      require_reversal_confirmation: true
++      confirmation_price: wick
++    confirmation:
++      displacement_atr_min: 0.0
++      break_internal_structure: false
++      enforce_candidate_availability: true
++      validate_until_confirmation: true
++    confirmation_score:
++      enabled: false
++    classification:
++      major_min_atr_multiple: 5.00
++      minor_max_atr_multiple: 5.00
++      structural_leg_weight: 0.70
++      structural_reversal_weight: 0.30
++      structural_scope_from_tier: false
++      hierarchy_enabled: true
++      hierarchy_reversal_atr: 5.00
++      hierarchy_include_provisional: true
++      hierarchy_provisional_prominence_atr: 5.00
++      hierarchy_scope_policy: major_external
++      protected_lookback_swings: 4
++    adaptive:
++      enabled: false
+ 
+ # Per-symbol overrides (merged after version + timeframe). Gold trades wider.
+ symbol_overrides:
+diff --git a/docs/SWING_DETECTION.md b/docs/SWING_DETECTION.md
+index 4378762..3ea463c 100644
+--- a/docs/SWING_DETECTION.md
++++ b/docs/SWING_DETECTION.md
+@@ -33,8 +33,8 @@ flowchart TD
+ 
+ ```
+ Bars → Market Context (adaptive) → Pivots → Noise Filter → ATR Validation
+-     → Leg Validation → Confirmation → Scoring → Scope/Tier/Confidence
+-     → Quality Score → Explanation → Output
++     → Leg Validation → Confirmation → Scoring → Optional Recursive Hierarchy
++     → Scope/Tier/Confidence → Quality Score → Explanation → Output
+ ```
+ 
+ ### Public API
+@@ -43,8 +43,8 @@ Bars → Market Context (adaptive) → Pivots → Noise Filter → ATR Validatio
+ from swing_engine import SwingEngine, SwingVisualizer, SUPPORTED_VERSIONS
+ from shared.types.models import Timeframe
+ 
+-# Versioned engine. The frozen default is v2.0.0; v2.1.0 is an opt-in tuned candidate.
+-engine = SwingEngine(version="2.1.0")
++# Versioned engine. The frozen default is v2.0.0; v2.2.0 is an opt-in hierarchy candidate.
++engine = SwingEngine(version="2.2.0")
+ result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
+ 
+ result.swings                        # List[DetectedSwing] (+ quality_score, explanation)
+@@ -68,7 +68,8 @@ swings = detect_swings(bars)
+ | `1.3.0` | Candidate lifecycle, replay, MTF hierarchy |
+ | `1.4.0` | Score-gated confirmation and dataset suite |
+ | `2.0.0` | **Frozen default** — causal multi-detector production baseline |
+-| `2.1.0` | **Opt-in candidate** — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
++| `2.1.0` | **Opt-in location candidate** — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
++| `2.2.0` | **Opt-in hierarchy candidate** — recursive, revision-aware Major/Minor structure over frozen v2.1 pivots |
+ 
+ Profiles in `config/swing_detection.yaml` under `version_profiles`. Per-symbol
+ overrides (e.g. `XAUUSD`) live under `symbol_overrides` and are passed via
+@@ -233,7 +234,7 @@ Use it explicitly:
+ ```python
+ from swing_engine import LATEST_VERSION, SwingEngine
+ 
+-engine = SwingEngine(version=LATEST_VERSION)  # currently 2.1.0
++engine = SwingEngine(version="2.1.0")
+ result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
+ ```
+ 
+@@ -247,6 +248,55 @@ The tuner selects on chronological TRAIN windows and evaluates VALIDATION only
+ after parameter selection. No locked test set currently exists, so v2.1.0 must
+ remain opt-in.
+ 
++## v2.2.0 Recursive Hierarchy Candidate
++
++v2.2.0 freezes the v2.1 first-level pivot sequence and adds a second,
++revision-aware directional-change layer. It improves structural classification
++without adding or removing swing locations.
++
++Core rules:
++
++- Preserve every v2.1 pivot index, price, direction, and confirmation candle.
++- Track one pending higher-order extreme over the alternating first-level swing
++  sequence.
++- Confirm a higher-order Major swing only after an opposite confirmed swing
++  moves at least 5.00 ATR from that pending extreme.
++- Replace a pending extreme only when a later same-direction pivot is more
++  extreme.
++- Expose a final pointwise-prominent extreme as `PROVISIONAL_MAJOR`, explicitly
++  marking it as revisable.
++- Record `hierarchy_confirmation_index` for confirmed Major swings and
++  `hierarchy_revision_index` for superseded candidates.
++- Keep `2.0.0` as the frozen default.
++
++Hierarchy states:
++
++`INTERNAL`, `PENDING`, `PROVISIONAL_MAJOR`, `CONFIRMED_MAJOR`, `SUPERSEDED`.
++
++Use it explicitly:
++
++```python
++from swing_engine import SwingEngine
++
++engine = SwingEngine(version="2.2.0")
++result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
++```
++
++Reproduce the TRAIN-only hierarchy search:
++
++```bash
++PYTHONPATH=. python scripts/tune_xauusd_h1_hierarchy.py
++```
++
++The v2.2 search requires a TRAIN Major External precision floor and a
++worst-sample semantic F1 floor before maximizing TRAIN full-semantic F1.
++Chronological VALIDATION is evaluated only after both hierarchy thresholds are
++frozen.
++
++A downstream BOS/CHoCH module must distinguish `CONFIRMED_MAJOR` from
++`PROVISIONAL_MAJOR`; a provisional hierarchy point is not a frozen structural
++anchor.
++
+ ## XAUUSD (Gold) Support
+ 
+ - Gold pip size is `0.1` via `pip_size.symbol_overrides.XAUUSD` (silver `XAGUSD` = `0.001`).
+diff --git a/docs/XAUUSD_H1_BENCHMARK.md b/docs/XAUUSD_H1_BENCHMARK.md
+index 275f76b..a56ecbe 100644
+--- a/docs/XAUUSD_H1_BENCHMARK.md
++++ b/docs/XAUUSD_H1_BENCHMARK.md
+@@ -209,3 +209,57 @@ Compared with frozen v2.0 on the same 12 windows, false positives fell from
+ of suppressing local fractal noise. These values must not be promoted to
+ production acceptance thresholds until independent adjudication and a new
+ locked test set are complete.
++
++## 7. Tune the v2.2 recursive hierarchy
++
++v2.2 keeps the v2.1 location detector unchanged and tunes only the second-level
++Major/Minor hierarchy:
++
++```bash
++python scripts/tune_xauusd_h1_hierarchy.py
++```
++
++Selection uses TRAIN samples only. A profile is eligible only when:
++
++```text
++TRAIN Major External precision >= 0.90
++Worst TRAIN sample semantic F1 >= 0.50
++```
++
++The eligible profile with the highest aggregate TRAIN full-semantic F1 is
++selected. VALIDATION is evaluated exactly once after the hierarchy and
++provisional thresholds are frozen.
++
++Selected profile:
++
++```text
++First-level reversal threshold:  2.80 ATR (frozen v2.1)
++Hierarchy reversal threshold:    5.00 ATR
++Provisional prominence:          5.00 ATR
++Scope policy:                    higher-order major -> external
++```
++
++Report:
++
++```text
++benchmarks/reports/XAUUSD_H1_v2_2_hierarchy_search.json
++benchmarks/reports/XAUUSD_H1_v2_2_hierarchy_summary.md
++```
++
++### Hierarchy result
++
++| Validation metric | v2.1 | v2.2 |
++|---|---:|---:|
++| Location F1 | 0.8710 | 0.8710 |
++| Full semantic F1 | 0.5806 | 0.7258 |
++| Tier accuracy | 0.6852 | 0.8334 |
++| Scope accuracy | 0.6667 | 0.8519 |
++| Major External precision | 0.6296 | 0.9474 |
++| Major External F1 | 0.6296 | 0.7826 |
++
++The location prediction count, false positives, and false negatives are
++identical. The gain comes entirely from recursive hierarchy classification.
++
++`PROVISIONAL_MAJOR` labels are intentionally revisable. Only
++`CONFIRMED_MAJOR` labels have a `hierarchy_confirmation_index` and should be
++treated as frozen higher-order structure by downstream modules.
+diff --git a/scripts/tune_xauusd_h1_hierarchy.py b/scripts/tune_xauusd_h1_hierarchy.py
+new file mode 100755
+index 0000000..0850171
+--- /dev/null
++++ b/scripts/tune_xauusd_h1_hierarchy.py
+@@ -0,0 +1,683 @@
++#!/usr/bin/env python3
++"""Tune the v2.2 recursive XAUUSD H1 hierarchy without test leakage.
++
++The v2.1 first-level pivot detector is frozen.  This command searches only the
++second-level hierarchy thresholds on TRAIN samples, freezes the selected pair,
++and evaluates chronological VALIDATION exactly once.
++
++The current benchmark contains AI-assisted expert draft labels and no locked
++TEST split.  Results are development evidence, not production certification.
++"""
++
++from __future__ import annotations
++
++import argparse
++import dataclasses
++import json
++import sys
++from collections import Counter, defaultdict
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++
++from shared.types.models import Timeframe
++from swing_engine.config import SwingEngineConfig, get_config
++from swing_engine.datasets import (
++    LABELS_DIR,
++    DatasetSpec,
++    load_labels,
++    load_manifest,
++    load_real_bars,
++)
++from swing_engine.detector import SwingEngine
++from swing_engine.evaluation import SwingBenchmarkEvaluator
++from swing_engine.models import BenchmarkLabel, DetectedSwing, SwingScope, SwingTier
++
++REPO_ROOT = Path(__file__).resolve().parents[1]
++DEFAULT_MANIFEST = (
++    REPO_ROOT
++    / "benchmarks"
++    / "datasets"
++    / "XAUUSD_H1.human.manifest.json"
++)
++DEFAULT_OUTPUT = (
++    REPO_ROOT
++    / "benchmarks"
++    / "reports"
++    / "XAUUSD_H1_v2_2_hierarchy_search.json"
++)
++
++
++def _csv_floats(value: str) -> list[float]:
++    values = [float(item.strip()) for item in value.split(",") if item.strip()]
++    if not values:
++        raise argparse.ArgumentTypeError("at least one numeric value is required")
++    return values
++
++
++def _load_sample(
++    spec: DatasetSpec,
++    manifest: Path,
++) -> tuple[list, list[BenchmarkLabel]]:
++    bars = load_real_bars(spec, manifest_path=manifest)
++    labels, _ = load_labels(
++        LABELS_DIR / spec.labels_file,
++        sample_id=spec.sample_id,
++    )
++
++    if spec.labelable_start_index is not None:
++        labels = [
++            label
++            for label in labels
++            if label.pivot_index >= spec.labelable_start_index
++        ]
++    if spec.labelable_end_index is not None:
++        labels = [
++            label
++            for label in labels
++            if label.pivot_index <= spec.labelable_end_index
++        ]
++
++    return bars, labels
++
++
++def _configured_engine(
++    spec: DatasetSpec,
++    *,
++    version: str,
++    hierarchy_reversal_atr: float | None = None,
++    provisional_prominence_atr: float | None = None,
++) -> tuple[SwingEngine, SwingEngineConfig]:
++    timeframe = Timeframe(spec.timeframe)
++    config = get_config(
++        timeframe,
++        version=version,
++        symbol=spec.symbol,
++    )
++
++    if hierarchy_reversal_atr is not None:
++        classification = dataclasses.replace(
++            config.classification,
++            hierarchy_reversal_atr=hierarchy_reversal_atr,
++            hierarchy_include_provisional=True,
++            hierarchy_provisional_prominence_atr=(
++                provisional_prominence_atr
++                if provisional_prominence_atr is not None
++                else config.classification.hierarchy_provisional_prominence_atr
++            ),
++        )
++        config = dataclasses.replace(
++            config,
++            classification=classification,
++        )
++
++    return SwingEngine(config, version=version), config
++
++
++def _detect(
++    spec: DatasetSpec,
++    bars: list,
++    *,
++    version: str,
++    hierarchy_reversal_atr: float | None = None,
++    provisional_prominence_atr: float | None = None,
++) -> tuple[list[DetectedSwing], SwingEngineConfig]:
++    engine, config = _configured_engine(
++        spec,
++        version=version,
++        hierarchy_reversal_atr=hierarchy_reversal_atr,
++        provisional_prominence_atr=provisional_prominence_atr,
++    )
++    timeframe = Timeframe(spec.timeframe)
++    result = engine.detect(
++        bars,
++        symbol=spec.symbol,
++        timeframe=timeframe,
++    )
++    predictions = result.confirmed_swings
++
++    if spec.labelable_start_index is not None:
++        predictions = [
++            swing
++            for swing in predictions
++            if swing.pivot_index >= spec.labelable_start_index
++        ]
++    if spec.labelable_end_index is not None:
++        predictions = [
++            swing
++            for swing in predictions
++            if swing.pivot_index <= spec.labelable_end_index
++        ]
++
++    return predictions, config
++
++
++def _evaluate_sample(
++    spec: DatasetSpec,
++    bars: list,
++    labels: list[BenchmarkLabel],
++    predictions: list[DetectedSwing],
++    config: SwingEngineConfig,
++    *,
++    version: str,
++) -> dict[str, Any]:
++    evaluation = config.evaluation
++    if spec.evaluation_tolerance_bars:
++        evaluation = dataclasses.replace(
++            evaluation,
++            index_match_tolerance_bars=spec.evaluation_tolerance_bars,
++        )
++
++    report = SwingBenchmarkEvaluator(
++        dataclasses.replace(config, evaluation=evaluation)
++    ).evaluate(
++        predictions,
++        labels,
++        spec.symbol,
++        engine_version=version,
++        benchmark_version="XAUUSD_H1_AI_DRAFT_V1",
++        regime=spec.regime,
++        candles=bars,
++        bar_count=len(bars),
++    )
++    report_dict = report.to_dict()
++
++    major_external_predicted = sum(
++        1
++        for swing in predictions
++        if swing.tier is SwingTier.MAJOR
++        and swing.scope is SwingScope.EXTERNAL
++    )
++    major_external_truth = sum(
++        1
++        for label in labels
++        if label.tier is SwingTier.MAJOR
++        and label.scope is SwingScope.EXTERNAL
++    )
++    major_external_true_positives = sum(
++        1
++        for pair in report_dict["matched_pairs"]
++        if pair["predicted_tier"] == SwingTier.MAJOR.value
++        and pair["predicted_scope"] == SwingScope.EXTERNAL.value
++        and pair["ground_truth_tier"] == SwingTier.MAJOR.value
++        and pair["ground_truth_scope"] == SwingScope.EXTERNAL.value
++    )
++
++    hierarchy_states = Counter(
++        swing.hierarchy_state.value
++        if swing.hierarchy_state is not None
++        else "NONE"
++        for swing in predictions
++    )
++
++    return {
++        "dataset_id": spec.id,
++        "sample_id": spec.sample_id,
++        "split": spec.split,
++        "regime": spec.regime,
++        "predicted": len(predictions),
++        "ground_truth": len(labels),
++        "hierarchy_states": dict(sorted(hierarchy_states.items())),
++        "major_external_predicted": major_external_predicted,
++        "major_external_truth": major_external_truth,
++        "major_external_true_positives": major_external_true_positives,
++        **report_dict,
++    }
++
++
++def _f1(precision: float, recall: float) -> float:
++    return (
++        2.0 * precision * recall / (precision + recall)
++        if precision + recall
++        else 0.0
++    )
++
++
++def _aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
++    predicted = sum(int(row["predicted"]) for row in rows)
++    ground_truth = sum(int(row["ground_truth"]) for row in rows)
++
++    location_tp = sum(int(row["true_positives"]) for row in rows)
++    location_fp = sum(int(row["false_positives"]) for row in rows)
++    location_fn = sum(int(row["false_negatives"]) for row in rows)
++
++    location_precision = (
++        location_tp / (location_tp + location_fp)
++        if location_tp + location_fp
++        else 0.0
++    )
++    location_recall = (
++        location_tp / (location_tp + location_fn)
++        if location_tp + location_fn
++        else 0.0
++    )
++
++    semantic_tp = sum(
++        int(row["semantic_true_positives"]) for row in rows
++    )
++    semantic_precision = semantic_tp / predicted if predicted else 0.0
++    semantic_recall = semantic_tp / ground_truth if ground_truth else 0.0
++
++    major_external_predicted = sum(
++        int(row["major_external_predicted"]) for row in rows
++    )
++    major_external_truth = sum(
++        int(row["major_external_truth"]) for row in rows
++    )
++    major_external_tp = sum(
++        int(row["major_external_true_positives"]) for row in rows
++    )
++    major_external_precision = (
++        major_external_tp / major_external_predicted
++        if major_external_predicted
++        else 0.0
++    )
++    major_external_recall = (
++        major_external_tp / major_external_truth
++        if major_external_truth
++        else 0.0
++    )
++
++    weighted_tier_correct = sum(
++        float(row["tier_accuracy"]) * int(row["true_positives"])
++        for row in rows
++    )
++    weighted_scope_correct = sum(
++        float(row["scope_accuracy"]) * int(row["true_positives"])
++        for row in rows
++    )
++    sample_semantic_f1 = [
++        float(row["semantic_f1"]) for row in rows
++    ]
++    hierarchy_states: Counter[str] = Counter()
++    for row in rows:
++        hierarchy_states.update(row.get("hierarchy_states", {}))
++
++    return {
++        "datasets": len(rows),
++        "predicted": predicted,
++        "ground_truth": ground_truth,
++        "hierarchy_states": dict(sorted(hierarchy_states.items())),
++        "location": {
++            "true_positives": location_tp,
++            "false_positives": location_fp,
++            "false_negatives": location_fn,
++            "precision": round(location_precision, 6),
++            "recall": round(location_recall, 6),
++            "f1": round(_f1(location_precision, location_recall), 6),
++        },
++        "semantic": {
++            "true_positives": semantic_tp,
++            "false_positives": predicted - semantic_tp,
++            "false_negatives": ground_truth - semantic_tp,
++            "precision": round(semantic_precision, 6),
++            "recall": round(semantic_recall, 6),
++            "f1": round(_f1(semantic_precision, semantic_recall), 6),
++            "macro_sample_f1": round(
++                sum(sample_semantic_f1) / len(sample_semantic_f1),
++                6,
++            )
++            if sample_semantic_f1
++            else 0.0,
++            "worst_sample_f1": round(min(sample_semantic_f1), 6)
++            if sample_semantic_f1
++            else 0.0,
++            "tier_accuracy_on_location_matches": round(
++                weighted_tier_correct / location_tp,
++                6,
++            )
++            if location_tp
++            else 0.0,
++            "scope_accuracy_on_location_matches": round(
++                weighted_scope_correct / location_tp,
++                6,
++            )
++            if location_tp
++            else 0.0,
++        },
++        "major_external": {
++            "true_positives": major_external_tp,
++            "predicted": major_external_predicted,
++            "ground_truth": major_external_truth,
++            "precision": round(major_external_precision, 6),
++            "recall": round(major_external_recall, 6),
++            "f1": round(
++                _f1(
++                    major_external_precision,
++                    major_external_recall,
++                ),
++                6,
++            ),
++        },
++    }
++
++
++def _aggregate_by_regime(
++    rows: list[dict[str, Any]],
++) -> dict[str, dict[str, Any]]:
++    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
++    for row in rows:
++        grouped[str(row["regime"])].append(row)
++
++    return {
++        regime: _aggregate(items)
++        for regime, items in sorted(grouped.items())
++    }
++
++
++def _run_profile(
++    specs: list[DatasetSpec],
++    samples: dict[str, tuple[list, list[BenchmarkLabel]]],
++    *,
++    version: str,
++    hierarchy_reversal_atr: float | None = None,
++    provisional_prominence_atr: float | None = None,
++) -> list[dict[str, Any]]:
++    rows: list[dict[str, Any]] = []
++    for spec in specs:
++        bars, labels = samples[spec.id]
++        predictions, config = _detect(
++            spec,
++            bars,
++            version=version,
++            hierarchy_reversal_atr=hierarchy_reversal_atr,
++            provisional_prominence_atr=provisional_prominence_atr,
++        )
++        rows.append(
++            _evaluate_sample(
++                spec,
++                bars,
++                labels,
++                predictions,
++                config,
++                version=version,
++            )
++        )
++    return rows
++
++
++def main() -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument(
++        "--manifest",
++        type=Path,
++        default=DEFAULT_MANIFEST,
++    )
++    parser.add_argument("--version", default="2.2.0")
++    parser.add_argument("--baseline-version", default="2.1.0")
++    parser.add_argument(
++        "--hierarchy-thresholds",
++        type=_csv_floats,
++        default=[4.0, 4.25, 4.5, 4.75, 5.0, 5.25],
++    )
++    parser.add_argument(
++        "--provisional-thresholds",
++        type=_csv_floats,
++        default=[4.0, 4.5, 5.0, 5.5, 6.0],
++    )
++    parser.add_argument(
++        "--train-major-external-precision-floor",
++        type=float,
++        default=0.90,
++    )
++    parser.add_argument(
++        "--train-worst-sample-semantic-f1-floor",
++        type=float,
++        default=0.50,
++    )
++    parser.add_argument(
++        "--output",
++        type=Path,
++        default=DEFAULT_OUTPUT,
++    )
++    args = parser.parse_args()
++
++    specs = load_manifest(args.manifest)
++    train = [
++        spec for spec in specs if spec.split.upper() == "TRAIN"
++    ]
++    validation = [
++        spec
++        for spec in specs
++        if spec.split.upper() == "VALIDATION"
++    ]
++    test = [
++        spec for spec in specs if spec.split.upper() == "TEST"
++    ]
++
++    if not train or not validation:
++        raise SystemExit(
++            "manifest must contain both TRAIN and VALIDATION samples"
++        )
++    if test:
++        raise SystemExit(
++            "this tuning command refuses to inspect locked TEST samples"
++        )
++
++    # Load only TRAIN material during selection. Validation candles and labels
++    # are not read until both hierarchy thresholds are frozen.
++    train_samples = {
++        spec.id: _load_sample(spec, args.manifest)
++        for spec in train
++    }
++
++    grid: list[dict[str, Any]] = []
++    for hierarchy_threshold in args.hierarchy_thresholds:
++        for provisional_threshold in args.provisional_thresholds:
++            train_rows = _run_profile(
++                train,
++                train_samples,
++                version=args.version,
++                hierarchy_reversal_atr=hierarchy_threshold,
++                provisional_prominence_atr=provisional_threshold,
++            )
++            grid.append(
++                {
++                    "hierarchy_reversal_atr": hierarchy_threshold,
++                    "provisional_prominence_atr": provisional_threshold,
++                    "train": _aggregate(train_rows),
++                }
++            )
++
++    for row in grid:
++        row["eligible"] = (
++            row["train"]["major_external"]["precision"]
++            >= args.train_major_external_precision_floor
++            and row["train"]["semantic"]["worst_sample_f1"]
++            >= args.train_worst_sample_semantic_f1_floor
++        )
++
++    eligible = [row for row in grid if row["eligible"]]
++    if not eligible:
++        raise SystemExit(
++            "no hierarchy profile satisfies both TRAIN robustness floors"
++        )
++
++    selected = max(
++        eligible,
++        key=lambda row: (
++            row["train"]["semantic"]["f1"],
++            row["train"]["semantic"]["macro_sample_f1"],
++            row["train"]["major_external"]["f1"],
++            row["train"]["major_external"]["precision"],
++        ),
++    )
++    hierarchy_threshold = float(
++        selected["hierarchy_reversal_atr"]
++    )
++    provisional_threshold = float(
++        selected["provisional_prominence_atr"]
++    )
++
++    selected_train_rows = _run_profile(
++        train,
++        train_samples,
++        version=args.version,
++        hierarchy_reversal_atr=hierarchy_threshold,
++        provisional_prominence_atr=provisional_threshold,
++    )
++
++    # VALIDATION is first loaded and evaluated here, after both thresholds are
++    # frozen. No validation candle, label, prediction, or metric participates
++    # in selection.
++    validation_samples = {
++        spec.id: _load_sample(spec, args.manifest)
++        for spec in validation
++    }
++    selected_validation_rows = _run_profile(
++        validation,
++        validation_samples,
++        version=args.version,
++        hierarchy_reversal_atr=hierarchy_threshold,
++        provisional_prominence_atr=provisional_threshold,
++    )
++    selected_rows = selected_train_rows + selected_validation_rows
++
++    baseline_train_rows = _run_profile(
++        train,
++        train_samples,
++        version=args.baseline_version,
++    )
++    baseline_validation_rows = _run_profile(
++        validation,
++        validation_samples,
++        version=args.baseline_version,
++    )
++    baseline_rows = baseline_train_rows + baseline_validation_rows
++
++    selected_train = _aggregate(selected_train_rows)
++    selected_validation = _aggregate(selected_validation_rows)
++    selected_all = _aggregate(selected_rows)
++
++    baseline_train = _aggregate(baseline_train_rows)
++    baseline_validation = _aggregate(baseline_validation_rows)
++    baseline_all = _aggregate(baseline_rows)
++
++    payload = {
++        "generated_at": datetime.now(timezone.utc).isoformat(
++            timespec="seconds"
++        ),
++        "engine_version": args.version,
++        "baseline_version": args.baseline_version,
++        "benchmark": "XAUUSD_H1_AI_ASSISTED_EXPERT_DRAFT",
++        "warning": (
++            "No locked TEST split exists; do not treat these metrics "
++            "as production certification."
++        ),
++        "frozen_first_level_location_profile": {
++            "leg_min_atr_multiple": 2.8,
++            "note": (
++                "v2.2 changes hierarchy only; v2.1 pivot locations "
++                "and first-level confirmation remain frozen."
++            ),
++        },
++        "selection_policy": {
++            "data_used": "TRAIN only",
++            "eligibility": {
++                "major_external_precision_floor": (
++                    args.train_major_external_precision_floor
++                ),
++                "worst_sample_semantic_f1_floor": (
++                    args.train_worst_sample_semantic_f1_floor
++                ),
++            },
++            "objective": (
++                "max aggregate TRAIN semantic F1, then macro sample "
++                "semantic F1, Major External F1, and precision"
++            ),
++            "validation_policy": (
++                "chronological VALIDATION evaluated exactly once "
++                "after both thresholds were frozen"
++            ),
++        },
++        "selected": {
++            "hierarchy_reversal_atr": hierarchy_threshold,
++            "provisional_prominence_atr": provisional_threshold,
++        },
++        "grid": grid,
++        "baseline": {
++            "train": baseline_train,
++            "validation": baseline_validation,
++            "all_development": baseline_all,
++            "by_regime": _aggregate_by_regime(baseline_rows),
++        },
++        "results": {
++            "train": selected_train,
++            "validation": selected_validation,
++            "all_development": selected_all,
++            "by_regime": _aggregate_by_regime(selected_rows),
++        },
++        "improvement": {
++            "validation_semantic_f1_gain": round(
++                selected_validation["semantic"]["f1"]
++                - baseline_validation["semantic"]["f1"],
++                6,
++            ),
++            "validation_tier_accuracy_gain": round(
++                selected_validation["semantic"][
++                    "tier_accuracy_on_location_matches"
++                ]
++                - baseline_validation["semantic"][
++                    "tier_accuracy_on_location_matches"
++                ],
++                6,
++            ),
++            "validation_scope_accuracy_gain": round(
++                selected_validation["semantic"][
++                    "scope_accuracy_on_location_matches"
++                ]
++                - baseline_validation["semantic"][
++                    "scope_accuracy_on_location_matches"
++                ],
++                6,
++            ),
++            "validation_major_external_f1_gain": round(
++                selected_validation["major_external"]["f1"]
++                - baseline_validation["major_external"]["f1"],
++                6,
++            ),
++            "location_prediction_change": (
++                selected_all["predicted"]
++                - baseline_all["predicted"]
++            ),
++            "location_false_positive_change": (
++                selected_all["location"]["false_positives"]
++                - baseline_all["location"]["false_positives"]
++            ),
++            "location_false_negative_change": (
++                selected_all["location"]["false_negatives"]
++                - baseline_all["location"]["false_negatives"]
++            ),
++        },
++        "baseline_per_sample": baseline_rows,
++        "per_sample": selected_rows,
++    }
++
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    args.output.write_text(
++        json.dumps(payload, indent=2) + "\n",
++        encoding="utf-8",
++    )
++
++    print(json.dumps(payload["selected"], indent=2))
++    print(
++        json.dumps(
++            {
++                "train": payload["results"]["train"],
++                "validation": payload["results"]["validation"],
++                "all_development": payload["results"][
++                    "all_development"
++                ],
++                "improvement": payload["improvement"],
++            },
++            indent=2,
++        )
++    )
++    print(f"Report: {args.output}")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/swing_engine/__init__.py b/swing_engine/__init__.py
+index e999f1c..086bfed 100644
+--- a/swing_engine/__init__.py
++++ b/swing_engine/__init__.py
+@@ -7,8 +7,9 @@ from swing_engine.models import (
+     EvaluationReport, InternalSwing, MTFHierarchyResult, MTFSwingContext,
+     MarketContext, PivotCandidate, PipelineArtifacts,
+     PerformanceMetrics, RejectedCandidate, StructureRegime, Swing, SwingClassification,
+-    SwingDetectionOutput, SwingDirection, SwingExplanation, SwingLifecycleState,
+-    SwingLifecycleEvent, SwingRuleCheck, SwingScope, SwingTier, SwingTrackedCandidate,
++    SwingDetectionOutput, SwingDirection, SwingExplanation, SwingHierarchyState,
++    SwingLifecycleState, SwingLifecycleEvent, SwingRuleCheck, SwingScope, SwingTier,
++    SwingTrackedCandidate,
+     TradingSession, TrendBias, VolatilityRegime,
+ )
+ from swing_engine.context import adapt_config, compute_market_context
+@@ -54,10 +55,11 @@ from swing_engine.calibration import CalibrationReport, calibrate_confidence
+ from swing_engine.confirmation_score import compute_score_breakdown
+ from swing_engine.ground_truth import labels_from_synthetic_bars, synthetic_pivot_indices, write_ground_truth_file
+ from swing_engine.structure_metadata import enrich_structure_metadata, swing_id
++from swing_engine.hierarchy import apply_recursive_hierarchy
+ from swing_engine.visualization import SwingVisualizer
+ from swing_engine.versions import DEFAULT_VERSION, LATEST_VERSION, SUPPORTED_VERSIONS
+ 
+-__version__ = "2.1.0"
++__version__ = "2.2.0"
+ 
+ __all__ = [
+     "SwingEngine", "SwingDetectionEngine", "detect_swings",
+@@ -69,7 +71,8 @@ __all__ = [
+     "SwingVisualizer", "PipelineArtifacts", "PerformanceMetrics", "RejectedCandidate",
+     "PivotCandidate", "DEFAULT_VERSION", "LATEST_VERSION", "SUPPORTED_VERSIONS",
+     "MarketContext", "SwingExplanation", "VolatilityRegime", "StructureRegime", "TradingSession",
+-    "SwingLifecycleState", "SwingLifecycleEvent", "SwingTrackedCandidate", "SwingRuleCheck",
++    "SwingHierarchyState", "SwingLifecycleState", "SwingLifecycleEvent",
++    "SwingTrackedCandidate", "SwingRuleCheck",
+     "MTFSwingContext", "MTFHierarchyResult", "TrendBias",
+     "compute_market_context", "adapt_config", "compute_quality_score",
+     "build_swing_explanation", "build_rejection_explanation",
+@@ -89,6 +92,6 @@ __all__ = [
+     "calibrate_confidence", "CalibrationReport",
+     "compute_score_breakdown",
+     "labels_from_synthetic_bars", "synthetic_pivot_indices", "write_ground_truth_file",
+-    "enrich_structure_metadata", "swing_id",
++    "enrich_structure_metadata", "swing_id", "apply_recursive_hierarchy",
+     "SwingVisualizer",
+ ]
+diff --git a/swing_engine/config.py b/swing_engine/config.py
+index 63d6a8e..58a8c86 100644
+--- a/swing_engine/config.py
++++ b/swing_engine/config.py
+@@ -138,6 +138,15 @@ class ClassificationConfig:
+     structural_reversal_weight: float = 0.30
+     structural_scope_from_tier: bool = False
+ 
++    # v2.2 recursive hierarchy. The first-level pivot detector remains frozen;
++    # this second directional-change pass determines structural importance from
++    # the sequence of already-confirmed swings.
++    hierarchy_enabled: bool = False
++    hierarchy_reversal_atr: float = 5.0
++    hierarchy_include_provisional: bool = False
++    hierarchy_provisional_prominence_atr: float = 5.0
++    hierarchy_scope_policy: str = "major_external"
++
+ 
+ @dataclass(frozen=True)
+ class ConfidenceConfig:
+diff --git a/swing_engine/evaluation.py b/swing_engine/evaluation.py
+index 0ab5c6e..0548563 100644
+--- a/swing_engine/evaluation.py
++++ b/swing_engine/evaluation.py
+@@ -104,6 +104,15 @@ class SwingBenchmarkEvaluator:
+                     "ground_truth_tier": truth.tier.value,
+                     "predicted_scope": pred.scope.value,
+                     "ground_truth_scope": truth.scope.value,
++                    "predicted_hierarchy_state": (
++                        pred.hierarchy_state.value
++                        if pred.hierarchy_state is not None
++                        else None
++                    ),
++                    "predicted_hierarchy_confirmation_index": (
++                        pred.hierarchy_confirmation_index
++                    ),
++                    "predicted_hierarchy_revision_index": pred.hierarchy_revision_index,
+                     "label_id": truth.label_id,
+                     "sample_id": truth.sample_id,
+                 }
+@@ -116,6 +125,15 @@ class SwingBenchmarkEvaluator:
+         recall = tp / (tp + fn) if (tp + fn) else 0.0
+         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
+ 
++        semantic_tp = sum(1 for pair in pairs if pair["full_semantic_match"])
++        semantic_precision = (
++            semantic_tp / len(confirmed) if confirmed else 0.0
++        )
++        semantic_recall = (
++            semantic_tp / len(ground_truth) if ground_truth else 0.0
++        )
++        semantic_f1 = _f1(semantic_precision, semantic_recall)
++
+         major = self._semantic_subset_metrics(
+             confirmed, ground_truth, pair_indexes, "tier", SwingTier.MAJOR
+         )
+@@ -161,6 +179,10 @@ class SwingBenchmarkEvaluator:
+             major_external_precision=major_external[0],
+             major_external_recall=major_external[1],
+             major_external_f1=major_external_f1,
++            semantic_precision=semantic_precision,
++            semantic_recall=semantic_recall,
++            semantic_f1=semantic_f1,
++            semantic_true_positives=semantic_tp,
+             tier_accuracy=tier_accuracy,
+             scope_accuracy=scope_accuracy,
+             false_positives_per_1000_bars=(
+@@ -352,6 +374,7 @@ def write_comparison_charts(reports: dict[str, EvaluationReport], path: Path) ->
+         "precision",
+         "recall",
+         "f1_score",
++        "semantic_f1",
+         "major_external_f1",
+         "major_precision",
+         "external_precision",
+@@ -391,6 +414,10 @@ def _markdown_summary(report: EvaluationReport) -> str:
+         f"| Major External F1 | {report.major_external_f1:.4f} |",
+         f"| Major External Precision | {report.major_external_precision:.4f} |",
+         f"| Major External Recall | {report.major_external_recall:.4f} |",
++        f"| Full Semantic F1 | {report.semantic_f1:.4f} |",
++        f"| Full Semantic Precision | {report.semantic_precision:.4f} |",
++        f"| Full Semantic Recall | {report.semantic_recall:.4f} |",
++        f"| Full Semantic True Positives | {report.semantic_true_positives} |",
+         f"| Major Precision | {report.major_precision:.4f} |",
+         f"| Major Recall | {report.major_recall:.4f} |",
+         f"| External Precision | {report.external_precision:.4f} |",
+diff --git a/swing_engine/explain.py b/swing_engine/explain.py
+index 0ab992d..c030cb9 100644
+--- a/swing_engine/explain.py
++++ b/swing_engine/explain.py
+@@ -19,6 +19,7 @@ from swing_engine.models import (
+     DetectedSwing,
+     RejectedCandidate,
+     SwingExplanation,
++    SwingHierarchyState,
+     SwingTier,
+ )
+ 
+@@ -67,8 +68,31 @@ def build_swing_explanation(
+     else:
+         factors.append("Not yet confirmed")
+ 
+-    if swing.tier == SwingTier.MAJOR:
+-        factors.append(f"Major threshold met (>= {config.classification.major_min_atr_multiple}x ATR)")
++    if swing.hierarchy_state is SwingHierarchyState.CONFIRMED_MAJOR:
++        hierarchy_reversal = float(
++            swing.metadata.get("hierarchy_reversal_atr", 0.0)
++        )
++        factors.append(
++            "Higher-order hierarchy confirmed "
++            f"after {hierarchy_reversal:.2f}x ATR reversal"
++        )
++        factors.append(
++            "Hierarchy confirmation bar "
++            f"{swing.hierarchy_confirmation_index}"
++        )
++    elif swing.hierarchy_state is SwingHierarchyState.PROVISIONAL_MAJOR:
++        factors.append(
++            "Provisional higher-order extreme; hierarchy may revise"
++        )
++    elif swing.hierarchy_state is not None:
++        factors.append(
++            f"Recursive hierarchy state: {swing.hierarchy_state.value}"
++        )
++    elif swing.tier == SwingTier.MAJOR:
++        factors.append(
++            "Major threshold met "
++            f"(>= {config.classification.major_min_atr_multiple}x ATR)"
++        )
+     else:
+         factors.append("Classified minor")
+ 
+diff --git a/swing_engine/hierarchy.py b/swing_engine/hierarchy.py
+new file mode 100644
+index 0000000..368630c
+--- /dev/null
++++ b/swing_engine/hierarchy.py
+@@ -0,0 +1,350 @@
++"""Recursive structural hierarchy for already-confirmed first-level swings.
++
++The v2.1 detector deliberately solves pivot location first.  This module adds a
++second, slower directional-change layer that classifies the structural role of
++those stable pivots without changing their price, timestamp, or confirmation
++bar.
++
++Hierarchy is revision-aware:
++
++* CONFIRMED_MAJOR -- a later opposite swing moved far enough to confirm the
++  pivot as a higher-order structural anchor.
++* PROVISIONAL_MAJOR -- the current pending extreme is prominent enough to be
++  exposed as major, but may still be superseded.
++* SUPERSEDED -- a pending same-direction extreme was replaced by a more extreme
++  pivot before higher-order confirmation.
++* INTERNAL -- the pivot never became the active higher-order extreme.
++* PENDING -- the current higher-order extreme is not prominent enough for
++  provisional-major status.
++
++Only hierarchy labels can revise.  First-level swing location and confirmation
++remain unchanged.
++"""
++
++from __future__ import annotations
++
++from collections.abc import Sequence
++
++from swing_engine.config import SwingEngineConfig
++from swing_engine.models import (
++    DetectedSwing,
++    SwingDirection,
++    SwingHierarchyState,
++    SwingScope,
++    SwingTier,
++)
++
++
++def apply_recursive_hierarchy(
++    swings: list[DetectedSwing],
++    atr_series: Sequence[float],
++    config: SwingEngineConfig,
++) -> list[DetectedSwing]:
++    """Classify a second structural level over confirmed first-level swings.
++
++    The input order is preserved.  Unconfirmed swings are retained but excluded
++    from hierarchy transitions.  The function mutates the supplied swing
++    objects, matching the rest of the scoring pipeline.
++    """
++
++    classification = config.classification
++    if not classification.hierarchy_enabled:
++        return swings
++
++    threshold = float(classification.hierarchy_reversal_atr)
++    provisional_threshold = float(
++        classification.hierarchy_provisional_prominence_atr
++    )
++    if threshold <= 0:
++        raise ValueError("hierarchy_reversal_atr must be positive")
++    if provisional_threshold < 0:
++        raise ValueError(
++            "hierarchy_provisional_prominence_atr cannot be negative"
++        )
++    if classification.hierarchy_scope_policy != "major_external":
++        raise ValueError(
++            "Unsupported hierarchy_scope_policy: "
++            f"{classification.hierarchy_scope_policy!r}"
++        )
++
++    confirmed = [swing for swing in swings if swing.confirmed]
++    for swing in swings:
++        _reset_hierarchy(swing, threshold, classification.hierarchy_scope_policy)
++
++    if not confirmed:
++        return swings
++
++    pending = confirmed[0]
++    _mark_pending(pending, config)
++
++    for candidate in confirmed[1:]:
++        if candidate.direction is pending.direction:
++            if _is_more_extreme(candidate, pending):
++                _mark_superseded(pending, candidate)
++                pending = candidate
++                _mark_pending(pending, config)
++            else:
++                _mark_internal(
++                    candidate,
++                    pending,
++                    reason="less_extreme_same_direction",
++                )
++            continue
++
++        reversal_atr = _reversal_atr(pending, candidate, atr_series)
++        candidate.metadata["hierarchy_test_anchor_index"] = pending.pivot_index
++        candidate.metadata["hierarchy_test_reversal_atr"] = round(
++            reversal_atr, 4
++        )
++
++        if reversal_atr >= threshold:
++            _mark_confirmed_major(
++                pending,
++                candidate,
++                reversal_atr,
++                config,
++            )
++            pending = candidate
++            _mark_pending(pending, config)
++        else:
++            _mark_internal(
++                candidate,
++                pending,
++                reason="insufficient_hierarchy_reversal",
++                reversal_atr=reversal_atr,
++            )
++
++    prominence = float(
++        pending.metadata.get("structural_prominence_atr", 0.0) or 0.0
++    )
++    if (
++        classification.hierarchy_include_provisional
++        and prominence >= provisional_threshold
++    ):
++        _mark_provisional_major(pending, prominence, config)
++    else:
++        pending.tier = SwingTier.MINOR
++        pending.scope = SwingScope.INTERNAL
++        pending.hierarchy_state = SwingHierarchyState.PENDING
++        pending.metadata.update(
++            {
++                "hierarchy_state": SwingHierarchyState.PENDING.value,
++                "hierarchy_pending_prominence_atr": round(prominence, 4),
++                "hierarchy_provisional_threshold_atr": provisional_threshold,
++            }
++        )
++
++    return swings
++
++
++def _reset_hierarchy(
++    swing: DetectedSwing,
++    threshold: float,
++    scope_policy: str,
++) -> None:
++    swing.tier = SwingTier.MINOR
++    swing.scope = SwingScope.INTERNAL
++    swing.hierarchy_state = (
++        SwingHierarchyState.PENDING
++        if swing.confirmed
++        else SwingHierarchyState.INTERNAL
++    )
++    swing.hierarchy_confirmation_index = None
++    swing.hierarchy_revision_index = None
++    swing.metadata.update(
++        {
++            "hierarchy_algorithm": "recursive_directional_change",
++            "hierarchy_reversal_threshold_atr": threshold,
++            "hierarchy_scope_policy": scope_policy,
++            "hierarchy_state": swing.hierarchy_state.value,
++            "hierarchy_available_index": _availability_index(swing),
++            "hierarchy_confirmation_index": None,
++            "hierarchy_revision_index": None,
++        }
++    )
++
++
++def _mark_pending(
++    swing: DetectedSwing,
++    config: SwingEngineConfig,
++) -> None:
++    swing.tier = SwingTier.MINOR
++    swing.scope = SwingScope.INTERNAL
++    swing.hierarchy_state = SwingHierarchyState.PENDING
++    prominence = float(
++        swing.metadata.get("structural_prominence_atr", 0.0) or 0.0
++    )
++    provisionally_eligible = (
++        config.classification.hierarchy_include_provisional
++        and prominence
++        >= config.classification.hierarchy_provisional_prominence_atr
++    )
++    swing.metadata.update(
++        {
++            "hierarchy_state": SwingHierarchyState.PENDING.value,
++            "hierarchy_anchor_pivot_index": swing.pivot_index,
++            "hierarchy_was_provisional": provisionally_eligible,
++            "hierarchy_provisional_since_index": (
++                _availability_index(swing)
++                if provisionally_eligible
++                else None
++            ),
++        }
++    )
++
++
++def _mark_internal(
++    swing: DetectedSwing,
++    anchor: DetectedSwing,
++    *,
++    reason: str,
++    reversal_atr: float | None = None,
++) -> None:
++    swing.tier = SwingTier.MINOR
++    swing.scope = SwingScope.INTERNAL
++    swing.hierarchy_state = SwingHierarchyState.INTERNAL
++    swing.metadata.update(
++        {
++            "hierarchy_state": SwingHierarchyState.INTERNAL.value,
++            "hierarchy_reason": reason,
++            "hierarchy_anchor_pivot_index": anchor.pivot_index,
++        }
++    )
++    if reversal_atr is not None:
++        swing.metadata["hierarchy_reversal_atr"] = round(reversal_atr, 4)
++
++
++def _mark_superseded(
++    swing: DetectedSwing,
++    superseder: DetectedSwing,
++) -> None:
++    revision_index = max(
++        _availability_index(swing),
++        _availability_index(superseder),
++    )
++    swing.tier = SwingTier.MINOR
++    swing.scope = SwingScope.INTERNAL
++    swing.hierarchy_state = SwingHierarchyState.SUPERSEDED
++    swing.hierarchy_revision_index = revision_index
++    swing.metadata.update(
++        {
++            "hierarchy_state": SwingHierarchyState.SUPERSEDED.value,
++            "hierarchy_reason": "more_extreme_same_direction",
++            "hierarchy_superseded_by_index": superseder.pivot_index,
++            "hierarchy_revision_index": revision_index,
++        }
++    )
++
++
++def _mark_confirmed_major(
++    swing: DetectedSwing,
++    confirmer: DetectedSwing,
++    reversal_atr: float,
++    config: SwingEngineConfig,
++) -> None:
++    confirmation_index = max(
++        _availability_index(swing),
++        _availability_index(confirmer),
++    )
++    swing.tier = SwingTier.MAJOR
++    swing.scope = _major_scope(swing, config)
++    swing.hierarchy_state = SwingHierarchyState.CONFIRMED_MAJOR
++    swing.hierarchy_confirmation_index = confirmation_index
++    swing.metadata.update(
++        {
++            "hierarchy_state": SwingHierarchyState.CONFIRMED_MAJOR.value,
++            "hierarchy_confirmation_index": confirmation_index,
++            "hierarchy_reversal_atr": round(reversal_atr, 4),
++            "hierarchy_reversal_pivot_index": confirmer.pivot_index,
++            "hierarchy_reversal_price": confirmer.price,
++            "hierarchy_reversal_direction": confirmer.direction.value,
++        }
++    )
++
++
++def _mark_provisional_major(
++    swing: DetectedSwing,
++    prominence: float,
++    config: SwingEngineConfig,
++) -> None:
++    swing.tier = SwingTier.MAJOR
++    swing.scope = _major_scope(swing, config)
++    swing.hierarchy_state = SwingHierarchyState.PROVISIONAL_MAJOR
++    swing.hierarchy_confirmation_index = None
++    swing.metadata.update(
++        {
++            "hierarchy_state": SwingHierarchyState.PROVISIONAL_MAJOR.value,
++            "hierarchy_pending_prominence_atr": round(prominence, 4),
++            "hierarchy_confirmation_index": None,
++            "hierarchy_is_revisable": True,
++        }
++    )
++
++
++def _major_scope(
++    swing: DetectedSwing,
++    config: SwingEngineConfig,
++) -> SwingScope:
++    """Assign scope independently from the tier-selection routine.
++
++    v2.2 uses a conservative two-scope policy: higher-order anchors are
++    external and all first-level pivots are internal.  The separate function
++    and config key intentionally leave room for a future protected-range scope
++    model without coupling it back into tier selection.
++    """
++
++    policy = config.classification.hierarchy_scope_policy
++    if policy == "major_external":
++        return SwingScope.EXTERNAL
++    raise ValueError(f"Unsupported hierarchy_scope_policy: {policy!r}")
++
++
++def _is_more_extreme(
++    candidate: DetectedSwing,
++    pending: DetectedSwing,
++) -> bool:
++    if candidate.direction is SwingDirection.HIGH:
++        return candidate.price >= pending.price
++    return candidate.price <= pending.price
++
++
++def _reversal_atr(
++    pending: DetectedSwing,
++    opposite: DetectedSwing,
++    atr_series: Sequence[float],
++) -> float:
++    atr = _atr_at(pending.pivot_index, atr_series)
++    return abs(opposite.price - pending.price) / atr if atr > 0 else 0.0
++
++
++def _atr_at(index: int, atr_series: Sequence[float]) -> float:
++    if not atr_series:
++        return 0.0
++
++    bounded = min(max(index, 0), len(atr_series) - 1)
++    value = float(atr_series[bounded])
++    if value > 0:
++        return value
++
++    for prior in range(bounded - 1, -1, -1):
++        value = float(atr_series[prior])
++        if value > 0:
++            return value
++
++    for later in range(bounded + 1, len(atr_series)):
++        value = float(atr_series[later])
++        if value > 0:
++            return value
++
++    return 0.0
++
++
++def _availability_index(swing: DetectedSwing) -> int:
++    if swing.confirmation_index is not None:
++        return int(swing.confirmation_index)
++
++    available = swing.metadata.get("available_index")
++    if available is not None:
++        return int(available)
++
++    return int(swing.pivot_index)
+diff --git a/swing_engine/models.py b/swing_engine/models.py
+index c3c562d..68a7da0 100644
+--- a/swing_engine/models.py
++++ b/swing_engine/models.py
+@@ -26,6 +26,16 @@ class SwingScope(str, Enum):
+     NEUTRAL = "NEUTRAL"
+ 
+ 
++class SwingHierarchyState(str, Enum):
++    """Lifecycle of a swing inside the recursive structural hierarchy."""
++
++    INTERNAL = "INTERNAL"
++    PENDING = "PENDING"
++    PROVISIONAL_MAJOR = "PROVISIONAL_MAJOR"
++    CONFIRMED_MAJOR = "CONFIRMED_MAJOR"
++    SUPERSEDED = "SUPERSEDED"
++
++
+ # Legacy aliases
+ SwingClassification = SwingTier
+ 
+@@ -299,6 +309,9 @@ class DetectedSwing:
+     explanation: "SwingExplanation | None" = None
+     rule_checks: list[SwingRuleCheck] = field(default_factory=list)
+     lifecycle_state: SwingLifecycleState | None = None
++    hierarchy_state: SwingHierarchyState | None = None
++    hierarchy_confirmation_index: int | None = None
++    hierarchy_revision_index: int | None = None
+     mtf_context: "MTFSwingContext | None" = None
+     reasoning: list[str] = field(default_factory=list)
+     metadata: dict[str, Any] = field(default_factory=dict)
+@@ -334,6 +347,9 @@ class DetectedSwing:
+             "explanation": self.explanation.to_dict() if self.explanation else None,
+             "rule_checks": [r.to_dict() for r in self.rule_checks],
+             "lifecycle_state": self.lifecycle_state.value if self.lifecycle_state else None,
++            "hierarchy_state": self.hierarchy_state.value if self.hierarchy_state else None,
++            "hierarchy_confirmation_index": self.hierarchy_confirmation_index,
++            "hierarchy_revision_index": self.hierarchy_revision_index,
+             "mtf_context": self.mtf_context.to_dict() if self.mtf_context else None,
+             "reasoning": list(self.reasoning),
+             "metadata": to_dict(self.metadata),
+@@ -488,6 +504,10 @@ class EvaluationReport:
+     major_external_precision: float = 0.0
+     major_external_recall: float = 0.0
+     major_external_f1: float = 0.0
++    semantic_precision: float = 0.0
++    semantic_recall: float = 0.0
++    semantic_f1: float = 0.0
++    semantic_true_positives: int = 0
+     tier_accuracy: float = 0.0
+     scope_accuracy: float = 0.0
+     false_positives_per_1000_bars: float = 0.0
+@@ -516,6 +536,10 @@ class EvaluationReport:
+             "major_external_precision": round(self.major_external_precision, 4),
+             "major_external_recall": round(self.major_external_recall, 4),
+             "major_external_f1": round(self.major_external_f1, 4),
++            "semantic_precision": round(self.semantic_precision, 4),
++            "semantic_recall": round(self.semantic_recall, 4),
++            "semantic_f1": round(self.semantic_f1, 4),
++            "semantic_true_positives": self.semantic_true_positives,
+             "tier_accuracy": round(self.tier_accuracy, 4),
+             "scope_accuracy": round(self.scope_accuracy, 4),
+             "false_positives_per_1000_bars": round(self.false_positives_per_1000_bars, 4),
+diff --git a/swing_engine/pipeline.py b/swing_engine/pipeline.py
+index e9a9d71..f622c64 100644
+--- a/swing_engine/pipeline.py
++++ b/swing_engine/pipeline.py
+@@ -10,14 +10,21 @@ from shared.types.models import Candle, Timeframe
+ from swing_engine.config import SwingEngineConfig, get_config
+ from swing_engine.confirmation import confirm_swings
+ from swing_engine.context import adapt_config, compute_market_context
+-from swing_engine.explain import build_rejection_explanation
++from swing_engine.explain import build_rejection_explanation, build_swing_explanation
+ from swing_engine.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
++from swing_engine.hierarchy import apply_recursive_hierarchy
+ from swing_engine.lifecycle import build_lifecycle, compute_repainting_stats
+-from swing_engine.models import DetectionResult, PipelineArtifacts, RejectedCandidate, SwingLifecycleState
++from swing_engine.models import (
++    DetectionResult,
++    PipelineArtifacts,
++    RejectedCandidate,
++    SwingHierarchyState,
++    SwingLifecycleState,
++)
+ from swing_engine.performance import measure_performance
+ from swing_engine.pivots import detect_pivot_candidates
+ from swing_engine.rules import build_rule_checks_for_swing
+-from swing_engine.scoring import score_and_classify
++from swing_engine.scoring import compute_confidence, score_and_classify
+ from swing_engine.structure_metadata import enrich_structure_metadata
+ from swing_engine.utils import compute_atr_series, log_stage
+ 
+@@ -35,6 +42,7 @@ def run_pipeline(
+     cfg = config or get_config(tf, version=version, symbol=sym)
+     artifacts = PipelineArtifacts()
+     stage_logs: list[dict[str, Any]] = []
++    hierarchy_stats: dict[str, int] = {}
+ 
+     if not bars:
+         return DetectionResult(swings=[], symbol=symbol or "UNKNOWN", timeframe=tf, bar_count=0, version=version)
+@@ -82,6 +90,27 @@ def run_pipeline(
+ 
+         detected = score_and_classify(confirmed, bars, atr_series, cfg)
+ 
++        if cfg.classification.hierarchy_enabled:
++            detected = apply_recursive_hierarchy(detected, atr_series, cfg)
++            for swing in detected:
++                # Tier and scope changed after first-level scoring, so refresh
++                # dependent metadata rather than leaving stale explanations.
++                swing.confidence = compute_confidence(swing, cfg)
++                swing.explanation = build_swing_explanation(swing, cfg)
++
++                state = (
++                    swing.hierarchy_state.value
++                    if swing.hierarchy_state is not None
++                    else "NONE"
++                )
++                hierarchy_stats[state] = hierarchy_stats.get(state, 0) + 1
++
++            stage_logs.append({
++                "stage": "hierarchy",
++                "count": len(detected),
++                "states": dict(sorted(hierarchy_stats.items())),
++            })
++
+         if _structure_metadata_enabled(version):
+             enrich_structure_metadata(detected)
+ 
+@@ -119,6 +148,23 @@ def run_pipeline(
+             "version": version,
+             "commit_hash": _git_commit_hash(),
+             "adaptive": cfg.adaptive.enabled,
++            "hierarchy_enabled": cfg.classification.hierarchy_enabled,
++            "hierarchy_algorithm": (
++                "recursive_directional_change"
++                if cfg.classification.hierarchy_enabled
++                else None
++            ),
++            "hierarchy_reversal_atr": (
++                cfg.classification.hierarchy_reversal_atr
++                if cfg.classification.hierarchy_enabled
++                else None
++            ),
++            "hierarchy_provisional_prominence_atr": (
++                cfg.classification.hierarchy_provisional_prominence_atr
++                if cfg.classification.hierarchy_enabled
++                else None
++            ),
++            "hierarchy_revision_stats": hierarchy_stats,
+             "market_context": artifacts.market_context.to_dict() if artifacts.market_context else None,
+             "repainting_stats": artifacts.repainting_stats,
+         },
+@@ -126,11 +172,11 @@ def run_pipeline(
+ 
+ 
+ def _sprint4_enabled(version: str) -> bool:
+-    return version in ("1.3.0", "1.4.0", "2.0.0", "2.1.0")
++    return version in ("1.3.0", "1.4.0", "2.0.0", "2.1.0", "2.2.0")
+ 
+ 
+ def _structure_metadata_enabled(version: str) -> bool:
+-    return version in ("1.4.0", "2.0.0", "2.1.0")
++    return version in ("1.4.0", "2.0.0", "2.1.0", "2.2.0")
+ 
+ 
+ def _build_timeline(artifacts: PipelineArtifacts) -> list[dict[str, Any]]:
+diff --git a/swing_engine/rules.py b/swing_engine/rules.py
+index 2e20b22..c7c8b4f 100644
+--- a/swing_engine/rules.py
++++ b/swing_engine/rules.py
+@@ -8,6 +8,7 @@ from swing_engine.models import (
+     PipelineArtifacts,
+     PivotCandidate,
+     RejectedCandidate,
++    SwingHierarchyState,
+     SwingRuleCheck,
+     SwingTier,
+ )
+@@ -27,6 +28,39 @@ def build_rule_checks_for_swing(
+     leg_atr = float(swing.metadata.get("leg_atr", 0.0))
+     comp = swing.metadata.get("strength_components", {})
+ 
++    major_value = swing.tier.value
++    major_threshold = (
++        f"atr>={config.classification.major_min_atr_multiple}"
++    )
++    if config.classification.hierarchy_enabled:
++        state = swing.hierarchy_state
++        major_value = (
++            f"{swing.tier.value}; hierarchy="
++            f"{state.value if state is not None else 'UNKNOWN'}"
++        )
++        if state is SwingHierarchyState.CONFIRMED_MAJOR:
++            major_value += (
++                f"; reversal_atr="
++                f"{float(swing.metadata.get('hierarchy_reversal_atr', 0.0)):.2f}"
++            )
++            major_threshold = (
++                "hierarchy_reversal_atr>="
++                f"{config.classification.hierarchy_reversal_atr}"
++            )
++        elif state is SwingHierarchyState.PROVISIONAL_MAJOR:
++            major_value += (
++                f"; prominence_atr="
++                f"{float(swing.metadata.get('structural_prominence_atr', 0.0)):.2f}"
++            )
++            major_threshold = (
++                "provisional_prominence_atr>="
++                f"{config.classification.hierarchy_provisional_prominence_atr}"
++            )
++        else:
++            major_threshold = (
++                "confirmed/provisional recursive hierarchy major"
++            )
++
+     return [
+         SwingRuleCheck(
+             rule_id="pivot_detection",
+@@ -65,8 +99,8 @@ def build_rule_checks_for_swing(
+             rule_id="major_tier",
+             label="Major tier",
+             passed=swing.tier == SwingTier.MAJOR,
+-            value=swing.tier.value,
+-            threshold=f"atr>={config.classification.major_min_atr_multiple}",
++            value=major_value,
++            threshold=major_threshold,
+         ),
+         SwingRuleCheck(
+             rule_id="quality",
+diff --git a/swing_engine/structure_metadata.py b/swing_engine/structure_metadata.py
+index 5b8d101..026667f 100644
+--- a/swing_engine/structure_metadata.py
++++ b/swing_engine/structure_metadata.py
+@@ -38,6 +38,11 @@ def enrich_structure_metadata(swings: list[DetectedSwing]) -> list[DetectedSwing
+             "is_internal": s.scope == SwingScope.INTERNAL,
+             "confirmation_candle_index": s.confirmation_index,
+             "pivot_candle_index": s.pivot_index,
++            "hierarchy_state": (
++                s.hierarchy_state.value if s.hierarchy_state is not None else None
++            ),
++            "hierarchy_confirmation_candle_index": s.hierarchy_confirmation_index,
++            "hierarchy_revision_candle_index": s.hierarchy_revision_index,
+         })
+         last[s.direction] = s
+     return swings
+diff --git a/swing_engine/versions/__init__.py b/swing_engine/versions/__init__.py
+index 71f061b..c668d4b 100644
+--- a/swing_engine/versions/__init__.py
++++ b/swing_engine/versions/__init__.py
+@@ -12,10 +12,11 @@ SUPPORTED_VERSIONS: dict[str, str] = {
+     "1.4.0": "v1_4",
+     "2.0.0": "v2_0",
+     "2.1.0": "v2_1",
++    "2.2.0": "v2_2",
+ }
+ 
+ DEFAULT_VERSION = "2.0.0"
+-LATEST_VERSION = "2.1.0"
++LATEST_VERSION = "2.2.0"
+ 
+ 
+ def resolve_version(version: str | None) -> str:
+@@ -48,4 +49,7 @@ def get_pipeline(version: str | None = None) -> Callable:
+     if v == "2.1.0":
+         from swing_engine.versions.v2_1 import detect_v2_1
+         return detect_v2_1
++    if v == "2.2.0":
++        from swing_engine.versions.v2_2 import detect_v2_2
++        return detect_v2_2
+     raise ValueError(f"No pipeline for version {v}")
+diff --git a/swing_engine/versions/v2_2.py b/swing_engine/versions/v2_2.py
+new file mode 100644
+index 0000000..5bfbc92
+--- /dev/null
++++ b/swing_engine/versions/v2_2.py
+@@ -0,0 +1,26 @@
++"""Swing Detection Engine v2.2.0 — recursive, revision-aware hierarchy."""
++
++from __future__ import annotations
++
++from shared.types.models import Candle, Timeframe
++
++from swing_engine.config import SwingEngineConfig
++from swing_engine.pipeline import run_pipeline
++
++VERSION = "2.2.0"
++
++
++def detect_v2_2(
++    bars: list[Candle],
++    *,
++    symbol: str | None = None,
++    timeframe: Timeframe | None = None,
++    config: SwingEngineConfig | None = None,
++):
++    return run_pipeline(
++        bars,
++        version=VERSION,
++        symbol=symbol,
++        timeframe=timeframe,
++        config=config,
++    )
+diff --git a/tests/swing_detection/test_evaluator.py b/tests/swing_detection/test_evaluator.py
+index 8ead935..294114c 100644
+--- a/tests/swing_detection/test_evaluator.py
++++ b/tests/swing_detection/test_evaluator.py
+@@ -84,6 +84,10 @@ def test_semantic_metrics_and_human_confirmation_delay():
+     )
+     assert report.f1_score == 1.0  # pivot location/direction matched
+     assert report.major_external_f1 == 0.0  # structural classification did not
++    assert report.semantic_true_positives == 0
++    assert report.semantic_precision == 0.0
++    assert report.semantic_recall == 0.0
++    assert report.semantic_f1 == 0.0
+     assert report.tier_accuracy == 0.0
+     assert report.scope_accuracy == 0.0
+     assert report.average_relative_detection_delay_bars == 2.0
+diff --git a/tests/swing_detection/test_v2_1_structural.py b/tests/swing_detection/test_v2_1_structural.py
+index b3f3edb..cf58d6a 100644
+--- a/tests/swing_detection/test_v2_1_structural.py
++++ b/tests/swing_detection/test_v2_1_structural.py
+@@ -30,7 +30,7 @@ def _detect_v21(candles):
+ 
+ def test_v21_is_opt_in_and_v20_remains_the_default():
+     assert DEFAULT_VERSION == "2.0.0"
+-    assert LATEST_VERSION == "2.1.0"
++    assert LATEST_VERSION == "2.2.0"
+     assert "2.1.0" in SUPPORTED_VERSIONS
+ 
+     frozen = get_config(Timeframe.H1, version="2.0.0", symbol="XAUUSD")
+diff --git a/tests/swing_detection/test_v2_2_hierarchy.py b/tests/swing_detection/test_v2_2_hierarchy.py
+new file mode 100644
+index 0000000..2e8c7bc
+--- /dev/null
++++ b/tests/swing_detection/test_v2_2_hierarchy.py
+@@ -0,0 +1,255 @@
++"""Regression tests for the opt-in v2.2 recursive hierarchy profile."""
++
++from __future__ import annotations
++
++from datetime import datetime, timedelta, timezone
++
++from shared.types.models import Timeframe
++from swing_engine import LATEST_VERSION, SwingEngine, get_config
++from swing_engine.hierarchy import apply_recursive_hierarchy
++from swing_engine.models import (
++    DetectedSwing,
++    SwingDirection,
++    SwingHierarchyState,
++    SwingScope,
++    SwingTier,
++)
++from swing_engine.versions import DEFAULT_VERSION, SUPPORTED_VERSIONS
++from tests.swing_detection.fixtures import gold_candles
++
++
++def _gold_fixture(n: int = 220):
++    return gold_candles(
++        n,
++        wave=12.0,
++        trend=0.05,
++        period=18,
++        seed=17,
++    )
++
++
++def _detect(candles, version: str):
++    config = get_config(Timeframe.H1, version=version, symbol="XAUUSD")
++    return SwingEngine(config, version=version).detect(
++        candles,
++        symbol="XAUUSD",
++        timeframe=Timeframe.H1,
++    )
++
++
++def _swing(
++    index: int,
++    direction: SwingDirection,
++    price: float,
++    *,
++    prominence: float,
++) -> DetectedSwing:
++    timestamp = datetime(2025, 1, 1, tzinfo=timezone.utc) + timedelta(
++        hours=index
++    )
++    return DetectedSwing(
++        timestamp=timestamp,
++        price=price,
++        direction=direction,
++        tier=SwingTier.MINOR,
++        scope=SwingScope.INTERNAL,
++        pivot_index=index,
++        confirmed=True,
++        confirmed_timestamp=timestamp + timedelta(hours=2),
++        confirmation_index=index + 2,
++        confirmation_delay=2,
++        strength=4,
++        normalized_score=80.0,
++        metadata={
++            "available_index": index + 2,
++            "structural_prominence_atr": prominence,
++        },
++    )
++
++
++def test_v22_is_opt_in_and_preserves_the_frozen_default():
++    assert DEFAULT_VERSION == "2.0.0"
++    assert LATEST_VERSION == "2.2.0"
++    assert "2.2.0" in SUPPORTED_VERSIONS
++
++    v21 = get_config(Timeframe.H1, version="2.1.0", symbol="XAUUSD")
++    v22 = get_config(Timeframe.H1, version="2.2.0", symbol="XAUUSD")
++
++    assert not v21.classification.hierarchy_enabled
++    assert v21.classification.structural_scope_from_tier
++
++    assert v22.leg.min_atr_multiple == v21.leg.min_atr_multiple == 2.8
++    assert v22.leg.enforce_alternation
++    assert v22.leg.require_reversal_confirmation
++    assert v22.classification.hierarchy_enabled
++    assert v22.classification.hierarchy_reversal_atr == 5.0
++    assert v22.classification.hierarchy_include_provisional
++    assert v22.classification.hierarchy_provisional_prominence_atr == 5.0
++    assert not v22.classification.structural_scope_from_tier
++
++
++def test_v22_changes_only_hierarchy_not_first_level_pivot_location():
++    candles = _gold_fixture()
++    v21 = _detect(candles, "2.1.0").confirmed_swings
++    v22 = _detect(candles, "2.2.0").confirmed_swings
++
++    assert [
++        (
++            swing.pivot_index,
++            swing.direction,
++            swing.price,
++            swing.confirmation_index,
++        )
++        for swing in v22
++    ] == [
++        (
++            swing.pivot_index,
++            swing.direction,
++            swing.price,
++            swing.confirmation_index,
++        )
++        for swing in v21
++    ]
++
++
++def test_v22_recursive_hierarchy_tracks_confirmed_provisional_and_superseded():
++    config = get_config(Timeframe.H1, version="2.2.0", symbol="XAUUSD")
++    swings = [
++        _swing(10, SwingDirection.HIGH, 110.0, prominence=6.0),
++        _swing(20, SwingDirection.LOW, 107.0, prominence=3.0),
++        _swing(30, SwingDirection.HIGH, 112.0, prominence=7.0),
++        _swing(40, SwingDirection.LOW, 106.0, prominence=4.0),
++        _swing(50, SwingDirection.HIGH, 109.0, prominence=3.0),
++        _swing(60, SwingDirection.LOW, 104.0, prominence=6.0),
++    ]
++    atr_series = [1.0] * 100
++
++    classified = apply_recursive_hierarchy(swings, atr_series, config)
++    by_index = {swing.pivot_index: swing for swing in classified}
++
++    assert by_index[10].hierarchy_state is SwingHierarchyState.SUPERSEDED
++    assert by_index[10].hierarchy_revision_index == 32
++    assert by_index[10].metadata["hierarchy_was_provisional"] is True
++    assert by_index[10].metadata["hierarchy_provisional_since_index"] == 12
++    assert by_index[20].hierarchy_state is SwingHierarchyState.INTERNAL
++
++    confirmed = by_index[30]
++    assert confirmed.tier is SwingTier.MAJOR
++    assert confirmed.scope is SwingScope.EXTERNAL
++    assert confirmed.hierarchy_state is SwingHierarchyState.CONFIRMED_MAJOR
++    assert confirmed.hierarchy_confirmation_index == 42
++    assert confirmed.metadata["hierarchy_reversal_pivot_index"] == 40
++    assert confirmed.metadata["hierarchy_reversal_atr"] == 6.0
++    assert confirmed.metadata["hierarchy_was_provisional"] is True
++    assert confirmed.metadata["hierarchy_provisional_since_index"] == 32
++
++    assert by_index[40].hierarchy_state is SwingHierarchyState.SUPERSEDED
++    assert by_index[40].metadata["hierarchy_was_provisional"] is False
++    assert by_index[50].hierarchy_state is SwingHierarchyState.INTERNAL
++
++    provisional = by_index[60]
++    assert provisional.tier is SwingTier.MAJOR
++    assert provisional.scope is SwingScope.EXTERNAL
++    assert (
++        provisional.hierarchy_state
++        is SwingHierarchyState.PROVISIONAL_MAJOR
++    )
++    assert provisional.hierarchy_confirmation_index is None
++    assert provisional.metadata["hierarchy_is_revisable"] is True
++
++
++def test_v22_final_output_has_explicit_hierarchy_and_no_neutral_scope():
++    result = _detect(_gold_fixture(), "2.2.0")
++    swings = result.confirmed_swings
++
++    assert len(swings) >= 10
++    assert result.metadata["hierarchy_enabled"] is True
++    assert result.metadata["hierarchy_algorithm"] == (
++        "recursive_directional_change"
++    )
++    assert sum(result.metadata["hierarchy_revision_stats"].values()) == len(
++        result.swings
++    )
++    assert all(swing.scope is not SwingScope.NEUTRAL for swing in swings)
++    assert all(swing.hierarchy_state is not None for swing in swings)
++    assert all(
++        swing.metadata["hierarchy_algorithm"]
++        == "recursive_directional_change"
++        for swing in swings
++    )
++
++    for swing in swings:
++        assert swing.explanation is not None
++        assert (
++            f"Accepted {swing.tier.value} {swing.scope.value}"
++            in swing.explanation.summary
++        )
++        major_rule = next(
++            check
++            for check in swing.rule_checks
++            if check.rule_id == "major_tier"
++        )
++        assert "hierarchy=" in major_rule.value
++
++        if swing.hierarchy_state is SwingHierarchyState.CONFIRMED_MAJOR:
++            assert swing.tier is SwingTier.MAJOR
++            assert swing.scope is SwingScope.EXTERNAL
++            assert swing.hierarchy_confirmation_index is not None
++            assert (
++                swing.hierarchy_confirmation_index
++                >= swing.confirmation_index
++            )
++            assert any(
++                "Higher-order hierarchy confirmed" in factor
++                for factor in swing.explanation.factors
++            )
++        elif swing.hierarchy_state is SwingHierarchyState.PROVISIONAL_MAJOR:
++            assert swing.tier is SwingTier.MAJOR
++            assert swing.scope is SwingScope.EXTERNAL
++            assert swing.hierarchy_confirmation_index is None
++            assert any(
++                "Provisional higher-order extreme" in factor
++                for factor in swing.explanation.factors
++            )
++        else:
++            assert swing.tier is SwingTier.MINOR
++            assert swing.scope is SwingScope.INTERNAL
++
++
++def test_v22_confirmed_hierarchy_is_reproducible_at_hierarchy_confirmation():
++    candles = _gold_fixture(260)
++    full = _detect(candles, "2.2.0").confirmed_swings
++    confirmed_majors = [
++        swing
++        for swing in full
++        if swing.hierarchy_state is SwingHierarchyState.CONFIRMED_MAJOR
++    ]
++    assert confirmed_majors
++
++    for expected in confirmed_majors[:5]:
++        assert expected.hierarchy_confirmation_index is not None
++        prefix = candles[: expected.hierarchy_confirmation_index + 1]
++        replay = _detect(prefix, "2.2.0").confirmed_swings
++        match = next(
++            (
++                swing
++                for swing in replay
++                if swing.pivot_index == expected.pivot_index
++                and swing.direction is expected.direction
++            ),
++            None,
++        )
++
++        assert match is not None
++        assert match.price == expected.price
++        assert match.confirmation_index == expected.confirmation_index
++        assert (
++            match.hierarchy_state
++            is SwingHierarchyState.CONFIRMED_MAJOR
++        )
++        assert (
++            match.hierarchy_confirmation_index
++            == expected.hierarchy_confirmation_index
++        )
++        assert match.tier is SwingTier.MAJOR
++        assert match.scope is SwingScope.EXTERNAL

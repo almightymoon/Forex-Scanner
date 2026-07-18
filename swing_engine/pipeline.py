@@ -10,14 +10,21 @@ from shared.types.models import Candle, Timeframe
 from swing_engine.config import SwingEngineConfig, get_config
 from swing_engine.confirmation import confirm_swings
 from swing_engine.context import adapt_config, compute_market_context
-from swing_engine.explain import build_rejection_explanation
+from swing_engine.explain import build_rejection_explanation, build_swing_explanation
 from swing_engine.filters import apply_noise_filters, validate_atr_movement, validate_minimum_leg
+from swing_engine.hierarchy import apply_recursive_hierarchy
 from swing_engine.lifecycle import build_lifecycle, compute_repainting_stats
-from swing_engine.models import DetectionResult, PipelineArtifacts, RejectedCandidate, SwingLifecycleState
+from swing_engine.models import (
+    DetectionResult,
+    PipelineArtifacts,
+    RejectedCandidate,
+    SwingHierarchyState,
+    SwingLifecycleState,
+)
 from swing_engine.performance import measure_performance
 from swing_engine.pivots import detect_pivot_candidates
 from swing_engine.rules import build_rule_checks_for_swing
-from swing_engine.scoring import score_and_classify
+from swing_engine.scoring import compute_confidence, score_and_classify
 from swing_engine.structure_metadata import enrich_structure_metadata
 from swing_engine.utils import compute_atr_series, log_stage
 
@@ -35,6 +42,7 @@ def run_pipeline(
     cfg = config or get_config(tf, version=version, symbol=sym)
     artifacts = PipelineArtifacts()
     stage_logs: list[dict[str, Any]] = []
+    hierarchy_stats: dict[str, int] = {}
 
     if not bars:
         return DetectionResult(swings=[], symbol=symbol or "UNKNOWN", timeframe=tf, bar_count=0, version=version)
@@ -82,6 +90,27 @@ def run_pipeline(
 
         detected = score_and_classify(confirmed, bars, atr_series, cfg)
 
+        if cfg.classification.hierarchy_enabled:
+            detected = apply_recursive_hierarchy(detected, atr_series, cfg)
+            for swing in detected:
+                # Tier and scope changed after first-level scoring, so refresh
+                # dependent metadata rather than leaving stale explanations.
+                swing.confidence = compute_confidence(swing, cfg)
+                swing.explanation = build_swing_explanation(swing, cfg)
+
+                state = (
+                    swing.hierarchy_state.value
+                    if swing.hierarchy_state is not None
+                    else "NONE"
+                )
+                hierarchy_stats[state] = hierarchy_stats.get(state, 0) + 1
+
+            stage_logs.append({
+                "stage": "hierarchy",
+                "count": len(detected),
+                "states": dict(sorted(hierarchy_stats.items())),
+            })
+
         if _structure_metadata_enabled(version):
             enrich_structure_metadata(detected)
 
@@ -119,6 +148,23 @@ def run_pipeline(
             "version": version,
             "commit_hash": _git_commit_hash(),
             "adaptive": cfg.adaptive.enabled,
+            "hierarchy_enabled": cfg.classification.hierarchy_enabled,
+            "hierarchy_algorithm": (
+                "recursive_directional_change"
+                if cfg.classification.hierarchy_enabled
+                else None
+            ),
+            "hierarchy_reversal_atr": (
+                cfg.classification.hierarchy_reversal_atr
+                if cfg.classification.hierarchy_enabled
+                else None
+            ),
+            "hierarchy_provisional_prominence_atr": (
+                cfg.classification.hierarchy_provisional_prominence_atr
+                if cfg.classification.hierarchy_enabled
+                else None
+            ),
+            "hierarchy_revision_stats": hierarchy_stats,
             "market_context": artifacts.market_context.to_dict() if artifacts.market_context else None,
             "repainting_stats": artifacts.repainting_stats,
         },
@@ -126,11 +172,11 @@ def run_pipeline(
 
 
 def _sprint4_enabled(version: str) -> bool:
-    return version in ("1.3.0", "1.4.0", "2.0.0", "2.1.0")
+    return version in ("1.3.0", "1.4.0", "2.0.0", "2.1.0", "2.2.0")
 
 
 def _structure_metadata_enabled(version: str) -> bool:
-    return version in ("1.4.0", "2.0.0", "2.1.0")
+    return version in ("1.4.0", "2.0.0", "2.1.0", "2.2.0")
 
 
 def _build_timeline(artifacts: PipelineArtifacts) -> list[dict[str, Any]]:

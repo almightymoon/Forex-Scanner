@@ -38,6 +38,11 @@ def enrich_structure_metadata(swings: list[DetectedSwing]) -> list[DetectedSwing
             "is_internal": s.scope == SwingScope.INTERNAL,
             "confirmation_candle_index": s.confirmation_index,
             "pivot_candle_index": s.pivot_index,
+            "hierarchy_state": (
+                s.hierarchy_state.value if s.hierarchy_state is not None else None
+            ),
+            "hierarchy_confirmation_candle_index": s.hierarchy_confirmation_index,
+            "hierarchy_revision_candle_index": s.hierarchy_revision_index,
         })
         last[s.direction] = s
     return swings

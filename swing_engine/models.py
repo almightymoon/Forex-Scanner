@@ -26,6 +26,16 @@ class SwingScope(str, Enum):
     NEUTRAL = "NEUTRAL"
 
 
+class SwingHierarchyState(str, Enum):
+    """Lifecycle of a swing inside the recursive structural hierarchy."""
+
+    INTERNAL = "INTERNAL"
+    PENDING = "PENDING"
+    PROVISIONAL_MAJOR = "PROVISIONAL_MAJOR"
+    CONFIRMED_MAJOR = "CONFIRMED_MAJOR"
+    SUPERSEDED = "SUPERSEDED"
+
+
 # Legacy aliases
 SwingClassification = SwingTier
 
@@ -299,6 +309,9 @@ class DetectedSwing:
     explanation: "SwingExplanation | None" = None
     rule_checks: list[SwingRuleCheck] = field(default_factory=list)
     lifecycle_state: SwingLifecycleState | None = None
+    hierarchy_state: SwingHierarchyState | None = None
+    hierarchy_confirmation_index: int | None = None
+    hierarchy_revision_index: int | None = None
     mtf_context: "MTFSwingContext | None" = None
     reasoning: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -334,6 +347,9 @@ class DetectedSwing:
             "explanation": self.explanation.to_dict() if self.explanation else None,
             "rule_checks": [r.to_dict() for r in self.rule_checks],
             "lifecycle_state": self.lifecycle_state.value if self.lifecycle_state else None,
+            "hierarchy_state": self.hierarchy_state.value if self.hierarchy_state else None,
+            "hierarchy_confirmation_index": self.hierarchy_confirmation_index,
+            "hierarchy_revision_index": self.hierarchy_revision_index,
             "mtf_context": self.mtf_context.to_dict() if self.mtf_context else None,
             "reasoning": list(self.reasoning),
             "metadata": to_dict(self.metadata),
@@ -488,6 +504,10 @@ class EvaluationReport:
     major_external_precision: float = 0.0
     major_external_recall: float = 0.0
     major_external_f1: float = 0.0
+    semantic_precision: float = 0.0
+    semantic_recall: float = 0.0
+    semantic_f1: float = 0.0
+    semantic_true_positives: int = 0
     tier_accuracy: float = 0.0
     scope_accuracy: float = 0.0
     false_positives_per_1000_bars: float = 0.0
@@ -516,6 +536,10 @@ class EvaluationReport:
             "major_external_precision": round(self.major_external_precision, 4),
             "major_external_recall": round(self.major_external_recall, 4),
             "major_external_f1": round(self.major_external_f1, 4),
+            "semantic_precision": round(self.semantic_precision, 4),
+            "semantic_recall": round(self.semantic_recall, 4),
+            "semantic_f1": round(self.semantic_f1, 4),
+            "semantic_true_positives": self.semantic_true_positives,
             "tier_accuracy": round(self.tier_accuracy, 4),
             "scope_accuracy": round(self.scope_accuracy, 4),
             "false_positives_per_1000_bars": round(self.false_positives_per_1000_bars, 4),
