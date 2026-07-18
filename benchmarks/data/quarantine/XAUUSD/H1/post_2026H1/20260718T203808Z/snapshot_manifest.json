@@ -1,0 +1,42 @@
+{
+  "snapshot_id": "XAUUSD_H1_POST_2026H1_20260718T203808Z",
+  "status": "QUARANTINED_UNLABELED_ACCRUAL_TRANCHE",
+  "immutable_after_commit": true,
+  "eligible_for_engine_evaluation": false,
+  "eligible_for_labeling": false,
+  "benchmark_status": "NOT_YET_A_BENCHMARK",
+  "source": {
+    "symbol": "XAUUSD.vx",
+    "timeframe": "PERIOD_H1",
+    "account_server": "ValetaxIntl-Live2",
+    "exported_at_gmt": "2026.07.18 20:38:08",
+    "server_minus_gmt_seconds": 10800
+  },
+  "coverage": {
+    "rows": 295,
+    "historical_end_utc": "2026-06-30T20:00:00+00:00",
+    "first_new_utc": "2026-06-30T22:00:00+00:00",
+    "last_new_utc": "2026-07-17T19:00:00+00:00",
+    "initial_gap_hours": 2.0
+  },
+  "files": {
+    "raw": {
+      "path": "XAUUSD_H1_raw.csv",
+      "sha256": "b3dbeaf1970f3ce47cfde15025429dc3e395bd7588d2654e1144dca31ae8bb0f"
+    },
+    "metadata": {
+      "path": "XAUUSD_H1_raw.meta.csv",
+      "sha256": "c74e42e9c74f27eabcda54c46faa27a72ca526cf73d634edb40c0ef2d0886732"
+    },
+    "audit": {
+      "path": "acquisition_audit.json",
+      "sha256": "c70e2b5db6711fa5f7cf1df0580f164213bf27762f8f53e3705f00d759f0c8e2"
+    }
+  },
+  "contamination_controls": {
+    "labels_exist": false,
+    "predictions_exist": false,
+    "swing_engine_executed": false,
+    "v2_3_evaluated": false
+  }
+}
