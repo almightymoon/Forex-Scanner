@@ -1,0 +1,71 @@
+{
+  "protocol_id": "XAUUSD_H1_POST_2026H1_LOCKED_V1",
+  "frozen_on": "2026-07-19",
+  "candidate": {
+    "version": "2.3.0-rc1",
+    "commit": "3fd5d7c74b82c3728d7badaa6cd72044bdd6bd1d"
+  },
+  "baseline": {
+    "version": "2.2.0"
+  },
+  "historical_boundary": {
+    "last_historical_utc": "2026-06-30T20:00:00Z"
+  },
+  "accrual_requirements": {
+    "not_before_utc": "2026-09-30T20:00:00Z",
+    "minimum_unique_h1_bars": 1400,
+    "requirements_are_conjunctive": true,
+    "engine_execution_permitted_during_accrual": false,
+    "labeling_permitted_during_accrual": false,
+    "existing_tranches_may_be_overwritten": false
+  },
+  "timestamp_policy": {
+    "normalize_each_tranche_using_recorded_server_offset": true,
+    "deduplicate_on_normalized_utc": true,
+    "require_strict_chronological_order": true
+  },
+  "window_selection": {
+    "performed_only_after_accrual_requirements_pass": true,
+    "selection_uses_prices_or_predictions": false,
+    "leading_guard_bars": 48,
+    "trailing_guard_bars": 48,
+    "bucket_count": 6,
+    "window_bars": 192,
+    "algorithm": [
+      "Combine all immutable tranches and sort by normalized UTC.",
+      "Remove duplicate UTC timestamps and fail on conflicting OHLC values.",
+      "Exclude the first and last 48 bars as boundary guards.",
+      "Divide the remaining ordered bar indices into six equal chronological buckets.",
+      "Select the centered contiguous 192-bar window from each bucket.",
+      "Fail rather than adjust parameters if six non-overlapping windows cannot be produced."
+    ]
+  },
+  "labeling": {
+    "predictions_visible_to_labeler": false,
+    "engine_version_visible_to_labeler": false,
+    "passes": 2,
+    "minimum_days_between_passes": 3,
+    "conflicts_require_explicit_adjudication": true,
+    "bars_and_labels_frozen_before_evaluation": true
+  },
+  "evaluation": {
+    "candidate_evaluations_allowed": 1,
+    "baseline_evaluations_allowed": 1,
+    "error_analysis_before_release_decision": false,
+    "tuning_after_unblinding": false,
+    "prefix_stability_required": true
+  },
+  "promotion_gates": {
+    "prefix_stability_failures_max": 0,
+    "location_precision_min": 0.80,
+    "location_recall_min": 0.70,
+    "location_f1_min": 0.75,
+    "semantic_f1_min": 0.60,
+    "major_external_precision_min": 0.85,
+    "major_external_recall_min": 0.40,
+    "worst_window_location_f1_min": 0.50,
+    "candidate_location_f1_delta_vs_v2_2_min": 0.00,
+    "candidate_semantic_f1_delta_vs_v2_2_min": 0.00
+  },
+  "current_status": "ACCRUING_UNLABELED_QUARANTINED_CANDLES"
+}
