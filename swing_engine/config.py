@@ -39,6 +39,7 @@ class NoiseFilterConfig:
     min_volatility_atr: float = 0.15
     consolidation_max_bars: int = 0
     insignificant_pullback_atr: float = 0.0
+    prevent_duplicate_replacements: bool = False
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,9 @@ class LegConfig:
     min_pips: float = 2.0
     min_atr_multiple: float = 0.35
     validate_same_direction: bool = False
+    enforce_alternation: bool = False
+    require_reversal_confirmation: bool = False
+    confirmation_price: str = "wick"
 
 
 @dataclass(frozen=True)
@@ -63,6 +67,8 @@ class ConfirmationConfig:
     displacement_atr_min: float = 0.0
     displacement_bars: int = 1
     break_internal_structure: bool = False
+    enforce_candidate_availability: bool = False
+    validate_until_confirmation: bool = False
 
 
 @dataclass(frozen=True)
@@ -128,6 +134,9 @@ class ClassificationConfig:
     internal_score_threshold: float = -0.25
     protected_lookback_swings: int = 3
     tier_weights: TierWeights = field(default_factory=TierWeights)
+    structural_leg_weight: float = 0.70
+    structural_reversal_weight: float = 0.30
+    structural_scope_from_tier: bool = False
 
 
 @dataclass(frozen=True)

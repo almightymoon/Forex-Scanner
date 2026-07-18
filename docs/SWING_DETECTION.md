@@ -1,4 +1,4 @@
-# Swing Detection Engine — Technical Documentation (Sprint 3)
+# Swing Detection Engine — Technical Documentation
 
 ## Architecture
 
@@ -43,8 +43,8 @@ Bars → Market Context (adaptive) → Pivots → Noise Filter → ATR Validatio
 from swing_engine import SwingEngine, SwingVisualizer, SUPPORTED_VERSIONS
 from shared.types.models import Timeframe
 
-# Versioned engine (default v1.2.0). Pass the symbol so gold/JPY sizing applies.
-engine = SwingEngine(version="1.2.0")
+# Versioned engine. The frozen default is v2.0.0; v2.1.0 is an opt-in tuned candidate.
+engine = SwingEngine(version="2.1.0")
 result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
 
 result.swings                        # List[DetectedSwing] (+ quality_score, explanation)
@@ -64,7 +64,11 @@ swings = detect_swings(bars)
 |---------|-------------|
 | `1.0.0` | Baseline — strict pivots, legacy defaults |
 | `1.1.0` | Equal-level pivots, expanded filters, tier scoring, protected levels |
-| `1.2.0` | **Default** — adaptive thresholds (market context), 0–100 quality score, structured explainability |
+| `1.2.0` | Adaptive thresholds, quality score, and structured explainability |
+| `1.3.0` | Candidate lifecycle, replay, MTF hierarchy |
+| `1.4.0` | Score-gated confirmation and dataset suite |
+| `2.0.0` | **Frozen default** — causal multi-detector production baseline |
+| `2.1.0` | **Opt-in candidate** — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
 
 Profiles in `config/swing_detection.yaml` under `version_profiles`. Per-symbol
 overrides (e.g. `XAUUSD`) live under `symbol_overrides` and are passed via
@@ -122,7 +126,7 @@ JSONL log. `compare_against_review()` scores the log against a human/benchmark
 review file to report *live* precision, recall, and detection delay separately
 from historical backtests. Runner: `scripts/paper_validate_swings.py`.
 
-## Sprint 4 Additions (v1.3.0 — default)
+## Sprint 4 Additions (v1.3.0)
 
 ### 1. Candidate Lifecycle (`swing_engine/lifecycle.py`)
 
@@ -155,7 +159,7 @@ lower-TF swing (parent trend, external range, alignment score).
 
 See **[Project Roadmap](ROADMAP.md)** for Sprint 6+ (BOS, CHoCH, liquidity, decision engine).
 
-## Sprint 5 Additions (v1.4.0 — default)
+## Sprint 5 Additions (v1.4.0)
 
 ### 1. Score-Gated Confirmation (`swing_engine/confirmation_score.py`)
 
@@ -176,13 +180,17 @@ PYTHONPATH=. python scripts/run_benchmark_suite.py --version 1.4.0
 
 `build_swing_explanation()` includes per-factor pass/fail audit from `confirmation_checks`.
 
-## v2.0.0 Production Freeze
+## v2.0.0 Frozen Default
 
-### Human-review benchmarks
-Independent fractal pivot labels (`label_source: fractal_truth`) — not bootstrapped from engine output.
+v2.0.0 remains the default API version so existing scanner behavior and historical
+reports do not change when v2.1.0 is installed. The real XAUUSD H1 benchmark is
+AI-assisted expert draft data pending independent human adjudication; it is not
+claimed as independently verified ground truth.
+
 ```bash
-PYTHONPATH=. python scripts/generate_human_labels.py
-PYTHONPATH=. python scripts/run_benchmark_suite.py --version 2.0.0 --human-only
+PYTHONPATH=. python scripts/run_benchmark_suite.py \
+  --manifest benchmarks/datasets/XAUUSD_H1.human.manifest.json \
+  --version 2.0.0 --no-history
 ```
 
 ### Score breakdown studio
@@ -200,6 +208,44 @@ PYTHONPATH=. python scripts/calibrate_confidence.py --dataset XAUUSD_H1_human
 ### BOS-ready metadata
 Every confirmed swing stores `swing_id`, `leg_id`, `prev_opposite_swing_id`, `trend_state`,
 `confirmation_candle_index` in `metadata` (v2.0.0+).
+
+
+## v2.1.0 Reversal-Confirmed Structural Candidate
+
+v2.1.0 addresses v2.0's local-pivot cascade without changing the frozen default.
+It reduces fractal candidates to an alternating sequence and emits a pivot only
+after price has reversed far enough to confirm that structural extreme.
+
+Core rules:
+
+- Freeze the ATR threshold at the pivot, preventing future-volatility leakage.
+- Require a 2.80 ATR opposite reversal before structural confirmation.
+- Respect the fractal's right-window availability and validate the extreme through
+  its confirmation candle.
+- Replace pre-confirmation same-side candidates only with a more extreme pivot.
+- Disable whole-window adaptive scaling for this profile.
+- Classify prominence as 70% incoming-leg ATR plus 30% confirming-reversal ATR.
+- Mark prominence of 5.00 ATR or greater as Major/External; otherwise Minor/Internal.
+- Never emit `NEUTRAL` scope from the v2.1 structural branch.
+
+Use it explicitly:
+
+```python
+from swing_engine import LATEST_VERSION, SwingEngine
+
+engine = SwingEngine(version=LATEST_VERSION)  # currently 2.1.0
+result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
+```
+
+Tune and reproduce the development search:
+
+```bash
+PYTHONPATH=. python scripts/tune_xauusd_h1.py
+```
+
+The tuner selects on chronological TRAIN windows and evaluates VALIDATION only
+after parameter selection. No locked test set currently exists, so v2.1.0 must
+remain opt-in.
 
 ## XAUUSD (Gold) Support
 

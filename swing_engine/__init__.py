@@ -55,9 +55,9 @@ from swing_engine.confirmation_score import compute_score_breakdown
 from swing_engine.ground_truth import labels_from_synthetic_bars, synthetic_pivot_indices, write_ground_truth_file
 from swing_engine.structure_metadata import enrich_structure_metadata, swing_id
 from swing_engine.visualization import SwingVisualizer
-from swing_engine.versions import DEFAULT_VERSION, SUPPORTED_VERSIONS
+from swing_engine.versions import DEFAULT_VERSION, LATEST_VERSION, SUPPORTED_VERSIONS
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 __all__ = [
     "SwingEngine", "SwingDetectionEngine", "detect_swings",
@@ -67,7 +67,7 @@ __all__ = [
     "SwingBenchmarkEvaluator", "SwingEvaluator",
     "write_json_report", "write_csv_report", "write_markdown_report", "write_comparison_charts",
     "SwingVisualizer", "PipelineArtifacts", "PerformanceMetrics", "RejectedCandidate",
-    "PivotCandidate", "DEFAULT_VERSION", "SUPPORTED_VERSIONS",
+    "PivotCandidate", "DEFAULT_VERSION", "LATEST_VERSION", "SUPPORTED_VERSIONS",
     "MarketContext", "SwingExplanation", "VolatilityRegime", "StructureRegime", "TradingSession",
     "SwingLifecycleState", "SwingLifecycleEvent", "SwingTrackedCandidate", "SwingRuleCheck",
     "MTFSwingContext", "MTFHierarchyResult", "TrendBias",

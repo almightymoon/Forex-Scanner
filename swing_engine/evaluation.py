@@ -98,6 +98,8 @@ class SwingBenchmarkEvaluator:
                     "tier_match": pred.tier == truth.tier,
                     "scope_match": pred.scope == truth.scope,
                     "full_semantic_match": pred.tier == truth.tier and pred.scope == truth.scope,
+                    "predicted_direction": pred.direction.value,
+                    "ground_truth_direction": truth.direction.value,
                     "predicted_tier": pred.tier.value,
                     "ground_truth_tier": truth.tier.value,
                     "predicted_scope": pred.scope.value,

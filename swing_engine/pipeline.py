@@ -126,11 +126,11 @@ def run_pipeline(
 
 
 def _sprint4_enabled(version: str) -> bool:
-    return version in ("1.3.0", "1.4.0", "2.0.0")
+    return version in ("1.3.0", "1.4.0", "2.0.0", "2.1.0")
 
 
 def _structure_metadata_enabled(version: str) -> bool:
-    return version in ("1.4.0", "2.0.0")
+    return version in ("1.4.0", "2.0.0", "2.1.0")
 
 
 def _build_timeline(artifacts: PipelineArtifacts) -> list[dict[str, Any]]:

@@ -30,7 +30,7 @@ docker compose up -d
 
 ```
 fx-navigators/
-├── swing_engine/            # Single source of truth — swing detection (v2.0.0: production freeze)
+├── swing_engine/            # Single source of truth — swing detection (v2.0.0 frozen default; v2.1.0 opt-in tuned candidate)
 ├── services/
 │   ├── bar_builder/         # Deterministic M1–D1 bar generation
 │   ├── data_collector/      # Market data ingestion + raw tick storage
@@ -65,8 +65,15 @@ python scripts/annotate_swings.py benchmarks/labels/XAUUSD_H1.human.json
 python scripts/validate_human_benchmark.py
 ```
 
+Run the holdout-aware v2.1 tuning harness with:
+
+```bash
+python scripts/tune_xauusd_h1.py
+```
+
 See `docs/XAUUSD_H1_BENCHMARK.md`. MT5 for macOS users can export history with
-`tools/mt5/ExportXAUUSDH1Benchmark.mq5`.
+`tools/mt5/ExportXAUUSDH1Benchmark.mq5`. The v2.1 profile remains opt-in until
+labels are independently adjudicated and a locked test set exists.
 
 ## Market Data (Phase 1)
 
@@ -104,7 +111,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
 - [Architecture](docs/ARCHITECTURE.md) — System design
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
-- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0: human-review benchmarks, score breakdown studio, calibration)
+- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0 frozen default; v2.1.0 structural tuning candidate)
 - [XAUUSD H1 Benchmark](docs/XAUUSD_H1_BENCHMARK.md) — real-data prepare/annotate/validate workflow
 - [Project Roadmap](docs/ROADMAP.md) — master plan to production (BOS, CHoCH, liquidity, decision engine)
 

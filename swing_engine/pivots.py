@@ -56,7 +56,10 @@ def detect_pivot_candidates(candles: list[Candle], config: SwingEngineConfig) ->
 
         candidates.append(PivotCandidate(
             i, candles[i].timestamp, price, direction, strength=strength,
-            metadata={"pivot_strength": round(strength, 2)},
+            metadata={
+                "pivot_strength": round(strength, 2),
+                "available_index": i + right,
+            },
         ))
         last_idx = i
 

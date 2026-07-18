@@ -45,6 +45,7 @@ def confirm_swings(
             tier=SwingTier.MINOR,
             reasoning=reasons,
             metadata={
+                **pivot.metadata,
                 "pivot_timestamp": pivot.pivot_timestamp.isoformat(),
                 "pivot_strength": pivot.strength,
                 "confirmation_reason": reasons[-1] if reasons else "none",
@@ -73,22 +74,38 @@ def _evaluate_score_gated(
     idx = pivot.pivot_index
     min_end = idx + cfg.min_candles
     reasons: list[str] = []
+    structural_index = pivot.metadata.get("structural_confirmation_index")
+    available_index = (
+        int(pivot.metadata.get("available_index", idx))
+        if cfg.enforce_candidate_availability
+        else idx
+    )
 
     if min_end >= n:
         return False, None, 0, ["insufficient_bars_for_min_candles"], {}
+    if config.leg.require_reversal_confirmation and structural_index is None:
+        return False, None, 0, ["awaiting_structural_reversal"], {}
 
-    for j in range(1, cfg.min_candles + 1):
-        bar = candles[idx + j]
-        if pivot.direction == SwingDirection.HIGH and bar.high > pivot.price:
-            return False, None, 0, [f"high_violated_at_bar_{idx + j}"], {}
-        if pivot.direction == SwingDirection.LOW and bar.low < pivot.price:
-            return False, None, 0, [f"low_violated_at_bar_{idx + j}"], {}
-
-    conf_index = max(min_end, idx + cfg.delay_bars)
+    conf_index = max(
+        min_end,
+        idx + cfg.delay_bars,
+        available_index,
+        int(structural_index) if structural_index is not None else idx,
+    )
     if conf_index >= n:
         return False, None, 0, ["insufficient_bars_for_delay"], {}
 
+    validation_end = conf_index if cfg.validate_until_confirmation else min_end
+    for check_index in range(idx + 1, validation_end + 1):
+        bar = candles[check_index]
+        if pivot.direction == SwingDirection.HIGH and bar.high > pivot.price:
+            return False, None, 0, [f"high_violated_at_bar_{check_index}"], {}
+        if pivot.direction == SwingDirection.LOW and bar.low < pivot.price:
+            return False, None, 0, [f"low_violated_at_bar_{check_index}"], {}
+
     delay = conf_index - idx
+    if structural_index is not None:
+        reasons.append(f"structural_reversal_confirmed_at_bar_{structural_index}")
     score, factors, checks = compute_confirmation_score(
         pivot, candles, atr_series, config,
         prev_opposite=prev_opposite, prev_same=prev_same,
@@ -143,18 +160,39 @@ def _evaluate_confirmation(
     reasons: list[str] = []
     idx = pivot.pivot_index
     min_end = idx + cfg.min_candles
+    structural_index = pivot.metadata.get("structural_confirmation_index")
+    available_index = (
+        int(pivot.metadata.get("available_index", idx))
+        if cfg.enforce_candidate_availability
+        else idx
+    )
 
     if min_end >= n:
         return False, None, 0, ["insufficient_bars_for_min_candles"]
+    if config.leg.require_reversal_confirmation and structural_index is None:
+        return False, None, 0, ["awaiting_structural_reversal"]
 
-    for j in range(1, cfg.min_candles + 1):
-        bar = candles[idx + j]
+    conf_index = max(
+        min_end,
+        idx + cfg.delay_bars,
+        available_index,
+        int(structural_index) if structural_index is not None else idx,
+    )
+    if conf_index >= n:
+        return False, None, 0, ["insufficient_bars_for_delay"]
+
+    validation_end = conf_index if cfg.validate_until_confirmation else min_end
+    for check_index in range(idx + 1, validation_end + 1):
+        bar = candles[check_index]
         if pivot.direction == SwingDirection.HIGH and bar.high > pivot.price:
-            return False, None, 0, [f"high_violated_at_bar_{idx + j}"]
+            return False, None, 0, [f"high_violated_at_bar_{check_index}"]
         if pivot.direction == SwingDirection.LOW and bar.low < pivot.price:
-            return False, None, 0, [f"low_violated_at_bar_{idx + j}"]
+            return False, None, 0, [f"low_violated_at_bar_{check_index}"]
 
-    reasons.append(f"held_for_{cfg.min_candles}_candles")
+    held_bars = validation_end - idx
+    reasons.append(f"held_for_{held_bars}_candles")
+    if structural_index is not None:
+        reasons.append(f"structural_reversal_confirmed_at_bar_{structural_index}")
     atr = atr_at(idx, atr_series, candles)
 
     if cfg.displacement_atr_min > 0:
@@ -189,9 +227,5 @@ def _evaluate_confirmation(
         if retrace < cfg.required_retracement_atr:
             return False, None, 0, ["insufficient_retracement"]
         reasons.append(f"retracement_atr={retrace:.2f}")
-
-    conf_index = max(min_end, idx + cfg.delay_bars)
-    if conf_index >= n:
-        return False, None, 0, ["insufficient_bars_for_delay"]
 
     return True, conf_index, conf_index - idx, reasons + [f"confirmed_at_bar_{conf_index}"]

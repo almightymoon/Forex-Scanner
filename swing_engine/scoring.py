@@ -21,6 +21,13 @@ def classify_scope(
     config: SwingEngineConfig,
 ) -> SwingScope:
     clf = config.classification
+    if clf.structural_scope_from_tier:
+        # The v2.1 structural detector is intentionally two-scale: accepted
+        # high-prominence pivots anchor the external range; lower-prominence
+        # pivots remain internal.  This also removes the ambiguous NEUTRAL
+        # class from BOS/CHoCH inputs.
+        return SwingScope.EXTERNAL if swing.tier == SwingTier.MAJOR else SwingScope.INTERNAL
+
     score = 0.0
 
     if prev_same:
@@ -66,6 +73,23 @@ def classify_tier(
 ) -> SwingTier:
     clf = config.classification
     tw = clf.tier_weights
+
+    if config.leg.enforce_alternation:
+        reversal_atr = float(swing.metadata.get("structural_reversal_atr", leg_atr))
+        prominence_atr = (
+            clf.structural_leg_weight * leg_atr
+            + clf.structural_reversal_weight * reversal_atr
+        )
+        swing.metadata["structural_prominence_atr"] = round(prominence_atr, 3)
+        swing.metadata["tier_score"] = round(
+            min(100.0, 100.0 * prominence_atr / max(clf.major_min_atr_multiple, 1e-12)),
+            2,
+        )
+        return (
+            SwingTier.MAJOR
+            if prominence_atr >= clf.major_min_atr_multiple
+            else SwingTier.MINOR
+        )
 
     tier_score = (
         min(1.0, leg_atr / clf.major_min_atr_multiple) * tw.leg_atr * 100

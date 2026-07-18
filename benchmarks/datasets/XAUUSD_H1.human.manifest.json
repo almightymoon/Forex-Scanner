@@ -214,7 +214,7 @@
       "labelable_start_index": 50,
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_009",
-      "split": "TRAIN",
+      "split": "VALIDATION",
       "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true,
       "label_source": "ai_assisted_expert_draft",
@@ -238,7 +238,7 @@
       "labelable_start_index": 50,
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_010",
-      "split": "TRAIN",
+      "split": "VALIDATION",
       "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true,
       "label_source": "ai_assisted_expert_draft",
@@ -262,7 +262,7 @@
       "labelable_start_index": 50,
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_011",
-      "split": "TRAIN",
+      "split": "VALIDATION",
       "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true,
       "label_source": "ai_assisted_expert_draft",
@@ -286,7 +286,7 @@
       "labelable_start_index": 50,
       "labelable_end_index": 349,
       "sample_id": "XAUUSD_H1_012",
-      "split": "TRAIN",
+      "split": "VALIDATION",
       "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
       "enabled": true,
       "label_source": "ai_assisted_expert_draft",
@@ -296,5 +296,26 @@
   ],
   "source_timezone": "Europe/Helsinki",
   "data_quality_report": "data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json",
-  "label_origin": "AI_ASSISTED_EXPERT_DRAFT"
+  "label_origin": "AI_ASSISTED_EXPERT_DRAFT",
+  "split_policy": {
+    "method": "chronological_non_overlapping_holdout",
+    "train_samples": [
+      "XAUUSD_H1_001",
+      "XAUUSD_H1_002",
+      "XAUUSD_H1_003",
+      "XAUUSD_H1_004",
+      "XAUUSD_H1_005",
+      "XAUUSD_H1_006",
+      "XAUUSD_H1_007",
+      "XAUUSD_H1_008"
+    ],
+    "validation_samples": [
+      "XAUUSD_H1_009",
+      "XAUUSD_H1_010",
+      "XAUUSD_H1_011",
+      "XAUUSD_H1_012"
+    ],
+    "locked_test_samples": [],
+    "note": "The AI-assisted draft has no locked test set. Validation is later in time and must not be used for repeated parameter search."
+  }
 }
