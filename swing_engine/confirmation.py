@@ -61,6 +61,58 @@ def confirm_swings(
     return swings
 
 
+
+def _validation_end_index(
+    pivot: PivotCandidate,
+    min_end: int,
+    conf_index: int,
+    config: SwingEngineConfig,
+) -> int:
+    """Return the final bar on which the proposed pivot must remain intact.
+
+    ``confirmation`` preserves the historical v2.1/v2.2 rule and validates
+    the pivot through its final confirmation bar.
+
+    ``structural_reversal`` validates through the causally detected opposite
+    structural pivot. Later same-side extremes belong to the subsequent leg
+    and must not retroactively erase the already established pivot.
+    """
+    cfg = config.confirmation
+
+    if not cfg.validate_until_confirmation:
+        return min_end
+
+    policy = cfg.validation_boundary.strip().lower()
+
+    if policy == "confirmation":
+        return conf_index
+
+    if policy == "structural_reversal":
+        reversal_index = pivot.metadata.get(
+            "structural_reversal_pivot_index"
+        )
+
+        if reversal_index is None:
+            return conf_index
+
+        try:
+            boundary = int(reversal_index)
+        except (TypeError, ValueError):
+            return conf_index
+
+        # Preserve the configured minimum hold while never extending beyond
+        # the already calculated causal confirmation index.
+        return min(
+            conf_index,
+            max(min_end, boundary),
+        )
+
+    raise ValueError(
+        "Unsupported confirmation validation boundary: "
+        f"{cfg.validation_boundary!r}"
+    )
+
+
 def _evaluate_score_gated(
     pivot: PivotCandidate,
     candles: list[Candle],
@@ -95,7 +147,12 @@ def _evaluate_score_gated(
     if conf_index >= n:
         return False, None, 0, ["insufficient_bars_for_delay"], {}
 
-    validation_end = conf_index if cfg.validate_until_confirmation else min_end
+    validation_end = _validation_end_index(
+        pivot,
+        min_end,
+        conf_index,
+        config,
+    )
     for check_index in range(idx + 1, validation_end + 1):
         bar = candles[check_index]
         if pivot.direction == SwingDirection.HIGH and bar.high > pivot.price:
@@ -181,7 +238,12 @@ def _evaluate_confirmation(
     if conf_index >= n:
         return False, None, 0, ["insufficient_bars_for_delay"]
 
-    validation_end = conf_index if cfg.validate_until_confirmation else min_end
+    validation_end = _validation_end_index(
+        pivot,
+        min_end,
+        conf_index,
+        config,
+    )
     for check_index in range(idx + 1, validation_end + 1):
         bar = candles[check_index]
         if pivot.direction == SwingDirection.HIGH and bar.high > pivot.price:

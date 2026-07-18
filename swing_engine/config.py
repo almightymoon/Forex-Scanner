@@ -69,6 +69,7 @@ class ConfirmationConfig:
     break_internal_structure: bool = False
     enforce_candidate_availability: bool = False
     validate_until_confirmation: bool = False
+    validation_boundary: str = "confirmation"
 
 
 @dataclass(frozen=True)

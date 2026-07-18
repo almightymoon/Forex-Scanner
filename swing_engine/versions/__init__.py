@@ -13,10 +13,11 @@ SUPPORTED_VERSIONS: dict[str, str] = {
     "2.0.0": "v2_0",
     "2.1.0": "v2_1",
     "2.2.0": "v2_2",
+    "2.3.0": "v2_3",
 }
 
 DEFAULT_VERSION = "2.0.0"
-LATEST_VERSION = "2.2.0"
+LATEST_VERSION = "2.3.0"
 
 
 def resolve_version(version: str | None) -> str:
@@ -52,4 +53,7 @@ def get_pipeline(version: str | None = None) -> Callable:
     if v == "2.2.0":
         from swing_engine.versions.v2_2 import detect_v2_2
         return detect_v2_2
+    if v == "2.3.0":
+        from swing_engine.versions.v2_3 import detect_v2_3
+        return detect_v2_3
     raise ValueError(f"No pipeline for version {v}")

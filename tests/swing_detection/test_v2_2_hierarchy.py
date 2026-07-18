@@ -69,7 +69,7 @@ def _swing(
 
 def test_v22_is_opt_in_and_preserves_the_frozen_default():
     assert DEFAULT_VERSION == "2.0.0"
-    assert LATEST_VERSION == "2.2.0"
+    assert LATEST_VERSION == "2.3.0"
     assert "2.2.0" in SUPPORTED_VERSIONS
 
     v21 = get_config(Timeframe.H1, version="2.1.0", symbol="XAUUSD")
