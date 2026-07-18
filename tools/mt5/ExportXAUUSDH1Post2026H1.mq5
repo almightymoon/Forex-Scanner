@@ -9,11 +9,27 @@
 input string          InpSymbol       = "XAUUSD.vx";
 input ENUM_TIMEFRAMES InpTimeframe    = PERIOD_H1;
 input datetime        InpStart        = D'2026.07.01 00:00:00';
-input string          InpOutputFile   = "FXNavigators_XAUUSD_H1_post_2026H1_raw.csv";
-input string          InpMetadataFile = "FXNavigators_XAUUSD_H1_post_2026H1_raw.meta.csv";
+input string          InpFilePrefix   = "FXNavigators_XAUUSD_H1_post_2026H1_raw";
 input bool            InpCommonFolder = true;
 
 const datetime LOCKED_START = D'2026.07.01 00:00:00';
+
+
+string ExportStamp(const datetime gmt_now)
+{
+   MqlDateTime parts;
+   TimeToStruct(gmt_now, parts);
+
+   return StringFormat(
+      "%04d%02d%02dT%02d%02d%02dZ",
+      parts.year,
+      parts.mon,
+      parts.day,
+      parts.hour,
+      parts.min,
+      parts.sec
+   );
+}
 
 
 int OutputFlags()
@@ -53,13 +69,17 @@ bool FindLastClosedBar(datetime &last_closed)
 void WriteMetadata(
    const MqlRates &rates[],
    const int copied,
-   const datetime last_closed
+   const datetime last_closed,
+   const string output_file,
+   const string metadata_file,
+   const datetime server_now,
+   const datetime gmt_now
 )
 {
    ResetLastError();
 
    int handle = FileOpen(
-      InpMetadataFile,
+      metadata_file,
       OutputFlags(),
       ','
    );
@@ -68,14 +88,12 @@ void WriteMetadata(
    {
       PrintFormat(
          "Metadata warning: could not open %s. Error=%d",
-         InpMetadataFile,
+         metadata_file,
          GetLastError()
       );
       return;
    }
 
-   datetime server_now = TimeTradeServer();
-   datetime gmt_now = TimeGMT();
    long server_minus_gmt = (long)(server_now - gmt_now);
 
    FileWrite(handle, "key", "value");
@@ -88,7 +106,7 @@ void WriteMetadata(
    FileWrite(handle, "last_closed_bar_server", TimeToString(last_closed, TIME_DATE | TIME_SECONDS));
    FileWrite(handle, "last_closed_bar_epoch", (long)last_closed);
    FileWrite(handle, "rows", copied);
-   FileWrite(handle, "raw_file", InpOutputFile);
+   FileWrite(handle, "raw_file", output_file);
    FileWrite(handle, "account_server", AccountInfoString(ACCOUNT_SERVER));
    FileWrite(handle, "terminal_company", TerminalInfoString(TERMINAL_COMPANY));
    FileWrite(handle, "terminal_name", TerminalInfoString(TERMINAL_NAME));
@@ -153,6 +171,27 @@ void OnStart()
       return;
    }
 
+   datetime server_now = TimeTradeServer();
+   datetime gmt_now = TimeGMT();
+
+   string stamp = ExportStamp(gmt_now);
+   string output_file = InpFilePrefix + "_" + stamp + ".csv";
+   string metadata_file = InpFilePrefix + "_" + stamp + ".meta.csv";
+
+   int common_flag = InpCommonFolder ? FILE_COMMON : 0;
+
+   if(
+      FileIsExist(output_file, common_flag)
+      || FileIsExist(metadata_file, common_flag)
+   )
+   {
+      PrintFormat(
+         "Export refused: timestamped output already exists for %s.",
+         stamp
+      );
+      return;
+   }
+
    MqlRates rates[];
    ArraySetAsSeries(rates, false);
 
@@ -187,7 +226,7 @@ void OnStart()
    }
 
    int handle = FileOpen(
-      InpOutputFile,
+      output_file,
       OutputFlags(),
       ','
    );
@@ -196,7 +235,7 @@ void OnStart()
    {
       PrintFormat(
          "Export failed: could not open %s. Error=%d",
-         InpOutputFile,
+         output_file,
          GetLastError()
       );
       return;
@@ -258,7 +297,11 @@ void OnStart()
    WriteMetadata(
       rates,
       copied,
-      last_closed
+      last_closed,
+      output_file,
+      metadata_file,
+      server_now,
+      gmt_now
    );
 
    string base_path = InpCommonFolder
@@ -269,13 +312,13 @@ void OnStart()
       "Acquisition complete: %d closed H1 bars written to %s%s",
       copied,
       base_path,
-      InpOutputFile
+      output_file
    );
 
    PrintFormat(
       "Metadata written to %s%s",
       base_path,
-      InpMetadataFile
+      metadata_file
    );
 
    Alert(
