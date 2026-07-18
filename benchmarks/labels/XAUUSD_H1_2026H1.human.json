@@ -1,0 +1,182 @@
+{
+  "benchmark_id": "XAUUSD_H1_2026H1_LOCKED_TEST_V1",
+  "benchmark_version": "1.0.0-draft",
+  "label_policy_version": "SWING_POLICY_1.0",
+  "label_origin": "HUMAN_DRAFT",
+  "status": "LABELING_IN_PROGRESS",
+  "dataset": {
+    "dataset_id": "XAUUSD_H1_REAL_V1",
+    "symbol": "XAUUSD",
+    "timeframe": "H1",
+    "timezone": "UTC",
+    "price_basis": "BID",
+    "source": "WEALTHTEX_MT5_XAUUSD_VX",
+    "data_file": "../data/real/XAUUSD/H1_2026H1/XAUUSD_H1_2026H1.real.csv.gz",
+    "data_sha256": "539b9e028fc226eba8b1ea3503f773d06a00d25464e4513992e5f4e9be27ec44",
+    "bar_count": 2914,
+    "first_timestamp": "2026-01-01T23:00:00+00:00",
+    "last_timestamp": "2026-06-30T20:00:00+00:00"
+  },
+  "samples": [
+    {
+      "sample_id": "XAUUSD_H1_2026H1_001",
+      "source_start_index": 144,
+      "source_end_index": 443,
+      "labelable_start_index": 40,
+      "labelable_end_index": 259,
+      "split": "TEST",
+      "primary_regime": "STRONG_BULLISH_TREND",
+      "regime_tags": [
+        "STRONG_BULLISH_TREND",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 18.395,
+        "volatility_ratio": 0.003865,
+        "efficiency_ratio": 0.291605,
+        "net_move_atr": 52.633868,
+        "absolute_move_atr": 52.633868,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 30.0,
+        "range_atr": 57.707529
+      },
+      "start_timestamp": "2026-01-12T05:00:00+00:00",
+      "end_timestamp": "2026-01-29T07:00:00+00:00"
+    },
+    {
+      "sample_id": "XAUUSD_H1_2026H1_002",
+      "source_start_index": 528,
+      "source_end_index": 827,
+      "labelable_start_index": 40,
+      "labelable_end_index": 259,
+      "split": "TEST",
+      "primary_regime": "HIGH_VOLATILITY",
+      "regime_tags": [
+        "HIGH_VOLATILITY",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 24.075,
+        "volatility_ratio": 0.004818,
+        "efficiency_ratio": 0.034315,
+        "net_move_atr": 6.557009,
+        "absolute_move_atr": 6.557009,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 23.0,
+        "range_atr": 21.663136
+      },
+      "start_timestamp": "2026-02-04T00:00:00+00:00",
+      "end_timestamp": "2026-02-23T02:00:00+00:00"
+    },
+    {
+      "sample_id": "XAUUSD_H1_2026H1_003",
+      "source_start_index": 1008,
+      "source_end_index": 1307,
+      "labelable_start_index": 40,
+      "labelable_end_index": 259,
+      "split": "TEST",
+      "primary_regime": "STRONG_BEARISH_TREND",
+      "regime_tags": [
+        "STRONG_BEARISH_TREND",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 24.315,
+        "volatility_ratio": 0.004796,
+        "efficiency_ratio": 0.161221,
+        "net_move_atr": -30.363562,
+        "absolute_move_atr": 30.363562,
+        "reversal_score": 0.0,
+        "liquidity_sweeps": 25.0,
+        "range_atr": 46.846802
+      },
+      "start_timestamp": "2026-03-04T23:00:00+00:00",
+      "end_timestamp": "2026-03-23T22:00:00+00:00"
+    },
+    {
+      "sample_id": "XAUUSD_H1_2026H1_004",
+      "source_start_index": 1536,
+      "source_end_index": 1835,
+      "labelable_start_index": 40,
+      "labelable_end_index": 259,
+      "split": "TEST",
+      "primary_regime": "RANGE",
+      "regime_tags": [
+        "RANGE",
+        "LIQUIDITY_SWEEP_CANDIDATE",
+        "REVERSAL_CANDIDATE"
+      ],
+      "features": {
+        "atr": 16.935,
+        "volatility_ratio": 0.003552,
+        "efficiency_ratio": 0.000184,
+        "net_move_atr": -0.032477,
+        "absolute_move_atr": 0.032477,
+        "reversal_score": 12.323,
+        "liquidity_sweeps": 34.0,
+        "range_atr": 14.449956
+      },
+      "start_timestamp": "2026-04-07T20:00:00+00:00",
+      "end_timestamp": "2026-04-24T20:00:00+00:00"
+    },
+    {
+      "sample_id": "XAUUSD_H1_2026H1_005",
+      "source_start_index": 2208,
+      "source_end_index": 2507,
+      "labelable_start_index": 40,
+      "labelable_end_index": 259,
+      "split": "TEST",
+      "primary_regime": "LOW_VOLATILITY",
+      "regime_tags": [
+        "LOW_VOLATILITY",
+        "LIQUIDITY_SWEEP_CANDIDATE"
+      ],
+      "features": {
+        "atr": 14.96,
+        "volatility_ratio": 0.00332,
+        "efficiency_ratio": 0.041868,
+        "net_move_atr": -7.120321,
+        "absolute_move_atr": 7.120321,
+        "reversal_score": 7.994652,
+        "liquidity_sweeps": 37.0,
+        "range_atr": 15.286096
+      },
+      "start_timestamp": "2026-05-19T02:00:00+00:00",
+      "end_timestamp": "2026-06-05T02:00:00+00:00"
+    },
+    {
+      "sample_id": "XAUUSD_H1_2026H1_006",
+      "source_start_index": 2592,
+      "source_end_index": 2891,
+      "labelable_start_index": 40,
+      "labelable_end_index": 259,
+      "split": "TEST",
+      "primary_regime": "TREND_REVERSAL",
+      "regime_tags": [
+        "TREND_REVERSAL",
+        "LIQUIDITY_SWEEP_CANDIDATE",
+        "REVERSAL_CANDIDATE"
+      ],
+      "features": {
+        "atr": 17.71,
+        "volatility_ratio": 0.004256,
+        "efficiency_ratio": 0.027662,
+        "net_move_atr": -4.93563,
+        "absolute_move_atr": 4.93563,
+        "reversal_score": 11.307171,
+        "liquidity_sweeps": 25.0,
+        "range_atr": 23.892151
+      },
+      "start_timestamp": "2026-06-10T18:00:00+00:00",
+      "end_timestamp": "2026-06-29T22:00:00+00:00"
+    }
+  ],
+  "swings": [],
+  "review": {
+    "required_annotators": 2,
+    "adjudicator": null,
+    "adjudicated_at": null,
+    "notes": "Blind-label first. Predictions must remain hidden until labels are frozen."
+  },
+  "dataset_id": "XAUUSD_H1_2026H1_LOCKED_TEST_V1"
+}
