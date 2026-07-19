@@ -187,12 +187,28 @@ def load_manifest(path: Path = MANIFEST_PATH, *, include_disabled: bool = False)
     return specs if include_disabled else [spec for spec in specs if spec.enabled]
 
 
-def _labels_path(spec_or_path: DatasetSpec | Path) -> Path:
+def _labels_path(
+    spec_or_path: DatasetSpec | Path,
+    *,
+    manifest_path: Path = MANIFEST_PATH,
+) -> Path:
     if isinstance(spec_or_path, DatasetSpec):
         path = Path(spec_or_path.labels_file)
     else:
         path = Path(spec_or_path)
-    return path if path.is_absolute() else LABELS_DIR / path
+
+    if path.is_absolute():
+        return path
+
+    if isinstance(spec_or_path, DatasetSpec):
+        package_path = (
+            Path(manifest_path).parent / path
+        ).resolve()
+
+        if package_path.exists():
+            return package_path
+
+    return LABELS_DIR / path
 
 
 def load_labels(
@@ -256,15 +272,31 @@ def write_labels(
     return path
 
 
-def resolve_data_path(spec: DatasetSpec, *, manifest_path: Path = MANIFEST_PATH) -> Path:
+def resolve_data_path(
+    spec: DatasetSpec,
+    *,
+    manifest_path: Path = MANIFEST_PATH,
+) -> Path:
     if not spec.data_file:
-        raise BenchmarkDataError(f"Dataset {spec.id} does not declare data_file")
+        raise BenchmarkDataError(
+            f"Dataset {spec.id} does not declare data_file"
+        )
+
     path = Path(spec.data_file)
+
     if path.is_absolute():
         return path
-    # Canonical manifests use paths relative to benchmarks/.  A path beginning
-    # with data/ therefore resolves naturally across clones and CI workers.
-    return (manifest_path.parent.parent / path).resolve()
+
+    package_path = (
+        Path(manifest_path).parent / path
+    ).resolve()
+
+    if package_path.exists():
+        return package_path
+
+    return (
+        Path(manifest_path).parent.parent / path
+    ).resolve()
 
 
 def load_real_bars(spec: DatasetSpec, *, manifest_path: Path = MANIFEST_PATH) -> list[Candle]:
@@ -317,7 +349,10 @@ def run_dataset(
     engine = SwingEngine(config, version=version)
     result = engine.detect(bars, symbol=spec.symbol, timeframe=timeframe)
 
-    labels_path = _labels_path(spec)
+    labels_path = _labels_path(
+        spec,
+        manifest_path=manifest_path,
+    )
     ground_truth, label_document = load_labels(labels_path, sample_id=spec.sample_id)
     predictions = result.confirmed_swings
     if spec.labelable_start_index is not None:
