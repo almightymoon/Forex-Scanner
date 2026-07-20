@@ -1,0 +1,20 @@
+key,value
+dataset_role,UNLABELED_QUARANTINED_RAW_CANDLES
+symbol,XAUUSD.vx
+timeframe,PERIOD_H1
+requested_start_server,2026.07.01 00:00:00
+first_bar_server,2026.07.01 01:00:00
+first_bar_epoch,1782867600
+last_closed_bar_server,2026.07.20 04:00:00
+last_closed_bar_epoch,1784520000
+rows,300
+raw_file,FXNavigators_XAUUSD_H1_post_2026H1_raw_20260720T020551Z.csv
+account_server,ValetaxIntl-Live2
+terminal_company,MetaQuotes Ltd.
+terminal_name,MetaTrader 5
+exported_at_server,2026.07.20 05:05:51
+exported_at_gmt,2026.07.20 02:05:51
+server_minus_gmt_seconds_at_export,10800
+contains_labels,false
+contains_predictions,false
+engine_version_evaluated,none
