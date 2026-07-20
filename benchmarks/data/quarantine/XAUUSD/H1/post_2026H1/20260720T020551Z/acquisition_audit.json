@@ -1,0 +1,47 @@
+{
+  "audit": "XAUUSD_H1_POST_2026H1_ACQUISITION_INTEGRITY",
+  "generated_at_utc": "2026-07-20T02:20:02+00:00",
+  "status": "PASS",
+  "policy": {
+    "labels_loaded": false,
+    "predictions_loaded": false,
+    "swing_engine_executed": false,
+    "data_role": "UNLABELED_QUARANTINED_RAW_CANDLES"
+  },
+  "timestamp_model": {
+    "source_epoch_semantics": "broker_server_wall_clock",
+    "server_minus_gmt_seconds": 10800,
+    "utc_conversion": "source_clock_minus_server_offset"
+  },
+  "files": {
+    "raw": "benchmarks/data/quarantine/XAUUSD/H1/post_2026H1/.staging-20260720T020551Z/XAUUSD_H1_raw.csv",
+    "metadata": "benchmarks/data/quarantine/XAUUSD/H1/post_2026H1/.staging-20260720T020551Z/XAUUSD_H1_raw.meta.csv",
+    "historical_comparison": "benchmarks/data/real/XAUUSD/H1_2026H1/XAUUSD_H1_2026H1.real.csv.gz",
+    "raw_sha256": "236fafd2f024e0c1dc2da6e1db417e315523273d48b8dd5e1609898662cadea2",
+    "metadata_sha256": "a381aabd56cc51fb388cc294ae20f572b6f4c12c7352bdb513dffe4bdd73f8b2"
+  },
+  "coverage": {
+    "rows": 300,
+    "historical_end_utc": "2026-06-30T20:00:00+00:00",
+    "first_new_utc": "2026-06-30T22:00:00+00:00",
+    "last_new_utc": "2026-07-20T01:00:00+00:00",
+    "initial_gap_hours": 2.0
+  },
+  "integrity": {
+    "duplicate_timestamps": 0,
+    "historical_overlap": 0,
+    "source_clock_mismatches": 0,
+    "ohlc_errors": 0,
+    "identity_errors": 0,
+    "invalid_hourly_intervals": 0,
+    "multi_hour_gaps": 13,
+    "gap_hour_distribution": {
+      "2": 10,
+      "50": 2,
+      "53": 1
+    },
+    "largest_gap_hours": 53,
+    "multi_hour_gaps_are_informational": true
+  },
+  "errors": []
+}
