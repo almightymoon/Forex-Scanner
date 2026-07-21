@@ -1,0 +1,114 @@
+{
+  "selection_id": "XAUUSD_H1_2022_2024_RETROSPECTIVE_WINDOWS_V1",
+  "benchmark_type": "RETROSPECTIVE_HOLDOUT",
+  "protocol_id": "XAUUSD_H1_2022_2024_RETROSPECTIVE_LOCKED_V1",
+  "protocol_sha256": "00a6d6ec51bd6bb0a1fd207babd1ac0bc8e460b0755eec5f2ad05f9643ca1254",
+  "algorithm_version": "PRICE_BLIND_SIX_BUCKET_CENTERED_V1",
+  "source_root": "benchmarks/data/retrospective/XAUUSD/H1_2022_2024_v1",
+  "canonical_source": "benchmarks/data/retrospective/XAUUSD/H1_2022_2024_v1/XAUUSD_H1_2022_2024.real.csv.gz",
+  "canonical_source_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "source_bar_count": 15368,
+  "windows": [
+    {
+      "window_number": 1,
+      "bucket_start_index": 48,
+      "bucket_end_index_exclusive": 2593,
+      "bucket_bars": 2545,
+      "start_index": 1224,
+      "end_index_exclusive": 1416,
+      "bars": 192,
+      "first_utc": "2022-03-15T03:00:00Z",
+      "last_utc": "2022-03-25T10:00:00Z",
+      "file": "window_01_1224_1416.csv",
+      "sha256": "5775bb6e9c02024d9ea9415c595044787b7c0ad5fea7b4b4738ff1c33c2482e2"
+    },
+    {
+      "window_number": 2,
+      "bucket_start_index": 2593,
+      "bucket_end_index_exclusive": 5138,
+      "bucket_bars": 2545,
+      "start_index": 3769,
+      "end_index_exclusive": 3961,
+      "bars": 192,
+      "first_utc": "2022-08-11T18:00:00Z",
+      "last_utc": "2022-08-23T17:00:00Z",
+      "file": "window_02_3769_3961.csv",
+      "sha256": "a6ca7513b5165bbf8700aa2cd1c441cb21601ae967b294eb217acb856eeea1b1"
+    },
+    {
+      "window_number": 3,
+      "bucket_start_index": 5138,
+      "bucket_end_index_exclusive": 7684,
+      "bucket_bars": 2546,
+      "start_index": 6315,
+      "end_index_exclusive": 6507,
+      "bars": 192,
+      "first_utc": "2023-01-11T22:00:00Z",
+      "last_utc": "2023-01-23T23:00:00Z",
+      "file": "window_03_6315_6507.csv",
+      "sha256": "e845c5b1249b237719322cae5382fba18c140ac302a1458e28b8c349469de91f"
+    },
+    {
+      "window_number": 4,
+      "bucket_start_index": 7684,
+      "bucket_end_index_exclusive": 10229,
+      "bucket_bars": 2545,
+      "start_index": 8860,
+      "end_index_exclusive": 9052,
+      "bars": 192,
+      "first_utc": "2023-06-12T14:00:00Z",
+      "last_utc": "2023-06-22T15:00:00Z",
+      "file": "window_04_8860_9052.csv",
+      "sha256": "46512a8c4ec6230443bb9fec46b9db6522b4e3b6516ca26b3f5bc8fc97fdf133"
+    },
+    {
+      "window_number": 5,
+      "bucket_start_index": 10229,
+      "bucket_end_index_exclusive": 12774,
+      "bucket_bars": 2545,
+      "start_index": 11405,
+      "end_index_exclusive": 11597,
+      "bars": 192,
+      "first_utc": "2023-11-08T07:00:00Z",
+      "last_utc": "2023-11-20T14:00:00Z",
+      "file": "window_05_11405_11597.csv",
+      "sha256": "7ba245bec20e133e33cabf7f13b0e996f6de8f6fc1a98e26ef9eef152055dbbd"
+    },
+    {
+      "window_number": 6,
+      "bucket_start_index": 12774,
+      "bucket_end_index_exclusive": 15320,
+      "bucket_bars": 2546,
+      "start_index": 13951,
+      "end_index_exclusive": 14143,
+      "bars": 192,
+      "first_utc": "2024-04-16T08:00:00Z",
+      "last_utc": "2024-04-26T15:00:00Z",
+      "file": "window_06_13951_14143.csv",
+      "sha256": "a2e68346d9957ce3c54851dac0ca16f1b84a1d6de1c2e2ab2c8157355454740f"
+    }
+  ],
+  "window_files": {
+    "window_01_1224_1416.csv": "5775bb6e9c02024d9ea9415c595044787b7c0ad5fea7b4b4738ff1c33c2482e2",
+    "window_02_3769_3961.csv": "a6ca7513b5165bbf8700aa2cd1c441cb21601ae967b294eb217acb856eeea1b1",
+    "window_03_6315_6507.csv": "e845c5b1249b237719322cae5382fba18c140ac302a1458e28b8c349469de91f",
+    "window_04_8860_9052.csv": "46512a8c4ec6230443bb9fec46b9db6522b4e3b6516ca26b3f5bc8fc97fdf133",
+    "window_05_11405_11597.csv": "7ba245bec20e133e33cabf7f13b0e996f6de8f6fc1a98e26ef9eef152055dbbd",
+    "window_06_13951_14143.csv": "a2e68346d9957ce3c54851dac0ca16f1b84a1d6de1c2e2ab2c8157355454740f"
+  },
+  "contamination_controls": {
+    "labels_loaded": false,
+    "predictions_loaded": false,
+    "swing_engine_executed": false,
+    "ohlc_inspected_for_selection": false,
+    "candidate_evaluated": false,
+    "baseline_evaluated": false,
+    "selection_uses_prices_or_predictions": false
+  },
+  "eligibility": {
+    "eligible_for_tuning": false,
+    "eligible_for_labeling": true,
+    "eligible_for_evaluation": false,
+    "prospective_test": false
+  }
+}

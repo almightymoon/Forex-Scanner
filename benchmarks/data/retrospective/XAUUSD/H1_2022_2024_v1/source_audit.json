@@ -1,0 +1,745 @@
+{
+  "classification": "RETROSPECTIVE_HOLDOUT",
+  "package_status": "RETROSPECTIVE_HOLDOUT_SOURCE_FROZEN_NOT_LABELED",
+  "source_hashes": {
+    "raw_sha256": "fe8a7f95c7d2b90cef759a7e23b11679b7f84e4928fb2fd67111fe89fb318d4c",
+    "duplicate_copy_sha256": "fe8a7f95c7d2b90cef759a7e23b11679b7f84e4928fb2fd67111fe89fb318d4c",
+    "canonical_overlap_sha256": "c867fa45a6ac6d520d488025256d636364524b3630fb783dc21805e12e211362",
+    "raw_path": "/Users/moon/Library/Application Support/net.metaquotes.wine.metatrader5/drive_c/users/user/AppData/Roaming/MetaQuotes/Terminal/Common/Files/FXNavigators_XAUUSD_H1.csv",
+    "duplicate_copy_path": "chart_csv/FXNavigators_XAUUSD_H1.csv",
+    "canonical_overlap_path": "benchmarks/data/real/XAUUSD/H1/XAUUSD_H1.real.csv.gz",
+    "raw_and_duplicate_byte_identical": true
+  },
+  "provenance_findings": {
+    "chart_csv_tracked": true,
+    "chart_csv_path": "chart_csv/FXNavigators_XAUUSD_H1.csv",
+    "first_git_appearance": {
+      "commit": "4224c63320c77346026cbd52075cbfe11e7b3a23",
+      "author_date": "2026-07-18 03:53:44 +0500",
+      "subject": "swing engine updated"
+    },
+    "repository_references": {
+      "FXNavigators_XAUUSD_H1.csv": [
+        "benchmarks/data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json",
+        "patch/FX-Navigators-MT5-Exporter-v1.1.patch",
+        "patch/FX-Navigators-XAUUSD-Benchmark-v1.patch",
+        "tools/mt5/ExportXAUUSDH1Benchmark.mq5",
+        "tools/mt5/README.md"
+      ],
+      "XAUUSD_H1.real.csv.gz": [
+        "benchmarks/data/real/XAUUSD/H1/README.md",
+        "benchmarks/data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json",
+        "benchmarks/datasets/XAUUSD_H1.human.manifest.json",
+        "benchmarks/labels/XAUUSD_H1.human.json",
+        "docs/XAUUSD_H1_BENCHMARK.md",
+        "patch/FX-Navigators-XAUUSD-Benchmark-v1.patch",
+        "patch/FX-Navigators-XAUUSD-Real-Data-v1.patch",
+        "scripts/prepare_xauusd_h1_benchmark.py"
+      ]
+    },
+    "caveats": [
+      "Absence of a repository reference is not proof that humans never viewed pre-2024-07-15 bars outside Git.",
+      "The full MT5 export existed in chart_csv and Common/Files before this retrospective package was constructed; the source is therefore not a prospective forward test.",
+      "benchmarks/data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json records excluded_source_rows=15416 starting at 2024.07.15 10:00:00; prior scripts intentionally started the exposed canonical series at that boundary.",
+      "No tracked label file, manifest window, or quarantine tranche references UTC bars before 2024-07-15T07:00:00Z, but that does not prove the earlier interval was never inspected informally."
+    ]
+  },
+  "raw_coverage": {
+    "row_count": 24099,
+    "first_server_timestamp": "2022.01.03 00:00:00",
+    "last_server_timestamp": "2025.12.31 23:00:00",
+    "symbol": "XAUUSD.vx",
+    "timeframe": "PERIOD_H1"
+  },
+  "integrity": {
+    "row_count": 24099,
+    "symbol": "XAUUSD.vx",
+    "timeframe": "PERIOD_H1",
+    "first_server_timestamp": "2022.01.03 00:00:00",
+    "last_server_timestamp": "2025.12.31 23:00:00",
+    "duplicate_timestamp_keys": 0,
+    "exact_duplicate_rows": 0,
+    "conflicting_duplicate_timestamps": [],
+    "ohlc_errors": [],
+    "gap_hours_histogram": {
+      "1": 23406,
+      "2": 453,
+      "3": 14,
+      "4": 13,
+      "7": 1,
+      "26": 2,
+      "29": 1,
+      "49": 88,
+      "50": 104,
+      "51": 4,
+      "52": 2,
+      "53": 2,
+      "73": 2,
+      "74": 3,
+      "75": 1,
+      "76": 2
+    },
+    "multi_hour_gap_count": 692,
+    "multi_hour_gaps_sample": [
+      {
+        "from_index": 119,
+        "to_index": 120,
+        "from_timestamp": "2022.01.07 23:00:00",
+        "to_timestamp": "2022.01.10 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 239,
+        "to_index": 240,
+        "from_timestamp": "2022.01.14 23:00:00",
+        "to_timestamp": "2022.01.17 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 261,
+        "to_index": 262,
+        "from_timestamp": "2022.01.17 21:00:00",
+        "to_timestamp": "2022.01.18 00:00:00",
+        "gap_hours": 3
+      },
+      {
+        "from_index": 357,
+        "to_index": 358,
+        "from_timestamp": "2022.01.21 23:00:00",
+        "to_timestamp": "2022.01.24 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 477,
+        "to_index": 478,
+        "from_timestamp": "2022.01.28 23:00:00",
+        "to_timestamp": "2022.01.31 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 597,
+        "to_index": 598,
+        "from_timestamp": "2022.02.04 23:00:00",
+        "to_timestamp": "2022.02.07 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 717,
+        "to_index": 718,
+        "from_timestamp": "2022.02.11 23:00:00",
+        "to_timestamp": "2022.02.14 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 837,
+        "to_index": 838,
+        "from_timestamp": "2022.02.18 23:00:00",
+        "to_timestamp": "2022.02.21 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 859,
+        "to_index": 860,
+        "from_timestamp": "2022.02.21 21:00:00",
+        "to_timestamp": "2022.02.22 00:00:00",
+        "gap_hours": 3
+      },
+      {
+        "from_index": 955,
+        "to_index": 956,
+        "from_timestamp": "2022.02.25 23:00:00",
+        "to_timestamp": "2022.02.28 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 1075,
+        "to_index": 1076,
+        "from_timestamp": "2022.03.04 23:00:00",
+        "to_timestamp": "2022.03.07 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 1195,
+        "to_index": 1196,
+        "from_timestamp": "2022.03.11 23:00:00",
+        "to_timestamp": "2022.03.14 00:00:00",
+        "gap_hours": 49
+      },
+      {
+        "from_index": 1218,
+        "to_index": 1219,
+        "from_timestamp": "2022.03.14 22:00:00",
+        "to_timestamp": "2022.03.15 00:00:00",
+        "gap_hours": 2
+      },
+      {
+        "from_index": 1241,
+        "to_index": 1242,
+        "from_timestamp": "2022.03.15 22:00:00",
+        "to_timestamp": "2022.03.16 00:00:00",
+        "gap_hours": 2
+      },
+      {
+        "from_index": 1264,
+        "to_index": 1265,
+        "from_timestamp": "2022.03.16 22:00:00",
+        "to_timestamp": "2022.03.17 00:00:00",
+        "gap_hours": 2
+      },
+      {
+        "from_index": 1287,
+        "to_index": 1288,
+        "from_timestamp": "2022.03.17 22:00:00",
+        "to_timestamp": "2022.03.18 00:00:00",
+        "gap_hours": 2
+      },
+      {
+        "from_index": 1310,
+        "to_index": 1311,
+        "from_timestamp": "2022.03.18 22:00:00",
+        "to_timestamp": "2022.03.21 00:00:00",
+        "gap_hours": 50
+      },
+      {
+        "from_index": 1333,
+        "to_index": 1334,
+        "from_timestamp": "2022.03.21 22:00:00",
+        "to_timestamp": "2022.03.22 00:00:00",
+        "gap_hours": 2
+      },
+      {
+        "from_index": 1356,
+        "to_index": 1357,
+        "from_timestamp": "2022.03.22 22:00:00",
+        "to_timestamp": "2022.03.23 00:00:00",
+        "gap_hours": 2
+      },
+      {
+        "from_index": 1379,
+        "to_index": 1380,
+        "from_timestamp": "2022.03.23 22:00:00",
+        "to_timestamp": "2022.03.24 00:00:00",
+        "gap_hours": 2
+      }
+    ]
+  },
+  "timezone_model": {
+    "classification": "EET_EEST_EQUIVALENT_OFFSET_SCHEDULE",
+    "exact_iana_zone_identified": false,
+    "conversion_reference_timezone": "Europe/Athens",
+    "conversion_reference_role": "DETERMINISTIC_IMPLEMENTATION_REFERENCE_ONLY",
+    "equivalent_exact_match_timezones": [
+      "Europe/Athens",
+      "Europe/Helsinki",
+      "Europe/Bucharest"
+    ],
+    "offsets_hours_observed": [
+      2.0,
+      3.0
+    ],
+    "winter_utc_plus_2_observed": true,
+    "summer_utc_plus_3_observed": true,
+    "overlap_count": 8683,
+    "canonical_timestamp_matches": 8683,
+    "canonical_ohlc_matches": 8683,
+    "attribution_notes": [
+      "The exact broker IANA timezone cannot be uniquely attributed.",
+      "The data follows an EET/EEST-compatible UTC+2 winter / UTC+3 summer schedule.",
+      "Europe/Athens is used only as a deterministic conversion reference.",
+      "Helsinki and Bucharest produce identical conversions for the validated period.",
+      "This is not evidence that the broker server is physically or administratively located in Athens."
+    ],
+    "method": "Interpret naive MT5 server timestamps with each candidate IANA zone and require exact UTC timestamp + Decimal OHLC equality against every exposed canonical row. When multiple EET/EEST zones match, record a non-unique offset schedule and keep Europe/Athens only as an implementation reference. No fixed-offset shortcut.",
+    "validation_evidence": [
+      {
+        "timezone": "Europe/Athens",
+        "status": "EXACT_MATCH",
+        "canonical_rows": 8683,
+        "canonical_timestamp_matches": 8683,
+        "canonical_ohlc_matches": 8683,
+        "exact_ohlc_matches": 8683,
+        "missing_utc": 0,
+        "ohlc_mismatches": 0,
+        "offsets_hours_observed": [
+          2.0,
+          3.0
+        ],
+        "winter_utc_plus_2_observed": true,
+        "summer_utc_plus_3_observed": true,
+        "dst_transition_count_in_overlap": 3,
+        "dst_transitions": [
+          {
+            "server_timestamp": "2024.10.28 00:00:00",
+            "from_offset_hours": 3.0,
+            "to_offset_hours": 2.0,
+            "utc": "2024-10-27T22:00:00Z"
+          },
+          {
+            "server_timestamp": "2025.03.31 01:00:00",
+            "from_offset_hours": 2.0,
+            "to_offset_hours": 3.0,
+            "utc": "2025-03-30T22:00:00Z"
+          },
+          {
+            "server_timestamp": "2025.10.27 00:00:00",
+            "from_offset_hours": 3.0,
+            "to_offset_hours": 2.0,
+            "utc": "2025-10-26T22:00:00Z"
+          }
+        ],
+        "first_exact_overlap": {
+          "raw_index": 15416,
+          "server_timestamp": "2024.07.15 10:00:00",
+          "utc": "2024-07-15T07:00:00Z",
+          "open": "2403.15",
+          "high": "2407.89",
+          "low": "2401.25",
+          "close": "2407.89"
+        },
+        "last_exact_overlap": {
+          "raw_index": 24098,
+          "server_timestamp": "2025.12.31 23:00:00",
+          "utc": "2025-12-31T21:00:00Z",
+          "open": "4313.24",
+          "high": "4317.30",
+          "low": "4307.00",
+          "close": "4317.30"
+        }
+      },
+      {
+        "timezone": "Europe/Helsinki",
+        "status": "EXACT_MATCH",
+        "canonical_rows": 8683,
+        "canonical_timestamp_matches": 8683,
+        "canonical_ohlc_matches": 8683,
+        "exact_ohlc_matches": 8683,
+        "missing_utc": 0,
+        "ohlc_mismatches": 0,
+        "offsets_hours_observed": [
+          2.0,
+          3.0
+        ],
+        "winter_utc_plus_2_observed": true,
+        "summer_utc_plus_3_observed": true,
+        "dst_transition_count_in_overlap": 3,
+        "dst_transitions": [
+          {
+            "server_timestamp": "2024.10.28 00:00:00",
+            "from_offset_hours": 3.0,
+            "to_offset_hours": 2.0,
+            "utc": "2024-10-27T22:00:00Z"
+          },
+          {
+            "server_timestamp": "2025.03.31 01:00:00",
+            "from_offset_hours": 2.0,
+            "to_offset_hours": 3.0,
+            "utc": "2025-03-30T22:00:00Z"
+          },
+          {
+            "server_timestamp": "2025.10.27 00:00:00",
+            "from_offset_hours": 3.0,
+            "to_offset_hours": 2.0,
+            "utc": "2025-10-26T22:00:00Z"
+          }
+        ],
+        "first_exact_overlap": {
+          "raw_index": 15416,
+          "server_timestamp": "2024.07.15 10:00:00",
+          "utc": "2024-07-15T07:00:00Z",
+          "open": "2403.15",
+          "high": "2407.89",
+          "low": "2401.25",
+          "close": "2407.89"
+        },
+        "last_exact_overlap": {
+          "raw_index": 24098,
+          "server_timestamp": "2025.12.31 23:00:00",
+          "utc": "2025-12-31T21:00:00Z",
+          "open": "4313.24",
+          "high": "4317.30",
+          "low": "4307.00",
+          "close": "4317.30"
+        }
+      },
+      {
+        "timezone": "Europe/Bucharest",
+        "status": "EXACT_MATCH",
+        "canonical_rows": 8683,
+        "canonical_timestamp_matches": 8683,
+        "canonical_ohlc_matches": 8683,
+        "exact_ohlc_matches": 8683,
+        "missing_utc": 0,
+        "ohlc_mismatches": 0,
+        "offsets_hours_observed": [
+          2.0,
+          3.0
+        ],
+        "winter_utc_plus_2_observed": true,
+        "summer_utc_plus_3_observed": true,
+        "dst_transition_count_in_overlap": 3,
+        "dst_transitions": [
+          {
+            "server_timestamp": "2024.10.28 00:00:00",
+            "from_offset_hours": 3.0,
+            "to_offset_hours": 2.0,
+            "utc": "2024-10-27T22:00:00Z"
+          },
+          {
+            "server_timestamp": "2025.03.31 01:00:00",
+            "from_offset_hours": 2.0,
+            "to_offset_hours": 3.0,
+            "utc": "2025-03-30T22:00:00Z"
+          },
+          {
+            "server_timestamp": "2025.10.27 00:00:00",
+            "from_offset_hours": 3.0,
+            "to_offset_hours": 2.0,
+            "utc": "2025-10-26T22:00:00Z"
+          }
+        ],
+        "first_exact_overlap": {
+          "raw_index": 15416,
+          "server_timestamp": "2024.07.15 10:00:00",
+          "utc": "2024-07-15T07:00:00Z",
+          "open": "2403.15",
+          "high": "2407.89",
+          "low": "2401.25",
+          "close": "2407.89"
+        },
+        "last_exact_overlap": {
+          "raw_index": 24098,
+          "server_timestamp": "2025.12.31 23:00:00",
+          "utc": "2025-12-31T21:00:00Z",
+          "open": "4313.24",
+          "high": "4317.30",
+          "low": "4307.00",
+          "close": "4317.30"
+        }
+      }
+    ],
+    "first_exact_overlap": {
+      "raw_index": 15416,
+      "server_timestamp": "2024.07.15 10:00:00",
+      "utc": "2024-07-15T07:00:00Z",
+      "open": "2403.15",
+      "high": "2407.89",
+      "low": "2401.25",
+      "close": "2407.89"
+    },
+    "last_exact_overlap": {
+      "raw_index": 24098,
+      "server_timestamp": "2025.12.31 23:00:00",
+      "utc": "2025-12-31T21:00:00Z",
+      "open": "4313.24",
+      "high": "4317.30",
+      "low": "4307.00",
+      "close": "4317.30"
+    },
+    "retrospective_equivalence": {
+      "retrospective_rows_checked": 15368,
+      "retrospective_equivalent_utc_conversions": true,
+      "retrospective_timezone_equivalence_passed": true,
+      "equivalence_start_server_timestamp": "2022.01.03 00:00:00",
+      "equivalence_end_server_timestamp": "2024.07.11 07:00:00",
+      "equivalence_timezones": [
+        "Europe/Athens",
+        "Europe/Helsinki",
+        "Europe/Bucharest"
+      ],
+      "conversion_reference_timezone": "Europe/Athens"
+    }
+  },
+  "timezone_validation_evidence": [
+    {
+      "timezone": "Europe/Athens",
+      "status": "EXACT_MATCH",
+      "canonical_rows": 8683,
+      "canonical_timestamp_matches": 8683,
+      "canonical_ohlc_matches": 8683,
+      "exact_ohlc_matches": 8683,
+      "missing_utc": 0,
+      "ohlc_mismatches": 0,
+      "offsets_hours_observed": [
+        2.0,
+        3.0
+      ],
+      "winter_utc_plus_2_observed": true,
+      "summer_utc_plus_3_observed": true,
+      "dst_transition_count_in_overlap": 3,
+      "dst_transitions": [
+        {
+          "server_timestamp": "2024.10.28 00:00:00",
+          "from_offset_hours": 3.0,
+          "to_offset_hours": 2.0,
+          "utc": "2024-10-27T22:00:00Z"
+        },
+        {
+          "server_timestamp": "2025.03.31 01:00:00",
+          "from_offset_hours": 2.0,
+          "to_offset_hours": 3.0,
+          "utc": "2025-03-30T22:00:00Z"
+        },
+        {
+          "server_timestamp": "2025.10.27 00:00:00",
+          "from_offset_hours": 3.0,
+          "to_offset_hours": 2.0,
+          "utc": "2025-10-26T22:00:00Z"
+        }
+      ],
+      "first_exact_overlap": {
+        "raw_index": 15416,
+        "server_timestamp": "2024.07.15 10:00:00",
+        "utc": "2024-07-15T07:00:00Z",
+        "open": "2403.15",
+        "high": "2407.89",
+        "low": "2401.25",
+        "close": "2407.89"
+      },
+      "last_exact_overlap": {
+        "raw_index": 24098,
+        "server_timestamp": "2025.12.31 23:00:00",
+        "utc": "2025-12-31T21:00:00Z",
+        "open": "4313.24",
+        "high": "4317.30",
+        "low": "4307.00",
+        "close": "4317.30"
+      }
+    },
+    {
+      "timezone": "Europe/Helsinki",
+      "status": "EXACT_MATCH",
+      "canonical_rows": 8683,
+      "canonical_timestamp_matches": 8683,
+      "canonical_ohlc_matches": 8683,
+      "exact_ohlc_matches": 8683,
+      "missing_utc": 0,
+      "ohlc_mismatches": 0,
+      "offsets_hours_observed": [
+        2.0,
+        3.0
+      ],
+      "winter_utc_plus_2_observed": true,
+      "summer_utc_plus_3_observed": true,
+      "dst_transition_count_in_overlap": 3,
+      "dst_transitions": [
+        {
+          "server_timestamp": "2024.10.28 00:00:00",
+          "from_offset_hours": 3.0,
+          "to_offset_hours": 2.0,
+          "utc": "2024-10-27T22:00:00Z"
+        },
+        {
+          "server_timestamp": "2025.03.31 01:00:00",
+          "from_offset_hours": 2.0,
+          "to_offset_hours": 3.0,
+          "utc": "2025-03-30T22:00:00Z"
+        },
+        {
+          "server_timestamp": "2025.10.27 00:00:00",
+          "from_offset_hours": 3.0,
+          "to_offset_hours": 2.0,
+          "utc": "2025-10-26T22:00:00Z"
+        }
+      ],
+      "first_exact_overlap": {
+        "raw_index": 15416,
+        "server_timestamp": "2024.07.15 10:00:00",
+        "utc": "2024-07-15T07:00:00Z",
+        "open": "2403.15",
+        "high": "2407.89",
+        "low": "2401.25",
+        "close": "2407.89"
+      },
+      "last_exact_overlap": {
+        "raw_index": 24098,
+        "server_timestamp": "2025.12.31 23:00:00",
+        "utc": "2025-12-31T21:00:00Z",
+        "open": "4313.24",
+        "high": "4317.30",
+        "low": "4307.00",
+        "close": "4317.30"
+      }
+    },
+    {
+      "timezone": "Europe/Bucharest",
+      "status": "EXACT_MATCH",
+      "canonical_rows": 8683,
+      "canonical_timestamp_matches": 8683,
+      "canonical_ohlc_matches": 8683,
+      "exact_ohlc_matches": 8683,
+      "missing_utc": 0,
+      "ohlc_mismatches": 0,
+      "offsets_hours_observed": [
+        2.0,
+        3.0
+      ],
+      "winter_utc_plus_2_observed": true,
+      "summer_utc_plus_3_observed": true,
+      "dst_transition_count_in_overlap": 3,
+      "dst_transitions": [
+        {
+          "server_timestamp": "2024.10.28 00:00:00",
+          "from_offset_hours": 3.0,
+          "to_offset_hours": 2.0,
+          "utc": "2024-10-27T22:00:00Z"
+        },
+        {
+          "server_timestamp": "2025.03.31 01:00:00",
+          "from_offset_hours": 2.0,
+          "to_offset_hours": 3.0,
+          "utc": "2025-03-30T22:00:00Z"
+        },
+        {
+          "server_timestamp": "2025.10.27 00:00:00",
+          "from_offset_hours": 3.0,
+          "to_offset_hours": 2.0,
+          "utc": "2025-10-26T22:00:00Z"
+        }
+      ],
+      "first_exact_overlap": {
+        "raw_index": 15416,
+        "server_timestamp": "2024.07.15 10:00:00",
+        "utc": "2024-07-15T07:00:00Z",
+        "open": "2403.15",
+        "high": "2407.89",
+        "low": "2401.25",
+        "close": "2407.89"
+      },
+      "last_exact_overlap": {
+        "raw_index": 24098,
+        "server_timestamp": "2025.12.31 23:00:00",
+        "utc": "2025-12-31T21:00:00Z",
+        "open": "4313.24",
+        "high": "4317.30",
+        "low": "4307.00",
+        "close": "4317.30"
+      }
+    }
+  ],
+  "retrospective_timezone_equivalence": {
+    "retrospective_rows_checked": 15368,
+    "retrospective_equivalent_utc_conversions": true,
+    "retrospective_timezone_equivalence_passed": true,
+    "equivalence_start_server_timestamp": "2022.01.03 00:00:00",
+    "equivalence_end_server_timestamp": "2024.07.11 07:00:00",
+    "equivalence_timezones": [
+      "Europe/Athens",
+      "Europe/Helsinki",
+      "Europe/Bucharest"
+    ],
+    "conversion_reference_timezone": "Europe/Athens"
+  },
+  "overlap_counts": {
+    "canonical_rows": 8683,
+    "canonical_timestamp_matches": 8683,
+    "canonical_ohlc_matches": 8683
+  },
+  "first_exact_overlap": {
+    "raw_index": 15416,
+    "server_timestamp": "2024.07.15 10:00:00",
+    "utc": "2024-07-15T07:00:00Z",
+    "open": "2403.15",
+    "high": "2407.89",
+    "low": "2401.25",
+    "close": "2407.89"
+  },
+  "last_exact_overlap": {
+    "raw_index": 24098,
+    "server_timestamp": "2025.12.31 23:00:00",
+    "utc": "2025-12-31T21:00:00Z",
+    "open": "4313.24",
+    "high": "4317.30",
+    "low": "4307.00",
+    "close": "4317.30"
+  },
+  "exposed_boundary_raw_index": 15416,
+  "embargo_bars": 48,
+  "holdout_boundary": {
+    "exposed_boundary_raw_index": 15416,
+    "exposed_boundary_server_timestamp": "2024.07.15 10:00:00",
+    "exposed_boundary_utc": "2024-07-15T07:00:00Z",
+    "embargo_bars": 48,
+    "holdout_end_exclusive": 15368,
+    "retrospective_row_count": 15368,
+    "retrospective_first_server_timestamp": "2022.01.03 00:00:00",
+    "retrospective_last_server_timestamp": "2024.07.11 07:00:00",
+    "retrospective_first_utc": "2022-01-02T22:00:00Z",
+    "retrospective_last_utc": "2024-07-11T04:00:00Z",
+    "embargo_server_range": {
+      "start_index": 15368,
+      "end_index_exclusive": 15416,
+      "first_server_timestamp": "2024.07.11 08:00:00",
+      "last_server_timestamp": "2024.07.15 09:00:00",
+      "first_utc": "2024-07-11T05:00:00Z",
+      "last_utc": "2024-07-15T06:00:00Z"
+    }
+  },
+  "retrospective_row_count": 15368,
+  "retrospective_utc_coverage": {
+    "first_utc": "2022-01-02T22:00:00Z",
+    "last_utc": "2024-07-11T04:00:00Z"
+  },
+  "duplicate_count": 0,
+  "ohlc_errors": [],
+  "gap_distribution": {
+    "1": 23406,
+    "2": 453,
+    "3": 14,
+    "4": 13,
+    "7": 1,
+    "26": 2,
+    "29": 1,
+    "49": 88,
+    "50": 104,
+    "51": 4,
+    "52": 2,
+    "53": 2,
+    "73": 2,
+    "74": 3,
+    "75": 1,
+    "76": 2
+  },
+  "exposed_manifest_intervals": [
+    {
+      "manifest": "benchmarks/datasets/XAUUSD_H1.human.manifest.json",
+      "data_file": "data/real/XAUUSD/H1/XAUUSD_H1.real.csv.gz",
+      "first_utc": "2024-07-15T07:00:00Z",
+      "last_utc": "2025-12-31T21:00:00Z",
+      "bar_count": 8683
+    },
+    {
+      "manifest": "benchmarks/datasets/XAUUSD_H1_2026H1.human.manifest.json",
+      "data_file": "data/real/XAUUSD/H1_2026H1/XAUUSD_H1_2026H1.real.csv.gz",
+      "first_utc": "2026-01-01T23:00:00Z",
+      "last_utc": "2026-06-30T20:00:00Z",
+      "bar_count": 2914
+    }
+  ],
+  "quarantine_check": {
+    "present": true,
+    "path": "benchmarks/data/quarantine/XAUUSD/H1/post_2026H1",
+    "earliest_observed_utc": null,
+    "overlaps_retrospective": false
+  },
+  "contamination_caveats": [
+    "Absence of a repository reference is not proof that humans never viewed pre-2024-07-15 bars outside Git.",
+    "The full MT5 export existed in chart_csv and Common/Files before this retrospective package was constructed; the source is therefore not a prospective forward test.",
+    "benchmarks/data/real/XAUUSD/H1/XAUUSD_H1.data_quality.json records excluded_source_rows=15416 starting at 2024.07.15 10:00:00; prior scripts intentionally started the exposed canonical series at that boundary.",
+    "No tracked label file, manifest window, or quarantine tranche references UTC bars before 2024-07-15T07:00:00Z, but that does not prove the earlier interval was never inspected informally."
+  ],
+  "eligibility": {
+    "eligible_for_tuning": false,
+    "eligible_for_labeling": true,
+    "eligible_for_evaluation": false,
+    "prospective_test": false
+  },
+  "labels_loaded": false,
+  "predictions_loaded": false,
+  "swing_engine_executed": false,
+  "candidate_evaluated": false,
+  "baseline_evaluated": false,
+  "output_hashes": {
+    "XAUUSD_H1_2022_2024_raw.csv": "fe7af5bb8c7f4a2304e132d72c52a608c9570c6dab14ad48960f1267052d2913",
+    "XAUUSD_H1_2022_2024.real.csv.gz": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73"
+  }
+}

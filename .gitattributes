@@ -1,3 +1,6 @@
 # Preserve immutable MT5 acquisition snapshots byte-for-byte.
 benchmarks/data/quarantine/**/XAUUSD_H1_raw.csv -text whitespace=cr-at-eol
 benchmarks/data/quarantine/**/XAUUSD_H1_raw.meta.csv -text whitespace=cr-at-eol
+
+# Preserve retrospective holdout raw MT5 prefix bytes (CRLF).
+benchmarks/data/retrospective/**/XAUUSD_H1_*_raw.csv -text whitespace=cr-at-eol

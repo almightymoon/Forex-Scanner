@@ -1,0 +1,100 @@
+{
+  "protocol_id": "XAUUSD_H1_2022_2024_RETROSPECTIVE_LOCKED_V1",
+  "frozen_on": "2026-07-21",
+  "benchmark_type": "RETROSPECTIVE_HOLDOUT",
+  "classification_notes": [
+    "The source existed before benchmark construction.",
+    "This is not a prospective forward test.",
+    "It is useful for independent chronological stress testing only if its selected interval was not used in prior tuning or evaluation.",
+    "Passing this benchmark may support an interim engineering decision.",
+    "It cannot replace the frozen post-2026H1 final certification."
+  ],
+  "candidate": {
+    "version": "2.3.0-rc1",
+    "commit": "3fd5d7c74b82c3728d7badaa6cd72044bdd6bd1d"
+  },
+  "baseline": {
+    "version": "2.2.0"
+  },
+  "split": "TEST",
+  "tuning_allowed": false,
+  "source": {
+    "package_status": "RETROSPECTIVE_HOLDOUT_SOURCE_FROZEN_NOT_LABELED",
+    "eligible_for_tuning": false,
+    "eligible_for_labeling": true,
+    "eligible_for_evaluation": false,
+    "prospective_test": false,
+    "embargo_bars_before_exposed_boundary": 48
+  },
+  "window_selection": {
+    "selection_uses_prices_or_predictions": false,
+    "leading_guard_bars": 48,
+    "trailing_guard_bars": 48,
+    "bucket_count": 6,
+    "window_bars": 192,
+    "algorithm_version": "PRICE_BLIND_SIX_BUCKET_CENTERED_V1",
+    "algorithm": [
+      "Sort frozen canonical bars chronologically.",
+      "Exclude 48 leading and 48 trailing bars.",
+      "Divide remaining eligible indices into six equal chronological buckets.",
+      "Select one centered contiguous 192-bar window per bucket.",
+      "Require six non-overlapping windows.",
+      "Fail rather than shift, resize, or cherry-pick windows.",
+      "Do not inspect OHLC, volatility, labels, predictions, or engine output."
+    ]
+  },
+  "labeling": {
+    "predictions_visible_during_labeling": false,
+    "engine_version_visible_during_labeling": false,
+    "passes": 2,
+    "minimum_days_between_passes": 3,
+    "conflicts_require_explicit_adjudication": true,
+    "automatic_conflict_resolution": false,
+    "bars_and_labels_frozen_before_evaluation": true,
+    "allowed_adjudication_decisions": [
+      "PASS_1",
+      "PASS_2",
+      "CUSTOM",
+      "EXCLUDE"
+    ],
+    "nonempty_notes_required_for_every_adjudication": true
+  },
+  "evaluation": {
+    "candidate_evaluations_allowed": 1,
+    "baseline_evaluations_allowed": 1,
+    "error_analysis_before_release_decision": false,
+    "tuning_after_unblinding": false,
+    "prefix_stability_required": true,
+    "final_production_certification_requires": "prospective post-2026H1 locked benchmark"
+  },
+  "engineering_gates": {
+    "prefix_stability_failures_max": 0,
+    "location_precision_min": 0.8,
+    "location_recall_min": 0.7,
+    "location_f1_min": 0.75,
+    "semantic_f1_min": 0.6,
+    "major_external_precision_min": 0.85,
+    "major_external_recall_min": 0.4,
+    "worst_window_location_f1_min": 0.5,
+    "candidate_location_f1_delta_vs_v2_2_min": 0.0,
+    "candidate_semantic_f1_delta_vs_v2_2_min": 0.0
+  },
+  "decision_values": [
+    "PASS_RETROSPECTIVE_ENGINEERING_GATE",
+    "FAIL_RETROSPECTIVE_ENGINEERING_GATE"
+  ],
+  "forbidden_decision_values": [
+    "PROMOTE_V2_3_0_FINAL"
+  ],
+  "current_status": "SOURCE_PROTOCOL_DEFINED_AWAITING_WINDOW_SELECTION",
+  "source_package": {
+    "path": "benchmarks/data/retrospective/XAUUSD/H1_2022_2024_v1",
+    "canonical_file": "XAUUSD_H1_2022_2024.real.csv.gz",
+    "canonical_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+    "raw_file": "XAUUSD_H1_2022_2024_raw.csv",
+    "raw_sha256": "fe7af5bb8c7f4a2304e132d72c52a608c9570c6dab14ad48960f1267052d2913",
+    "row_count": 15368,
+    "first_utc": "2022-01-02T22:00:00Z",
+    "last_utc": "2024-07-11T04:00:00Z"
+  }
+}
