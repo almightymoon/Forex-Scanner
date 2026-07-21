@@ -1,0 +1,93 @@
+{
+  "dataset_id": "XAUUSD_H1_2022_2024_AI_ASSISTED_ENGINEERING_DRAFT_V1",
+  "protocol_id": "XAUUSD_H1_2022_2024_RETROSPECTIVE_LOCKED_V1",
+  "benchmark_type": "AI_ASSISTED_ENGINEERING_DIAGNOSTIC",
+  "label_origin": "AI_ASSISTED_ENGINEERING_DRAFT",
+  "status": "FROZEN_AI_ASSISTED_ENGINEERING_DRAFT_NOT_EVALUATED",
+  "frozen_at_utc": "2026-07-21T19:53:56Z",
+  "candidate": {
+    "version": "2.3.0-rc1",
+    "commit": "3fd5d7c74b82c3728d7badaa6cd72044bdd6bd1d"
+  },
+  "baseline": {
+    "version": "2.2.0"
+  },
+  "eligibility": {
+    "eligible_for_tuning": false,
+    "eligible_for_human_benchmark": false,
+    "eligible_for_release_gate": false,
+    "eligible_for_production_certification": false,
+    "eligible_for_engineering_diagnostic": true,
+    "prospective_test": false,
+    "human_adjudicated": false
+  },
+  "label_counts": {
+    "by_window": {
+      "1": 4,
+      "2": 8,
+      "3": 4,
+      "4": 9,
+      "5": 6,
+      "6": 11
+    },
+    "total": 42
+  },
+  "source_evidence": {
+    "selection_manifest": {
+      "path": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/selection_manifest.json",
+      "sha256": "9bdaa635b71b09287def03bd38a0a8fe3c1a50a5f0fd431ee686e685bbc369e8"
+    },
+    "windows": {
+      "window_01_1224_1416.csv": "5775bb6e9c02024d9ea9415c595044787b7c0ad5fea7b4b4738ff1c33c2482e2",
+      "window_02_3769_3961.csv": "a6ca7513b5165bbf8700aa2cd1c441cb21601ae967b294eb217acb856eeea1b1",
+      "window_03_6315_6507.csv": "e845c5b1249b237719322cae5382fba18c140ac302a1458e28b8c349469de91f",
+      "window_04_8860_9052.csv": "46512a8c4ec6230443bb9fec46b9db6522b4e3b6516ca26b3f5bc8fc97fdf133",
+      "window_05_11405_11597.csv": "7ba245bec20e133e33cabf7f13b0e996f6de8f6fc1a98e26ef9eef152055dbbd",
+      "window_06_13951_14143.csv": "a2e68346d9957ce3c54851dac0ca16f1b84a1d6de1c2e2ab2c8157355454740f"
+    },
+    "protocol": {
+      "path": "benchmarks/protocols/XAUUSD_H1_2022_2024_retrospective_locked_protocol.json",
+      "sha256": "00a6d6ec51bd6bb0a1fd207babd1ac0bc8e460b0755eec5f2ad05f9643ca1254"
+    },
+    "pass_1_json": {
+      "path": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/labels/pass_1.json",
+      "sha256": "d1fe3440c0cc21eb888a07caadeb6893830c0354b7341b8157a64debca1bd0ca",
+      "unchanged": true,
+      "note": "Formal empty human template; AI labels were not inserted."
+    },
+    "ai_draft_inputs": {
+      "ai_assisted_labels.json": "c625761a09a59496cf14a6c079a1a9f80a774b58bd77ab85d6be270189f95bce",
+      "methodology.json": "cad45add087ceae37d02f3a4cc812258d554503b2cf5e3a2c53fa6f5f6b16147",
+      "review.md": "097dc3eb92ae33a87243d17d916890e8fe321774d23d935d3f6be363301feff0",
+      "annotated_window_01.svg": "61d8ae2896779fcb45d062a90ca482835b806edc505b737bcdbb3a2341fbe0e7",
+      "annotated_window_02.svg": "a58a584301bf112f35c42dfc1ed8132216b478c8eea67423035fa038dc683a68",
+      "annotated_window_03.svg": "d30c42f708145403dfdf6feed18a374927751c3c7b84a86991f12e0a2180b19f",
+      "annotated_window_04.svg": "3ebec241978e0463654eefdee258771c35b681b3bc8b185e3185c747c2b96a26",
+      "annotated_window_05.svg": "aed5ea503652ba6e77ff2707421fe5fef275c1a24ae7f4ae54c364294eb8d259",
+      "annotated_window_06.svg": "b2b8d09191192a3d87c4b2aaac17b283349be625bd2653dfd6fd9806bc31b553"
+    }
+  },
+  "outputs": {
+    "data_sha256": "b3db9b67e7c24b028805df660e13bbc2cdb83d3ac4b0e2024f2e622ec81d8b68",
+    "labels_sha256": "a38d76010326fea29114bd3e277268ac12cdd73e4d18895102d2dd0ff0ac3b01",
+    "manifest_sha256": "4ec53564a3f755ea0835d4bd7fc7c89323e9a29123e68b8e5effd0e7d7074325"
+  },
+  "contamination_controls": {
+    "labels_generated_by_ai": true,
+    "human_blind_pass_completed": false,
+    "predictions_loaded_during_label_creation": false,
+    "swing_engine_executed_during_label_creation": false,
+    "predictions_loaded": false,
+    "swing_detector_executed": false,
+    "candidate_evaluated": false,
+    "baseline_evaluated": false
+  },
+  "policy": {
+    "evaluation_allowed_after_freeze": true,
+    "human_benchmark": false,
+    "release_gate": false,
+    "production_certification": false,
+    "engineering_diagnostic_only": true
+  },
+  "warning": "These metrics use AI-assisted engineering-draft labels. They are diagnostic only and cannot establish human benchmark performance, release approval, or production certification."
+}

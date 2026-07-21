@@ -1,0 +1,626 @@
+{
+  "classification": "AI_ASSISTED_ENGINEERING_DRAFT",
+  "engine_imported": false,
+  "candidate_evaluated": false,
+  "baseline_evaluated": false,
+  "formal_pass_files_modified": false,
+  "parameters": {
+    "reversal_threshold_atr": 1.75,
+    "confirmation_threshold_atr": 1.25,
+    "min_two_sided_prominence_atr": 1.5,
+    "major_prominence_atr": 3.5,
+    "major_leg_bars": 24,
+    "major_leg_amplitude_atr": 2.75,
+    "min_pivot_separation_bars": 3,
+    "boundary_edge_bars": 5,
+    "atr_period": 14
+  },
+  "process": [
+    "Read 192 OHLC candles per window.",
+    "Compute true range and rolling ATR(14) within-window only.",
+    "Generate alternating zigzag pivots with 1.75 ATR reversal.",
+    "Confirm with opposite move of at least 1.25 ATR.",
+    "Exclude boundary indices 0-5 and 186-191 unless exceptional.",
+    "Prune by separation, prominence, and confidence.",
+    "Assign MAJOR/MINOR and EXTERNAL/INTERNAL by structural rules.",
+    "Sparse windows (<3 labels): documented recovery at 1.25 then 1.00 ATR.",
+    "Visual review SVG charts; remove obvious noise; record discretionary adds.",
+    "Omit LOW-confidence pivots."
+  ],
+  "discretionary_additions": [
+    {
+      "action": "remove_noise_cluster",
+      "window_number": 1,
+      "removed_indices": [
+        62,
+        66,
+        69
+      ],
+      "reason": "Visual review: bars 62/66/69 are a tight chop after the bar-58 swing high and do not represent distinct two-sided structure versus the later trough at 110."
+    },
+    {
+      "action": "discretionary_add",
+      "window_number": 1,
+      "pivot_index": 110,
+      "direction": "LOW",
+      "reason": "After removing the 62/66/69 noise cluster, alternation required a LOW between 58 HIGH and 156 HIGH. Bar 110 is the deepest confirmed trough in that span."
+    },
+    {
+      "action": "remove_noise",
+      "window_number": 3,
+      "removed_indices": [
+        91
+      ],
+      "reason": "Visual review: bar 91 is a shallow internal dip immediately before the bar-94 climax candle."
+    },
+    {
+      "action": "discretionary_reclass",
+      "window_number": 3,
+      "pivot_index": 94,
+      "direction": "LOW",
+      "reason": "Bar 94 is a dual-wick climax. The meaningful structural event after 70 LOW / 86 HIGH is the new extreme low at 1896.45, not the upper wick."
+    }
+  ],
+  "windows": [
+    {
+      "window_number": 1,
+      "source_file": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/window_01_1224_1416.csv",
+      "source_sha256": "5775bb6e9c02024d9ea9415c595044787b7c0ad5fea7b4b4738ff1c33c2482e2",
+      "bar_count": 192,
+      "raw_zigzag_candidates": 21,
+      "proposed_labels": 4,
+      "prune_log": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "HIGH",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 13,
+          "prev": 11
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 18,
+          "prev": 18
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 18
+        },
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "HIGH",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_boundary",
+          "index": 3,
+          "direction": "LOW",
+          "two_sided_atr": 1.511
+        },
+        {
+          "action": "drop_boundary",
+          "index": 5,
+          "direction": "HIGH",
+          "two_sided_atr": 1.391
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 13,
+          "prev": 11
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 41,
+          "prev": 41
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 76,
+          "prev": 74
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 80,
+          "prev": 78
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 87,
+          "prev": 87
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 133,
+          "prev": 133
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 18
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 58
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 78
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 87
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 133
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 156
+        },
+        {
+          "action": "sparse_window_recovery",
+          "reason": "Sparse primary pass (<3 labels). Applied documented sparse-window recovery at 1.00 ATR reversal with a 1.0 ATR two-sided prominence floor. Still excludes boundary bars and unconfirmed terminals. LOW confidence labels remain omitted.",
+          "primary_reversal_atr": 1.75,
+          "recovery_reversal_atr": 1.0,
+          "primary_count": 1,
+          "recovery_count": 6
+        },
+        {
+          "action": "remove_noise_cluster",
+          "window_number": 1,
+          "removed_indices": [
+            62,
+            66,
+            69
+          ],
+          "reason": "Visual review: bars 62/66/69 are a tight chop after the bar-58 swing high and do not represent distinct two-sided structure versus the later trough at 110."
+        },
+        {
+          "action": "discretionary_add",
+          "window_number": 1,
+          "pivot_index": 110,
+          "direction": "LOW",
+          "reason": "After removing the 62/66/69 noise cluster, alternation required a LOW between 58 HIGH and 156 HIGH. Bar 110 is the deepest confirmed trough in that span."
+        }
+      ],
+      "boundary_exceptions": [],
+      "omitted_ambiguous": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "HIGH",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 13,
+          "prev": 11
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 18,
+          "prev": 18
+        },
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "HIGH",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_boundary",
+          "index": 3,
+          "direction": "LOW",
+          "two_sided_atr": 1.511
+        },
+        {
+          "action": "drop_boundary",
+          "index": 5,
+          "direction": "HIGH",
+          "two_sided_atr": 1.391
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 13,
+          "prev": 11
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 41,
+          "prev": 41
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 76,
+          "prev": 74
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 80,
+          "prev": 78
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 87,
+          "prev": 87
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 133,
+          "prev": 133
+        }
+      ],
+      "sparse_window_recovery": {
+        "reason": "Sparse primary pass (<3 labels). Applied documented sparse-window recovery at 1.00 ATR reversal with a 1.0 ATR two-sided prominence floor. Still excludes boundary bars and unconfirmed terminals. LOW confidence labels remain omitted.",
+        "primary_reversal_atr": 1.75,
+        "recovery_reversal_atr": 1.0,
+        "primary_count": 1,
+        "recovery_count": 6
+      },
+      "visual_review_actions": [
+        {
+          "action": "remove_noise_cluster",
+          "window_number": 1,
+          "removed_indices": [
+            62,
+            66,
+            69
+          ],
+          "reason": "Visual review: bars 62/66/69 are a tight chop after the bar-58 swing high and do not represent distinct two-sided structure versus the later trough at 110."
+        },
+        {
+          "action": "discretionary_add",
+          "window_number": 1,
+          "pivot_index": 110,
+          "direction": "LOW",
+          "reason": "After removing the 62/66/69 noise cluster, alternation required a LOW between 58 HIGH and 156 HIGH. Bar 110 is the deepest confirmed trough in that span."
+        }
+      ],
+      "counts": {
+        "MAJOR_EXTERNAL": 3,
+        "MAJOR_INTERNAL": 1,
+        "MINOR_INTERNAL": 0
+      }
+    },
+    {
+      "window_number": 2,
+      "source_file": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/window_02_3769_3961.csv",
+      "source_sha256": "a6ca7513b5165bbf8700aa2cd1c441cb21601ae967b294eb217acb856eeea1b1",
+      "bar_count": 192,
+      "raw_zigzag_candidates": 16,
+      "proposed_labels": 8,
+      "prune_log": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "HIGH",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_low_confidence",
+          "index": 17,
+          "two_sided_atr": 1.139
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 21,
+          "prev": 19
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 99,
+          "prev": 99
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 125,
+          "prev": 123
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 27
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 113
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 123
+        }
+      ],
+      "boundary_exceptions": [],
+      "omitted_ambiguous": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "HIGH",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_low_confidence",
+          "index": 17,
+          "two_sided_atr": 1.139
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 21,
+          "prev": 19
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 99,
+          "prev": 99
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 125,
+          "prev": 123
+        }
+      ],
+      "sparse_window_recovery": null,
+      "visual_review_actions": [],
+      "counts": {
+        "MAJOR_EXTERNAL": 2,
+        "MAJOR_INTERNAL": 1,
+        "MINOR_INTERNAL": 5
+      }
+    },
+    {
+      "window_number": 3,
+      "source_file": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/window_03_6315_6507.csv",
+      "source_sha256": "e845c5b1249b237719322cae5382fba18c140ac302a1458e28b8c349469de91f",
+      "bar_count": 192,
+      "raw_zigzag_candidates": 12,
+      "proposed_labels": 4,
+      "prune_log": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "LOW",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 24,
+          "prev": 24
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 72,
+          "prev": 70
+        },
+        {
+          "action": "drop_low_confidence",
+          "index": 76,
+          "two_sided_atr": 0.88
+        },
+        {
+          "action": "drop_low_prominence",
+          "index": 78,
+          "two_sided_atr": 0.853
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 48
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 70
+        },
+        {
+          "action": "sparse_window_recovery",
+          "reason": "Sparse primary pass (<3 labels). Applied documented sparse-window recovery at 1.00 ATR reversal with a 1.0 ATR two-sided prominence floor. Still excludes boundary bars and unconfirmed terminals. LOW confidence labels remain omitted.",
+          "primary_reversal_atr": 1.75,
+          "recovery_reversal_atr": 1.0,
+          "primary_count": 1,
+          "recovery_count": 5
+        },
+        {
+          "action": "remove_noise",
+          "window_number": 3,
+          "removed_indices": [
+            91
+          ],
+          "reason": "Visual review: bar 91 is a shallow internal dip immediately before the bar-94 climax candle."
+        },
+        {
+          "action": "discretionary_reclass",
+          "window_number": 3,
+          "pivot_index": 94,
+          "direction": "LOW",
+          "reason": "Bar 94 is a dual-wick climax. The meaningful structural event after 70 LOW / 86 HIGH is the new extreme low at 1896.45, not the upper wick."
+        }
+      ],
+      "boundary_exceptions": [],
+      "omitted_ambiguous": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "LOW",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 24,
+          "prev": 24
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 72,
+          "prev": 70
+        },
+        {
+          "action": "drop_low_confidence",
+          "index": 76,
+          "two_sided_atr": 0.88
+        },
+        {
+          "action": "drop_low_prominence",
+          "index": 78,
+          "two_sided_atr": 0.853
+        }
+      ],
+      "sparse_window_recovery": {
+        "reason": "Sparse primary pass (<3 labels). Applied documented sparse-window recovery at 1.00 ATR reversal with a 1.0 ATR two-sided prominence floor. Still excludes boundary bars and unconfirmed terminals. LOW confidence labels remain omitted.",
+        "primary_reversal_atr": 1.75,
+        "recovery_reversal_atr": 1.0,
+        "primary_count": 1,
+        "recovery_count": 5
+      },
+      "visual_review_actions": [
+        {
+          "action": "remove_noise",
+          "window_number": 3,
+          "removed_indices": [
+            91
+          ],
+          "reason": "Visual review: bar 91 is a shallow internal dip immediately before the bar-94 climax candle."
+        },
+        {
+          "action": "discretionary_reclass",
+          "window_number": 3,
+          "pivot_index": 94,
+          "direction": "LOW",
+          "reason": "Bar 94 is a dual-wick climax. The meaningful structural event after 70 LOW / 86 HIGH is the new extreme low at 1896.45, not the upper wick."
+        }
+      ],
+      "counts": {
+        "MAJOR_EXTERNAL": 1,
+        "MAJOR_INTERNAL": 0,
+        "MINOR_INTERNAL": 3
+      }
+    },
+    {
+      "window_number": 4,
+      "source_file": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/window_04_8860_9052.csv",
+      "source_sha256": "46512a8c4ec6230443bb9fec46b9db6522b4e3b6516ca26b3f5bc8fc97fdf133",
+      "bar_count": 192,
+      "raw_zigzag_candidates": 9,
+      "proposed_labels": 9,
+      "prune_log": [],
+      "boundary_exceptions": [],
+      "omitted_ambiguous": [],
+      "sparse_window_recovery": null,
+      "visual_review_actions": [],
+      "counts": {
+        "MAJOR_EXTERNAL": 3,
+        "MAJOR_INTERNAL": 5,
+        "MINOR_INTERNAL": 1
+      }
+    },
+    {
+      "window_number": 5,
+      "source_file": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/window_05_11405_11597.csv",
+      "source_sha256": "7ba245bec20e133e33cabf7f13b0e996f6de8f6fc1a98e26ef9eef152055dbbd",
+      "bar_count": 192,
+      "raw_zigzag_candidates": 7,
+      "proposed_labels": 6,
+      "prune_log": [
+        {
+          "action": "drop_boundary",
+          "index": 1,
+          "direction": "HIGH",
+          "two_sided_atr": 1.374
+        }
+      ],
+      "boundary_exceptions": [],
+      "omitted_ambiguous": [
+        {
+          "action": "drop_boundary",
+          "index": 1,
+          "direction": "HIGH",
+          "two_sided_atr": 1.374
+        }
+      ],
+      "sparse_window_recovery": null,
+      "visual_review_actions": [],
+      "counts": {
+        "MAJOR_EXTERNAL": 3,
+        "MAJOR_INTERNAL": 0,
+        "MINOR_INTERNAL": 3
+      }
+    },
+    {
+      "window_number": 6,
+      "source_file": "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/windows_v1/window_06_13951_14143.csv",
+      "source_sha256": "a2e68346d9957ce3c54851dac0ca16f1b84a1d6de1c2e2ab2c8157355454740f",
+      "bar_count": 192,
+      "raw_zigzag_candidates": 18,
+      "proposed_labels": 11,
+      "prune_log": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "LOW",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 28,
+          "prev": 28
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 51,
+          "prev": 51
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 167,
+          "prev": 165
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 31
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 62
+        },
+        {
+          "action": "final_alternation_merge",
+          "kept_index": 185
+        }
+      ],
+      "boundary_exceptions": [],
+      "omitted_ambiguous": [
+        {
+          "action": "drop_boundary",
+          "index": 0,
+          "direction": "LOW",
+          "two_sided_atr": 1.0
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 28,
+          "prev": 28
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 51,
+          "prev": 51
+        },
+        {
+          "action": "drop_min_separation",
+          "index": 167,
+          "prev": 165
+        }
+      ],
+      "sparse_window_recovery": null,
+      "visual_review_actions": [],
+      "counts": {
+        "MAJOR_EXTERNAL": 3,
+        "MAJOR_INTERNAL": 2,
+        "MINOR_INTERNAL": 6
+      }
+    }
+  ],
+  "validation_errors": [],
+  "validation_passed": true
+}
