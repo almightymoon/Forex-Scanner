@@ -1383,3 +1383,292 @@ def test_package_checksum_tampering_refused_by_evaluator(tmp_path: Path):
     write_json(receipt_path, receipt)
     with pytest.raises(SystemExit, match="checksum mismatch"):
         EVALUATOR.load_package(package)
+
+
+ADAPTER = load_script(
+    "xauusd_h1_retrospective_selection_adapter.py",
+    "test_retrospective_selection_adapter",
+)
+
+FROZEN_SELECTION_ROOT = (
+    ROOT
+    / "benchmarks"
+    / "data"
+    / "locked"
+    / "XAUUSD"
+    / "H1"
+    / "retrospective_2022_2024"
+    / "windows_v1"
+)
+
+FROZEN_SELECTION_SHA = (
+    "9bdaa635b71b09287def03bd38a0a8fe3c1a50a5f0fd431ee686e685bbc369e8"
+)
+
+FROZEN_WINDOW_HASHES = {
+    "window_01_1224_1416.csv": (
+        "5775bb6e9c02024d9ea9415c595044787b7c0ad5fea7b4b4738ff1c33c2482e2"
+    ),
+    "window_02_3769_3961.csv": (
+        "a6ca7513b5165bbf8700aa2cd1c441cb21601ae967b294eb217acb856eeea1b1"
+    ),
+    "window_03_6315_6507.csv": (
+        "e845c5b1249b237719322cae5382fba18c140ac302a1458e28b8c349469de91f"
+    ),
+    "window_04_8860_9052.csv": (
+        "46512a8c4ec6230443bb9fec46b9db6522b4e3b6516ca26b3f5bc8fc97fdf133"
+    ),
+    "window_05_11405_11597.csv": (
+        "7ba245bec20e133e33cabf7f13b0e996f6de8f6fc1a98e26ef9eef152055dbbd"
+    ),
+    "window_06_13951_14143.csv": (
+        "a2e68346d9957ce3c54851dac0ca16f1b84a1d6de1c2e2ab2c8157355454740f"
+    ),
+}
+
+
+def _copy_frozen_selection(tmp_path: Path) -> Path:
+    import shutil
+
+    dest = tmp_path / "windows_v1"
+    shutil.copytree(FROZEN_SELECTION_ROOT, dest)
+    return dest
+
+
+def test_committed_retrospective_manifest_schema_is_accepted():
+    assert FROZEN_SELECTION_ROOT.exists()
+    assert sha256(
+        FROZEN_SELECTION_ROOT / "selection_manifest.json"
+    ) == FROZEN_SELECTION_SHA
+    for name, digest in FROZEN_WINDOW_HASHES.items():
+        assert sha256(FROZEN_SELECTION_ROOT / name) == digest
+
+    selection, manifest_path, windows = (
+        ADAPTER.load_retrospective_selection(
+            FROZEN_SELECTION_ROOT,
+            parse_utc=PASSES.parse_utc,
+        )
+    )
+    assert selection["benchmark_type"] == "RETROSPECTIVE_HOLDOUT"
+    assert selection["status"] == (
+        "WINDOWS_SELECTED_UNLABELED_NOT_EVALUATED"
+    )
+    assert selection["policy"][
+        "selection_uses_chronology_and_indices_only"
+    ] is True
+    assert selection["contamination_controls"]["labels_exist"] is False
+    assert len(windows) == 6
+    assert manifest_path == (
+        FROZEN_SELECTION_ROOT / "selection_manifest.json"
+    ).resolve()
+    assert sha256(manifest_path) == FROZEN_SELECTION_SHA
+
+
+def test_native_controls_validated_before_normalization():
+    native = json.loads(
+        (
+            FROZEN_SELECTION_ROOT / "selection_manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    errors = ADAPTER.validate_native_retrospective_manifest(native)
+    assert errors == []
+
+    bad = dict(native)
+    bad["contamination_controls"] = dict(native["contamination_controls"])
+    bad["contamination_controls"]["labels_loaded"] = True
+    assert ADAPTER.validate_native_retrospective_manifest(bad)
+
+
+def test_missing_or_true_contamination_flags_refused(tmp_path: Path):
+    root = _copy_frozen_selection(tmp_path)
+    manifest_path = root / "selection_manifest.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["contamination_controls"]["predictions_loaded"] = True
+    write_json(manifest_path, payload)
+    with pytest.raises(SystemExit, match="predictions_loaded must be false"):
+        ADAPTER.load_retrospective_selection(
+            root,
+            parse_utc=PASSES.parse_utc,
+        )
+
+
+def test_eligible_for_labeling_false_refused(tmp_path: Path):
+    root = _copy_frozen_selection(tmp_path)
+    manifest_path = root / "selection_manifest.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["eligibility"]["eligible_for_labeling"] = False
+    write_json(manifest_path, payload)
+    with pytest.raises(
+        SystemExit,
+        match="eligible_for_labeling must be True",
+    ):
+        ADAPTER.load_retrospective_selection(
+            root,
+            parse_utc=PASSES.parse_utc,
+        )
+
+
+def test_prospective_test_true_refused(tmp_path: Path):
+    root = _copy_frozen_selection(tmp_path)
+    manifest_path = root / "selection_manifest.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["eligibility"]["prospective_test"] = True
+    write_json(manifest_path, payload)
+    with pytest.raises(
+        SystemExit,
+        match="prospective_test must be False",
+    ):
+        ADAPTER.load_retrospective_selection(
+            root,
+            parse_utc=PASSES.parse_utc,
+        )
+
+
+def test_normalized_compatibility_object_never_written_to_disk(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    root = _copy_frozen_selection(tmp_path)
+    writes: list[Path] = []
+    original_write_text = Path.write_text
+
+    def tracking_write_text(self, *args, **kwargs):
+        writes.append(Path(self))
+        return original_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", tracking_write_text)
+
+    selection, manifest_path, _windows = (
+        ADAPTER.load_retrospective_selection(
+            root,
+            parse_utc=PASSES.parse_utc,
+        )
+    )
+    assert selection["compatibility_adapter"]["written_to_disk"] is False
+    assert writes == []
+    assert not (root / "compatibility_manifest.json").exists()
+    assert sha256(manifest_path) != sha256_json_like(selection)
+
+
+def sha256_json_like(value: dict) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def test_pass_1_binds_actual_final_manifest_sha_and_empty_labels(
+    tmp_path: Path,
+):
+    root = _copy_frozen_selection(tmp_path)
+    # Keep committed hash identity for the copied bytes.
+    assert sha256(root / "selection_manifest.json") == FROZEN_SELECTION_SHA
+
+    RETRO_PASSES = load_script(
+        "manage_xauusd_h1_post_2026h1_label_passes.py",
+        "test_retro_adapted_pass_manager",
+    )
+    ADAPTER.install_on_pass_module(RETRO_PASSES)
+
+    created = datetime(2026, 7, 21, 12, tzinfo=timezone.utc)
+    document = RETRO_PASSES.build_pass_document(
+        selection_root=root,
+        pass_number=1,
+        annotator_id="MOON_PASS_1",
+        created_at=created,
+    )
+
+    assert document["labels"] == []
+    assert document["selection"]["manifest_sha256"] == FROZEN_SELECTION_SHA
+    assert document["selection"]["manifest_path"].endswith(
+        "selection_manifest.json"
+    )
+    assert "compatibility" not in document["selection"]["manifest_path"]
+    assert document["blindness"]["predictions_visible"] is False
+    assert document["blindness"]["engine_version_visible"] is False
+
+    validated = RETRO_PASSES.validate_pass_document(
+        document,
+        selection_root=root,
+    )
+    assert validated["selection_manifest_sha256"] == FROZEN_SELECTION_SHA
+
+
+def test_selection_manifest_tamper_refused_after_pass_bind(tmp_path: Path):
+    root = _copy_frozen_selection(tmp_path)
+    RETRO_PASSES = load_script(
+        "manage_xauusd_h1_post_2026h1_label_passes.py",
+        "test_retro_adapted_pass_manager_tamper",
+    )
+    ADAPTER.install_on_pass_module(RETRO_PASSES)
+
+    document = RETRO_PASSES.build_pass_document(
+        selection_root=root,
+        pass_number=1,
+        annotator_id="MOON_PASS_1",
+        created_at=datetime(2026, 7, 21, 12, tzinfo=timezone.utc),
+    )
+
+    payload = json.loads(
+        (root / "selection_manifest.json").read_text(encoding="utf-8")
+    )
+    payload["note"] = "tampered"
+    write_json(root / "selection_manifest.json", payload)
+
+    with pytest.raises(SystemExit, match="selection manifest SHA-256 mismatch"):
+        RETRO_PASSES.validate_pass_document(
+            document,
+            selection_root=root,
+        )
+
+
+def test_window_file_tamper_refused(tmp_path: Path):
+    root = _copy_frozen_selection(tmp_path)
+    window_path = root / "window_01_1224_1416.csv"
+    window_path.write_bytes(window_path.read_bytes() + b"\n")
+
+    with pytest.raises(SystemExit, match="SHA-256 mismatch"):
+        ADAPTER.load_retrospective_selection(
+            root,
+            parse_utc=PASSES.parse_utc,
+        )
+
+
+def test_adjudication_and_freezer_consume_adapted_selection(
+    tmp_path: Path,
+):
+    root = _copy_frozen_selection(tmp_path)
+
+    adjudication = load_script(
+        "manage_xauusd_h1_post_2026h1_adjudication.py",
+        "test_retro_adapted_adjudication",
+    )
+    ADAPTER.install_on_module_with_passes(adjudication)
+    selection, manifest_path, windows = adjudication.PASSES.load_selection(
+        root
+    )
+    assert selection["status"] == (
+        "WINDOWS_SELECTED_UNLABELED_NOT_EVALUATED"
+    )
+    assert len(windows) == 6
+    assert sha256(manifest_path) == FROZEN_SELECTION_SHA
+
+    freezer = load_script(
+        "freeze_xauusd_h1_post_2026h1_labels.py",
+        "test_retro_adapted_freezer",
+    )
+    ADAPTER.install_on_module_with_passes(freezer)
+    selection2, manifest_path2, windows2 = freezer.PASSES.load_selection(root)
+    assert selection2["benchmark_type"] == "RETROSPECTIVE_HOLDOUT"
+    assert len(windows2) == 6
+    assert sha256(manifest_path2) == FROZEN_SELECTION_SHA
+
+
+def test_frozen_selection_and_windows_remain_byte_identical():
+    assert sha256(
+        FROZEN_SELECTION_ROOT / "selection_manifest.json"
+    ) == FROZEN_SELECTION_SHA
+    for name, digest in FROZEN_WINDOW_HASHES.items():
+        assert sha256(FROZEN_SELECTION_ROOT / name) == digest

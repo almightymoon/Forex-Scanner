@@ -2,7 +2,11 @@
 """Freeze adjudicated labels for the 2022–2024 retrospective holdout.
 
 Thin wrapper around the post-2026H1 label freezer with retrospective package
-naming. Never runs candidate/baseline detection or evaluation.
+naming. Installs the retrospective selection adapter onto the shared pass
+helper so native RETROSPECTIVE_HOLDOUT manifests are accepted without rewriting
+committed selection evidence.
+
+Never runs candidate/baseline detection or evaluation.
 """
 
 from __future__ import annotations
@@ -13,6 +17,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.xauusd_h1_retrospective_selection_adapter import (  # noqa: E402
+    install_on_module_with_passes,
+)
 
 
 def load_freezer():
@@ -28,7 +37,9 @@ def load_freezer():
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load {path}")
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
+    install_on_module_with_passes(module)
     return module
 
 
