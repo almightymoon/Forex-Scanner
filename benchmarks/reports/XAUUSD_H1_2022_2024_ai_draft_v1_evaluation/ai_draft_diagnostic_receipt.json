@@ -1,0 +1,72 @@
+{
+  "dataset_id": "XAUUSD_H1_2022_2024_AI_ASSISTED_ENGINEERING_DRAFT_V1",
+  "protocol_id": "XAUUSD_H1_2022_2024_RETROSPECTIVE_LOCKED_V1",
+  "benchmark_type": "AI_ASSISTED_ENGINEERING_DIAGNOSTIC",
+  "label_origin": "AI_ASSISTED_ENGINEERING_DRAFT",
+  "status": "AI_DRAFT_DIAGNOSTIC_COMPLETE",
+  "diagnostic_conclusion": "MIXED_AI_DRAFT_RESULT",
+  "allowed_diagnostic_conclusions": [
+    "CANDIDATE_OUTPERFORMS_BASELINE_ON_AI_DRAFT",
+    "BASELINE_OUTPERFORMS_CANDIDATE_ON_AI_DRAFT",
+    "MIXED_AI_DRAFT_RESULT",
+    "AI_DRAFT_DIAGNOSTIC_INCONCLUSIVE"
+  ],
+  "forbidden_decision_values": [
+    "PROMOTE_V2_3_0_FINAL",
+    "PASS_RETROSPECTIVE_ENGINEERING_GATE",
+    "FAIL_RETROSPECTIVE_ENGINEERING_GATE",
+    "PRODUCTION_READY",
+    "RELEASE_APPROVED",
+    "HUMAN_ADJUDICATED",
+    "FROZEN_HUMAN_ADJUDICATED"
+  ],
+  "non_binding_threshold_diagnostics": {
+    "label": "NON_BINDING_AI_DRAFT_THRESHOLD_DIAGNOSTICS",
+    "comparisons": {
+      "prefix_stability_failures": 0,
+      "candidate_location_f1": 0.340426,
+      "candidate_semantic_f1": 0.12766,
+      "baseline_location_f1": 0.32967,
+      "baseline_semantic_f1": 0.131868,
+      "protocol_engineering_gates": {
+        "prefix_stability_failures_max": 0,
+        "location_precision_min": 0.8,
+        "location_recall_min": 0.7,
+        "location_f1_min": 0.75,
+        "semantic_f1_min": 0.6,
+        "major_external_precision_min": 0.85,
+        "major_external_recall_min": 0.4,
+        "worst_window_location_f1_min": 0.5,
+        "candidate_location_f1_delta_vs_v2_2_min": 0.0,
+        "candidate_semantic_f1_delta_vs_v2_2_min": 0.0
+      },
+      "note": "Informational only. These comparisons do not produce a gate decision and cannot approve release or production certification."
+    }
+  },
+  "warning": "These metrics use AI-assisted engineering-draft labels. They are diagnostic only and cannot establish human benchmark performance, release approval, or production certification.",
+  "gate_decision": null,
+  "release_decision": null,
+  "production_certification": false,
+  "completed_at_utc": "2026-07-21T20:59:09+00:00",
+  "package_hashes": {
+    "data_sha256": "b3db9b67e7c24b028805df660e13bbc2cdb83d3ac4b0e2024f2e622ec81d8b68",
+    "labels_sha256": "a38d76010326fea29114bd3e277268ac12cdd73e4d18895102d2dd0ff0ac3b01",
+    "manifest_sha256": "4ec53564a3f755ea0835d4bd7fc7c89323e9a29123e68b8e5effd0e7d7074325"
+  },
+  "repository": {
+    "evaluation_head": "e401fdbf806ab9d335d5fa0f60115470c5314e90",
+    "candidate_tag": "v2.3.0-rc1",
+    "candidate_tag_commit": "3fd5d7c74b82c3728d7badaa6cd72044bdd6bd1d",
+    "evaluator_tag": "xauusd-h1-post-2026h1-evaluator-v1",
+    "evaluator_tag_commit": "cf54921b459af6277da6fb0d4d0ffc1f01885554",
+    "allowed_post_candidate_changes": [
+      "swing_engine/datasets.py"
+    ],
+    "dependency_sha256": {
+      "swing_engine/datasets.py": "02505d9cdac675ae221a9a1870e037923558ee57638adbafb7186f283f7a2d50",
+      "scripts/tune_xauusd_h1_hierarchy.py": "321f8cf6cea27d5e1b582e7d129694062cfbe413064f6e1678aa5cd05d819ee4"
+    },
+    "ai_draft_evaluator_tag": "xauusd-h1-2022-2024-ai-draft-evaluator-v1",
+    "ai_draft_evaluator_tag_commit": "e401fdbf806ab9d335d5fa0f60115470c5314e90"
+  }
+}
