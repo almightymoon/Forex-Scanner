@@ -1,0 +1,2394 @@
+{
+  "classification": "DEVELOPMENT_ONLY",
+  "scope": "TRAIN_001_008_ONLY",
+  "decision_status": "NOT_A_RELEASE_DECISION",
+  "viable_v2_4_development_candidate": false,
+  "active_v2_4_profile": false,
+  "latest_version": "2.3.0",
+  "generated_at_utc": "2026-07-22T20:18:02.653240Z",
+  "samples": [
+    "XAUUSD_H1_001",
+    "XAUUSD_H1_002",
+    "XAUUSD_H1_003",
+    "XAUUSD_H1_004",
+    "XAUUSD_H1_005",
+    "XAUUSD_H1_006",
+    "XAUUSD_H1_007",
+    "XAUUSD_H1_008"
+  ],
+  "forbidden_unused": [
+    "XAUUSD_H1_009-012",
+    "XAUUSD_H1_2026H1",
+    "retrospective AI-draft windows/reports",
+    "post-2026H1 quarantine",
+    "prospective/locked benchmarks beyond TRAIN 001-008"
+  ],
+  "excluded_datasets_not_used": true,
+  "baseline_engine": {
+    "engine_version": "2.3.0",
+    "hierarchy_reversal_atr": 5.0
+  },
+  "threshold_only_experiment": {
+    "experiment_label": "V2_4_THRESHOLD_ONLY_HYPOTHESIS",
+    "engine_version": "2.3.0",
+    "hierarchy_reversal_atr_override": 4.25,
+    "active_v2_4_profile": false,
+    "accepted_candidate": false
+  },
+  "baselines": {
+    "v2_3_me": {
+      "tp": 35,
+      "fp": 3,
+      "fn": 16
+    },
+    "threshold_only_hypothesis_me": {
+      "tp": 45,
+      "fp": 11,
+      "fn": 6
+    },
+    "location_counts": {
+      "tp": 93,
+      "fp": 22,
+      "fn": 11
+    }
+  },
+  "promotions": [
+    {
+      "sample_id": "XAUUSD_H1_001",
+      "pivot_index": 173,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 193,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 6.307,
+        "leg_atr": 7.002,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 245,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 2403.07
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 193,
+        "hierarchy_confirmation_index": 221,
+        "hierarchy_reversal_atr": 4.6858,
+        "structural_prominence_atr": 6.307,
+        "leg_atr": 7.002,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2403.07
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 4.6858,
+      "prominence_atr": 6.307,
+      "leg_amplitude_atr": 7.002,
+      "pivot_price": 2403.07,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 221,
+        "confirmation_candle_ohlc": {
+          "open": 2409.78,
+          "high": 2409.97,
+          "low": 2407.83,
+          "close": 2408.9
+        },
+        "confirmation_candle_close": 2408.9,
+        "highest_high_by_hierarchy_confirmation": 2483.6,
+        "lowest_low_by_hierarchy_confirmation": 2353.07,
+        "prior_same_direction_external_price": 2431.9,
+        "prior_opposite_direction_external_price": 2353.07,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 9.408434,
+        "wick_only_break_distance_atr": 9.53944,
+        "first_close_break_index": 0,
+        "atr_at_hierarchy_confirmation": 5.419605,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 256,
+        "close_break_persisted_to_next_confirmation": true,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_001",
+      "pivot_index": 190,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 221,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.6858,
+        "structural_prominence_atr": 5.103,
+        "leg_atr": 4.7,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2369.61
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 221,
+        "hierarchy_confirmation_index": 256,
+        "hierarchy_reversal_atr": 12.443,
+        "structural_prominence_atr": 5.103,
+        "leg_atr": 4.7,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2369.61
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 12.443,
+      "prominence_atr": 5.103,
+      "leg_amplitude_atr": 4.7,
+      "pivot_price": 2369.61,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 256,
+        "confirmation_candle_ohlc": {
+          "open": 2440.68,
+          "high": 2454.75,
+          "low": 2440.25,
+          "close": 2450.66
+        },
+        "confirmation_candle_close": 2450.66,
+        "highest_high_by_hierarchy_confirmation": 2483.6,
+        "lowest_low_by_hierarchy_confirmation": 2353.07,
+        "prior_same_direction_external_price": 2353.07,
+        "prior_opposite_direction_external_price": 2403.07,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": false,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 7.239073,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 291,
+        "close_break_persisted_to_next_confirmation": false,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": false,
+        "rule_c_close_break_and_alternates": false,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_002",
+      "pivot_index": 56,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 66,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.3043,
+        "structural_prominence_atr": 4.699,
+        "leg_atr": 4.685,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2528.91
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 66,
+        "hierarchy_confirmation_index": 92,
+        "hierarchy_reversal_atr": 6.5115,
+        "structural_prominence_atr": 4.699,
+        "leg_atr": 4.685,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2528.91
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 6.5115,
+      "prominence_atr": 4.699,
+      "leg_amplitude_atr": 4.685,
+      "pivot_price": 2528.91,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 92,
+        "confirmation_candle_ohlc": {
+          "open": 2519.82,
+          "high": 2520.15,
+          "low": 2503.55,
+          "close": 2509.07
+        },
+        "confirmation_candle_close": 2509.07,
+        "highest_high_by_hierarchy_confirmation": 2528.91,
+        "lowest_low_by_hierarchy_confirmation": 2493.59,
+        "prior_same_direction_external_price": null,
+        "prior_opposite_direction_external_price": null,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 5.822338,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": false,
+        "close_break_persisted_to_next_confirmation": null,
+        "note": "no prior level or no later confirmation event"
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": false,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 51,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 68,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.4213,
+        "structural_prominence_atr": 5.026,
+        "leg_atr": 5.791,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2743.18
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 68,
+        "hierarchy_confirmation_index": 84,
+        "hierarchy_reversal_atr": 4.3959,
+        "structural_prominence_atr": 5.026,
+        "leg_atr": 5.791,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2743.18
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 4.3959,
+      "prominence_atr": 5.026,
+      "leg_amplitude_atr": 5.791,
+      "pivot_price": 2743.18,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 84,
+        "confirmation_candle_ohlc": {
+          "open": 2735.7,
+          "high": 2736.19,
+          "low": 2732.08,
+          "close": 2732.37
+        },
+        "confirmation_candle_close": 2732.37,
+        "highest_high_by_hierarchy_confirmation": 2758.35,
+        "lowest_low_by_hierarchy_confirmation": 2708.68,
+        "prior_same_direction_external_price": null,
+        "prior_opposite_direction_external_price": null,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 6.319602,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": false,
+        "close_break_persisted_to_next_confirmation": null,
+        "note": "no prior level or no later confirmation event"
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 70,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 84,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.219,
+        "leg_atr": 4.979,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "less_extreme_same_direction",
+        "price": 2716.99
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 84,
+        "hierarchy_confirmation_index": 88,
+        "hierarchy_reversal_atr": 5.7793,
+        "structural_prominence_atr": 5.219,
+        "leg_atr": 4.979,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2716.99
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 5.7793,
+      "prominence_atr": 5.219,
+      "leg_amplitude_atr": 4.979,
+      "pivot_price": 2716.99,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 88,
+        "confirmation_candle_ohlc": {
+          "open": 2729.6,
+          "high": 2733.26,
+          "low": 2729.1,
+          "close": 2732.84
+        },
+        "confirmation_candle_close": 2732.84,
+        "highest_high_by_hierarchy_confirmation": 2758.35,
+        "lowest_low_by_hierarchy_confirmation": 2708.68,
+        "prior_same_direction_external_price": null,
+        "prior_opposite_direction_external_price": 2743.18,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 6.096482,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": false,
+        "close_break_persisted_to_next_confirmation": null,
+        "note": "no prior level or no later confirmation event"
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 223,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 238,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 6.184,
+        "leg_atr": 6.854,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 268,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 2724.62
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 238,
+        "hierarchy_confirmation_index": 271,
+        "hierarchy_reversal_atr": 4.6214,
+        "structural_prominence_atr": 6.184,
+        "leg_atr": 6.854,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2724.62
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 4.6214,
+      "prominence_atr": 6.184,
+      "leg_amplitude_atr": 6.854,
+      "pivot_price": 2724.62,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 271,
+        "confirmation_candle_ohlc": {
+          "open": 2659.12,
+          "high": 2659.52,
+          "low": 2654.04,
+          "close": 2654.5
+        },
+        "confirmation_candle_close": 2654.5,
+        "highest_high_by_hierarchy_confirmation": 2790.0,
+        "lowest_low_by_hierarchy_confirmation": 2643.17,
+        "prior_same_direction_external_price": 2716.99,
+        "prior_opposite_direction_external_price": 2762.1,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 6.399381,
+        "wick_only_break_distance_atr": 6.984067,
+        "first_close_break_index": 32,
+        "atr_at_hierarchy_confirmation": 10.569773,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 290,
+        "close_break_persisted_to_next_confirmation": true,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 235,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 271,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.6214,
+        "structural_prominence_atr": 7.861,
+        "leg_atr": 3.997,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2749.89
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 271,
+        "hierarchy_confirmation_index": 290,
+        "hierarchy_reversal_atr": 16.8784,
+        "structural_prominence_atr": 7.861,
+        "leg_atr": 3.997,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2749.89
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 16.8784,
+      "prominence_atr": 7.861,
+      "leg_amplitude_atr": 3.997,
+      "pivot_price": 2749.89,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 290,
+        "confirmation_candle_ohlc": {
+          "open": 2706.86,
+          "high": 2710.26,
+          "low": 2705.55,
+          "close": 2706.22
+        },
+        "confirmation_candle_close": 2706.22,
+        "highest_high_by_hierarchy_confirmation": 2790.0,
+        "lowest_low_by_hierarchy_confirmation": 2643.17,
+        "prior_same_direction_external_price": 2762.1,
+        "prior_opposite_direction_external_price": 2724.62,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 2.978929,
+        "wick_only_break_distance_atr": 3.148187,
+        "first_close_break_index": 121,
+        "atr_at_hierarchy_confirmation": 8.862244,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 318,
+        "close_break_persisted_to_next_confirmation": false,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 195,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 201,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 12.032,
+        "leg_atr": 15.132,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 217,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 2704.28
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 201,
+        "hierarchy_confirmation_index": 220,
+        "hierarchy_reversal_atr": 4.7998,
+        "structural_prominence_atr": 12.032,
+        "leg_atr": 15.132,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2704.28
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 4.7998,
+      "prominence_atr": 12.032,
+      "leg_amplitude_atr": 15.132,
+      "pivot_price": 2704.28,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 220,
+        "confirmation_candle_ohlc": {
+          "open": 2710.21,
+          "high": 2715.34,
+          "low": 2709.74,
+          "close": 2712.58
+        },
+        "confirmation_candle_close": 2712.58,
+        "highest_high_by_hierarchy_confirmation": 2726.08,
+        "lowest_low_by_hierarchy_confirmation": 2613.42,
+        "prior_same_direction_external_price": null,
+        "prior_opposite_direction_external_price": 2613.42,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 7.78455,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": false,
+        "close_break_persisted_to_next_confirmation": null,
+        "note": "no prior level or no later confirmation event"
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 198,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 220,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.7998,
+        "structural_prominence_atr": 4.715,
+        "leg_atr": 3.843,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2675.46
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 220,
+        "hierarchy_confirmation_index": 234,
+        "hierarchy_reversal_atr": 6.7491,
+        "structural_prominence_atr": 4.715,
+        "leg_atr": 3.843,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2675.46
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 6.7491,
+      "prominence_atr": 4.715,
+      "leg_amplitude_atr": 3.843,
+      "pivot_price": 2675.46,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 234,
+        "confirmation_candle_ohlc": {
+          "open": 2686.28,
+          "high": 2687.0,
+          "low": 2682.82,
+          "close": 2684.1
+        },
+        "confirmation_candle_close": 2684.1,
+        "highest_high_by_hierarchy_confirmation": 2726.08,
+        "lowest_low_by_hierarchy_confirmation": 2613.42,
+        "prior_same_direction_external_price": 2613.42,
+        "prior_opposite_direction_external_price": 2704.28,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": false,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 7.864397,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 277,
+        "close_break_persisted_to_next_confirmation": false,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": false,
+        "rule_c_close_break_and_alternates": false,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": false,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 341,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 349,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.072,
+        "leg_atr": 5.224,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 384,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 2626.32
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 349,
+        "hierarchy_confirmation_index": 373,
+        "hierarchy_reversal_atr": 4.7159,
+        "structural_prominence_atr": 5.072,
+        "leg_atr": 5.224,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2626.32
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 4.7159,
+      "prominence_atr": 5.072,
+      "leg_amplitude_atr": 5.224,
+      "pivot_price": 2626.32,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 373,
+        "confirmation_candle_ohlc": {
+          "open": 2626.08,
+          "high": 2629.25,
+          "low": 2624.97,
+          "close": 2627.82
+        },
+        "confirmation_candle_close": 2627.82,
+        "highest_high_by_hierarchy_confirmation": 2726.08,
+        "lowest_low_by_hierarchy_confirmation": 2582.65,
+        "prior_same_direction_external_price": 2726.08,
+        "prior_opposite_direction_external_price": 2582.65,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": false,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 6.730448,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 396,
+        "close_break_persisted_to_next_confirmation": false,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": false,
+        "rule_c_close_break_and_alternates": false,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 346,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 373,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.7159,
+        "structural_prominence_atr": 4.73,
+        "leg_atr": 4.54,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2586.9
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 373,
+        "hierarchy_confirmation_index": 396,
+        "hierarchy_reversal_atr": 5.3306,
+        "structural_prominence_atr": 4.73,
+        "leg_atr": 4.54,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2586.9
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 5.3306,
+      "prominence_atr": 4.73,
+      "leg_amplitude_atr": 4.54,
+      "pivot_price": 2586.9,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 396,
+        "confirmation_candle_ohlc": {
+          "open": 2610.39,
+          "high": 2612.52,
+          "low": 2609.61,
+          "close": 2611.09
+        },
+        "confirmation_candle_close": 2611.09,
+        "highest_high_by_hierarchy_confirmation": 2726.08,
+        "lowest_low_by_hierarchy_confirmation": 2582.65,
+        "prior_same_direction_external_price": 2582.65,
+        "prior_opposite_direction_external_price": 2626.32,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": false,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 5.798867,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": false,
+        "close_break_persisted_to_next_confirmation": null,
+        "note": "no prior level or no later confirmation event"
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": false,
+        "rule_c_close_break_and_alternates": false,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": false,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 267,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 296,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 9.506,
+        "leg_atr": 11.713,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 318,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 2763.26
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 296,
+        "hierarchy_confirmation_index": 300,
+        "hierarchy_reversal_atr": 4.3573,
+        "structural_prominence_atr": 9.506,
+        "leg_atr": 11.713,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2763.26
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 4.3573,
+      "prominence_atr": 9.506,
+      "leg_amplitude_atr": 11.713,
+      "pivot_price": 2763.26,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 300,
+        "confirmation_candle_ohlc": {
+          "open": 2754.07,
+          "high": 2754.53,
+          "low": 2751.33,
+          "close": 2753.71
+        },
+        "confirmation_candle_close": 2753.71,
+        "highest_high_by_hierarchy_confirmation": 2763.26,
+        "lowest_low_by_hierarchy_confirmation": 2632.82,
+        "prior_same_direction_external_price": 2724.66,
+        "prior_opposite_direction_external_price": 2689.31,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 5.976693,
+        "wick_only_break_distance_atr": 6.546548,
+        "first_close_break_index": 236,
+        "atr_at_hierarchy_confirmation": 5.896237,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 336,
+        "close_break_persisted_to_next_confirmation": true,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 293,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 300,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.3573,
+        "structural_prominence_atr": 4.532,
+        "leg_atr": 4.768,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2735.75
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 300,
+        "hierarchy_confirmation_index": 336,
+        "hierarchy_reversal_atr": 8.6885,
+        "structural_prominence_atr": 4.532,
+        "leg_atr": 4.768,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2735.75
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 8.6885,
+      "prominence_atr": 4.532,
+      "leg_amplitude_atr": 4.768,
+      "pivot_price": 2735.75,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 336,
+        "confirmation_candle_ohlc": {
+          "open": 2763.26,
+          "high": 2770.93,
+          "low": 2762.74,
+          "close": 2768.03
+        },
+        "confirmation_candle_close": 2768.03,
+        "highest_high_by_hierarchy_confirmation": 2785.88,
+        "lowest_low_by_hierarchy_confirmation": 2632.82,
+        "prior_same_direction_external_price": 2656.73,
+        "prior_opposite_direction_external_price": 2763.26,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 3.363281,
+        "wick_only_break_distance_atr": 3.585201,
+        "first_close_break_index": 0,
+        "atr_at_hierarchy_confirmation": 6.669082,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 340,
+        "close_break_persisted_to_next_confirmation": false,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": false,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 343,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "PENDING",
+        "confirmation_index": 371,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 4.952,
+        "leg_atr": 5.216,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2730.44
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 371,
+        "hierarchy_confirmation_index": 394,
+        "hierarchy_reversal_atr": 4.4779,
+        "structural_prominence_atr": 4.952,
+        "leg_atr": 5.216,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2730.44
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 4.4779,
+      "prominence_atr": 4.952,
+      "leg_amplitude_atr": 5.216,
+      "pivot_price": 2730.44,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 394,
+        "confirmation_candle_ohlc": {
+          "open": 2760.7,
+          "high": 2760.7,
+          "low": 2758.15,
+          "close": 2760.17
+        },
+        "confirmation_candle_close": 2760.17,
+        "highest_high_by_hierarchy_confirmation": 2785.88,
+        "lowest_low_by_hierarchy_confirmation": 2632.82,
+        "prior_same_direction_external_price": 2656.73,
+        "prior_opposite_direction_external_price": 2785.88,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 4.305372,
+        "wick_only_break_distance_atr": 4.589454,
+        "first_close_break_index": 0,
+        "atr_at_hierarchy_confirmation": 5.20977,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": false,
+        "close_break_persisted_to_next_confirmation": null,
+        "note": "no prior level or no later confirmation event"
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "PENDING",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": false,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 149,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 160,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 9.186,
+        "leg_atr": 11.177,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 186,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 2946.94
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 160,
+        "hierarchy_confirmation_index": 173,
+        "hierarchy_reversal_atr": 4.5412,
+        "structural_prominence_atr": 9.186,
+        "leg_atr": 11.177,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2946.94
+      },
+      "benefit": "harmful",
+      "hierarchy_reversal_atr": 4.5412,
+      "prominence_atr": 9.186,
+      "leg_amplitude_atr": 11.177,
+      "pivot_price": 2946.94,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 173,
+        "confirmation_candle_ohlc": {
+          "open": 2952.17,
+          "high": 2952.82,
+          "low": 2947.14,
+          "close": 2948.68
+        },
+        "confirmation_candle_close": 2948.68,
+        "highest_high_by_hierarchy_confirmation": 2954.79,
+        "lowest_low_by_hierarchy_confirmation": 2864.11,
+        "prior_same_direction_external_price": 2939.94,
+        "prior_opposite_direction_external_price": 2876.99,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 2.288027,
+        "wick_only_break_distance_atr": 2.349738,
+        "first_close_break_index": 148,
+        "atr_at_hierarchy_confirmation": 6.319855,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 250,
+        "close_break_persisted_to_next_confirmation": true,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 193,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 206,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.1405,
+        "structural_prominence_atr": 3.611,
+        "leg_atr": 3.854,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 2916.7
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 206,
+        "hierarchy_confirmation_index": 250,
+        "hierarchy_reversal_atr": 4.6028,
+        "structural_prominence_atr": 3.611,
+        "leg_atr": 3.854,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 2916.7
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 4.6028,
+      "prominence_atr": 3.611,
+      "leg_amplitude_atr": 3.854,
+      "pivot_price": 2916.7,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 250,
+        "confirmation_candle_ohlc": {
+          "open": 2909.41,
+          "high": 2913.74,
+          "low": 2905.65,
+          "close": 2911.99
+        },
+        "confirmation_candle_close": 2911.99,
+        "highest_high_by_hierarchy_confirmation": 2956.1,
+        "lowest_low_by_hierarchy_confirmation": 2864.11,
+        "prior_same_direction_external_price": 2876.99,
+        "prior_opposite_direction_external_price": 2946.94,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": false,
+        "wick_break_without_requiring_close": true,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 1.230094,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 10.470745,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 258,
+        "close_break_persisted_to_next_confirmation": false,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": false,
+        "rule_c_close_break_and_alternates": false,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": false,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_007",
+      "pivot_index": 98,
+      "direction": "LOW",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 108,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.761,
+        "leg_atr": 6.593,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 131,
+        "hierarchy_reason": "more_extreme_same_direction",
+        "price": 3054.17
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 108,
+        "hierarchy_confirmation_index": 128,
+        "hierarchy_reversal_atr": 4.7836,
+        "structural_prominence_atr": 5.761,
+        "leg_atr": 6.593,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 3054.17
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 4.7836,
+      "prominence_atr": 5.761,
+      "leg_amplitude_atr": 6.593,
+      "pivot_price": 3054.17,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 128,
+        "confirmation_candle_ohlc": {
+          "open": 3036.46,
+          "high": 3040.93,
+          "low": 3033.77,
+          "close": 3036.96
+        },
+        "confirmation_candle_close": 3036.96,
+        "highest_high_by_hierarchy_confirmation": 3167.55,
+        "lowest_low_by_hierarchy_confirmation": 3015.73,
+        "prior_same_direction_external_price": 3100.76,
+        "prior_opposite_direction_external_price": 3167.55,
+        "pivot_extends_prior_external": true,
+        "close_confirmed_extension_by_hierarchy_confirmation": true,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 4.185602,
+        "wick_only_break_distance_atr": 4.513655,
+        "first_close_break_index": 0,
+        "atr_at_hierarchy_confirmation": 18.83839,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 136,
+        "close_break_persisted_to_next_confirmation": true,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": true,
+        "rule_b_close_break": true,
+        "rule_c_close_break_and_alternates": true,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "SUPERSEDED",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_007",
+      "pivot_index": 119,
+      "direction": "HIGH",
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 128,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_reversal_atr": 4.7836,
+        "structural_prominence_atr": 5.738,
+        "leg_atr": 5.033,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal",
+        "price": 3136.43
+      },
+      "raw_4_25": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 128,
+        "hierarchy_confirmation_index": 136,
+        "hierarchy_reversal_atr": 10.0839,
+        "structural_prominence_atr": 5.738,
+        "leg_atr": 5.033,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null,
+        "price": 3136.43
+      },
+      "benefit": "beneficial",
+      "hierarchy_reversal_atr": 10.0839,
+      "prominence_atr": 5.738,
+      "leg_amplitude_atr": 5.033,
+      "pivot_price": 3136.43,
+      "close_break_features": {
+        "hierarchy_confirmation_index": 136,
+        "confirmation_candle_ohlc": {
+          "open": 3035.44,
+          "high": 3044.51,
+          "low": 3024.79,
+          "close": 3031.84
+        },
+        "confirmation_candle_close": 3031.84,
+        "highest_high_by_hierarchy_confirmation": 3167.55,
+        "lowest_low_by_hierarchy_confirmation": 2971.61,
+        "prior_same_direction_external_price": 3167.55,
+        "prior_opposite_direction_external_price": 3054.17,
+        "pivot_extends_prior_external": false,
+        "close_confirmed_extension_by_hierarchy_confirmation": false,
+        "wick_break_without_requiring_close": false,
+        "close_break_distance_atr": 0.0,
+        "wick_only_break_distance_atr": 0.0,
+        "first_close_break_index": null,
+        "atr_at_hierarchy_confirmation": 25.608427,
+        "features_causal_at_or_before_hconf": true
+      },
+      "persistence_audit_only": {
+        "evaluated": true,
+        "next_confirmation_index": 262,
+        "close_break_persisted_to_next_confirmation": true,
+        "used_for_rule_decision": false
+      },
+      "rule_predicates": {
+        "rule_a_pivot_extends": false,
+        "rule_b_close_break": false,
+        "rule_c_close_break_and_alternates": false,
+        "alternates_vs_latest_opposite_external": true
+      },
+      "provisional_superseded_chain": {
+        "v2_3_state": "INTERNAL",
+        "raw_4_25_state": "CONFIRMED_MAJOR",
+        "was_provisional": true,
+        "superseded_by_index": null
+      }
+    }
+  ],
+  "promotion_counts": {
+    "beneficial": 10,
+    "harmful": 8
+  },
+  "beneficial_vs_harmful_close_break_table": [
+    {
+      "id": "XAUUSD_H1_001:173:HIGH",
+      "benefit": "beneficial",
+      "pivot_extends": false,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 9.408434,
+      "wick_only_break_distance_atr": 9.53944,
+      "rule_a": false,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_001:190:LOW",
+      "benefit": "beneficial",
+      "pivot_extends": false,
+      "close_break": false,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": false,
+      "rule_b": false,
+      "rule_c": false
+    },
+    {
+      "id": "XAUUSD_H1_002:56:HIGH",
+      "benefit": "beneficial",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_003:51:HIGH",
+      "benefit": "beneficial",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_003:70:LOW",
+      "benefit": "beneficial",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_003:223:LOW",
+      "benefit": "harmful",
+      "pivot_extends": false,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 6.399381,
+      "wick_only_break_distance_atr": 6.984067,
+      "rule_a": false,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_003:235:HIGH",
+      "benefit": "harmful",
+      "pivot_extends": false,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 2.978929,
+      "wick_only_break_distance_atr": 3.148187,
+      "rule_a": false,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_004:195:HIGH",
+      "benefit": "harmful",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_004:198:LOW",
+      "benefit": "harmful",
+      "pivot_extends": false,
+      "close_break": false,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": false,
+      "rule_b": false,
+      "rule_c": false
+    },
+    {
+      "id": "XAUUSD_H1_004:341:HIGH",
+      "benefit": "harmful",
+      "pivot_extends": false,
+      "close_break": false,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": false,
+      "rule_b": false,
+      "rule_c": false
+    },
+    {
+      "id": "XAUUSD_H1_004:346:LOW",
+      "benefit": "harmful",
+      "pivot_extends": false,
+      "close_break": false,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": false,
+      "rule_b": false,
+      "rule_c": false
+    },
+    {
+      "id": "XAUUSD_H1_005:267:HIGH",
+      "benefit": "beneficial",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 5.976693,
+      "wick_only_break_distance_atr": 6.546548,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_005:293:LOW",
+      "benefit": "beneficial",
+      "pivot_extends": false,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 3.363281,
+      "wick_only_break_distance_atr": 3.585201,
+      "rule_a": false,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_005:343:LOW",
+      "benefit": "harmful",
+      "pivot_extends": false,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 4.305372,
+      "wick_only_break_distance_atr": 4.589454,
+      "rule_a": false,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_006:149:HIGH",
+      "benefit": "harmful",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 2.288027,
+      "wick_only_break_distance_atr": 2.349738,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_006:193:LOW",
+      "benefit": "beneficial",
+      "pivot_extends": false,
+      "close_break": false,
+      "wick_only": true,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 1.230094,
+      "rule_a": false,
+      "rule_b": false,
+      "rule_c": false
+    },
+    {
+      "id": "XAUUSD_H1_007:98:LOW",
+      "benefit": "beneficial",
+      "pivot_extends": true,
+      "close_break": true,
+      "wick_only": false,
+      "close_break_distance_atr": 4.185602,
+      "wick_only_break_distance_atr": 4.513655,
+      "rule_a": true,
+      "rule_b": true,
+      "rule_c": true
+    },
+    {
+      "id": "XAUUSD_H1_007:119:HIGH",
+      "benefit": "beneficial",
+      "pivot_extends": false,
+      "close_break": false,
+      "wick_only": false,
+      "close_break_distance_atr": 0.0,
+      "wick_only_break_distance_atr": 0.0,
+      "rule_a": false,
+      "rule_b": false,
+      "rule_c": false
+    }
+  ],
+  "predeclared_rules": {
+    "A": "EXTERNAL only when pivot extends prior confirmed external same-direction extreme",
+    "B": "EXTERNAL only when a candle close breaks prior confirmed external same-direction extreme by hierarchy confirmation",
+    "C": "EXTERNAL only when Rule B holds and sequence alternates vs latest confirmed opposite external"
+  },
+  "rule_results": {
+    "A": {
+      "rule": "A",
+      "location_counts": {
+        "tp": 93,
+        "fp": 22,
+        "fn": 11
+      },
+      "major_external_counts": {
+        "tp": 31,
+        "fp": 4,
+        "fn": 20
+      },
+      "major_external_metrics": {
+        "precision": 0.8857142857142857,
+        "recall": 0.6078431372549019,
+        "f1": 0.7209302325581395
+      },
+      "aggregate": {
+        "location_f1": 0.849315,
+        "semantic_f1": 0.584475,
+        "major_external_precision": 0.885714,
+        "major_external_recall": 0.607843,
+        "major_external_f1": 0.72093
+      },
+      "promotion_impact": {
+        "beneficial_retained": 5,
+        "beneficial_lost": 5,
+        "harmful_retained": 2,
+        "harmful_removed": 6,
+        "beneficial_retained_ids": [
+          "XAUUSD_H1_002:56:HIGH",
+          "XAUUSD_H1_003:51:HIGH",
+          "XAUUSD_H1_003:70:LOW",
+          "XAUUSD_H1_005:267:HIGH",
+          "XAUUSD_H1_007:98:LOW"
+        ],
+        "beneficial_lost_ids": [
+          "XAUUSD_H1_001:173:HIGH",
+          "XAUUSD_H1_001:190:LOW",
+          "XAUUSD_H1_005:293:LOW",
+          "XAUUSD_H1_006:193:LOW",
+          "XAUUSD_H1_007:119:HIGH"
+        ],
+        "harmful_retained_ids": [
+          "XAUUSD_H1_004:195:HIGH",
+          "XAUUSD_H1_006:149:HIGH"
+        ],
+        "harmful_removed_ids": [
+          "XAUUSD_H1_003:223:LOW",
+          "XAUUSD_H1_003:235:HIGH",
+          "XAUUSD_H1_004:198:LOW",
+          "XAUUSD_H1_004:341:HIGH",
+          "XAUUSD_H1_004:346:LOW",
+          "XAUUSD_H1_005:343:LOW"
+        ],
+        "affected_samples": [
+          "XAUUSD_H1_001",
+          "XAUUSD_H1_004",
+          "XAUUSD_H1_005",
+          "XAUUSD_H1_006",
+          "XAUUSD_H1_007"
+        ]
+      },
+      "all_features_causal": true,
+      "acceptance_checks": {
+        "location_unchanged": true,
+        "me_precision_ge_0_85": true,
+        "me_recall_gt_0_686": false,
+        "me_f1_ge_v2_3": false,
+        "semantic_f1_gt_v2_3": false
+      },
+      "passes_full_train": false,
+      "prefix_failures": 0,
+      "prefix_note": "Scope-only refinement preserves hierarchy confirmation indexes from the raw-4.25 override run",
+      "leave_one_sample_out": {
+        "folds": [
+          {
+            "held_out_sample": "XAUUSD_H1_001",
+            "major_external_counts": {
+              "tp": 27,
+              "fp": 4,
+              "fn": 17
+            },
+            "major_external_metrics": {
+              "precision": 0.8709677419354839,
+              "recall": 0.6136363636363636,
+              "f1": 0.72
+            },
+            "semantic_f1": 0.568306,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_002",
+            "major_external_counts": {
+              "tp": 27,
+              "fp": 4,
+              "fn": 14
+            },
+            "major_external_metrics": {
+              "precision": 0.8709677419354839,
+              "recall": 0.6585365853658537,
+              "f1": 0.75
+            },
+            "semantic_f1": 0.606383,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_003",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 2,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.9333333333333333,
+              "recall": 0.6086956521739131,
+              "f1": 0.7368421052631579
+            },
+            "semantic_f1": 0.590674,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_004",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 3,
+              "fn": 19
+            },
+            "major_external_metrics": {
+              "precision": 0.9032258064516129,
+              "recall": 0.5957446808510638,
+              "f1": 0.7179487179487178
+            },
+            "semantic_f1": 0.590674,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_005",
+            "major_external_counts": {
+              "tp": 26,
+              "fp": 4,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.8666666666666667,
+              "recall": 0.5909090909090909,
+              "f1": 0.7027027027027029
+            },
+            "semantic_f1": 0.587629,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_006",
+            "major_external_counts": {
+              "tp": 27,
+              "fp": 3,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.9,
+              "recall": 0.6,
+              "f1": 0.7200000000000001
+            },
+            "semantic_f1": 0.56701,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_007",
+            "major_external_counts": {
+              "tp": 26,
+              "fp": 4,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.8666666666666667,
+              "recall": 0.5909090909090909,
+              "f1": 0.7027027027027029
+            },
+            "semantic_f1": 0.569948,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_008",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 4,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.875,
+              "recall": 0.6086956521739131,
+              "f1": 0.717948717948718
+            },
+            "semantic_f1": 0.594872,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          }
+        ],
+        "precision_ge_0_85_every_fold": true,
+        "recall_gt_v2_3_every_fold": false
+      },
+      "passes_full_and_loso": false
+    },
+    "B": {
+      "rule": "B",
+      "location_counts": {
+        "tp": 93,
+        "fp": 22,
+        "fn": 11
+      },
+      "major_external_counts": {
+        "tp": 33,
+        "fp": 8,
+        "fn": 18
+      },
+      "major_external_metrics": {
+        "precision": 0.8048780487804879,
+        "recall": 0.6470588235294118,
+        "f1": 0.717391304347826
+      },
+      "aggregate": {
+        "location_f1": 0.849315,
+        "semantic_f1": 0.60274,
+        "major_external_precision": 0.804878,
+        "major_external_recall": 0.647059,
+        "major_external_f1": 0.717391
+      },
+      "promotion_impact": {
+        "beneficial_retained": 7,
+        "beneficial_lost": 3,
+        "harmful_retained": 5,
+        "harmful_removed": 3,
+        "beneficial_retained_ids": [
+          "XAUUSD_H1_001:173:HIGH",
+          "XAUUSD_H1_002:56:HIGH",
+          "XAUUSD_H1_003:51:HIGH",
+          "XAUUSD_H1_003:70:LOW",
+          "XAUUSD_H1_005:267:HIGH",
+          "XAUUSD_H1_005:293:LOW",
+          "XAUUSD_H1_007:98:LOW"
+        ],
+        "beneficial_lost_ids": [
+          "XAUUSD_H1_001:190:LOW",
+          "XAUUSD_H1_006:193:LOW",
+          "XAUUSD_H1_007:119:HIGH"
+        ],
+        "harmful_retained_ids": [
+          "XAUUSD_H1_003:223:LOW",
+          "XAUUSD_H1_003:235:HIGH",
+          "XAUUSD_H1_004:195:HIGH",
+          "XAUUSD_H1_005:343:LOW",
+          "XAUUSD_H1_006:149:HIGH"
+        ],
+        "harmful_removed_ids": [
+          "XAUUSD_H1_004:198:LOW",
+          "XAUUSD_H1_004:341:HIGH",
+          "XAUUSD_H1_004:346:LOW"
+        ],
+        "affected_samples": [
+          "XAUUSD_H1_001",
+          "XAUUSD_H1_003",
+          "XAUUSD_H1_004",
+          "XAUUSD_H1_005",
+          "XAUUSD_H1_006",
+          "XAUUSD_H1_007"
+        ]
+      },
+      "all_features_causal": true,
+      "acceptance_checks": {
+        "location_unchanged": true,
+        "me_precision_ge_0_85": false,
+        "me_recall_gt_0_686": false,
+        "me_f1_ge_v2_3": false,
+        "semantic_f1_gt_v2_3": false
+      },
+      "passes_full_train": false,
+      "prefix_failures": 0,
+      "prefix_note": "Scope-only refinement preserves hierarchy confirmation indexes from the raw-4.25 override run",
+      "leave_one_sample_out": {
+        "folds": [
+          {
+            "held_out_sample": "XAUUSD_H1_001",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 8,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.7777777777777778,
+              "recall": 0.6363636363636364,
+              "f1": 0.7000000000000001
+            },
+            "semantic_f1": 0.579235,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_002",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 8,
+              "fn": 11
+            },
+            "major_external_metrics": {
+              "precision": 0.7894736842105263,
+              "recall": 0.7317073170731707,
+              "f1": 0.7594936708860759
+            },
+            "semantic_f1": 0.638298,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": true
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_003",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 3,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.9090909090909091,
+              "recall": 0.6521739130434783,
+              "f1": 0.759493670886076
+            },
+            "semantic_f1": 0.611399,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_004",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 7,
+              "fn": 17
+            },
+            "major_external_metrics": {
+              "precision": 0.8108108108108109,
+              "recall": 0.6382978723404256,
+              "f1": 0.7142857142857143
+            },
+            "semantic_f1": 0.611399,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_005",
+            "major_external_counts": {
+              "tp": 26,
+              "fp": 7,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.7878787878787878,
+              "recall": 0.5909090909090909,
+              "f1": 0.6753246753246752
+            },
+            "semantic_f1": 0.587629,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_006",
+            "major_external_counts": {
+              "tp": 29,
+              "fp": 7,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.8055555555555556,
+              "recall": 0.6444444444444445,
+              "f1": 0.7160493827160493
+            },
+            "semantic_f1": 0.587629,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_007",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 8,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.7777777777777778,
+              "recall": 0.6363636363636364,
+              "f1": 0.7000000000000001
+            },
+            "semantic_f1": 0.590674,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_008",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 8,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.7894736842105263,
+              "recall": 0.6521739130434783,
+              "f1": 0.7142857142857143
+            },
+            "semantic_f1": 0.615385,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          }
+        ],
+        "precision_ge_0_85_every_fold": false,
+        "recall_gt_v2_3_every_fold": false
+      },
+      "passes_full_and_loso": false
+    },
+    "C": {
+      "rule": "C",
+      "location_counts": {
+        "tp": 93,
+        "fp": 22,
+        "fn": 11
+      },
+      "major_external_counts": {
+        "tp": 33,
+        "fp": 8,
+        "fn": 18
+      },
+      "major_external_metrics": {
+        "precision": 0.8048780487804879,
+        "recall": 0.6470588235294118,
+        "f1": 0.717391304347826
+      },
+      "aggregate": {
+        "location_f1": 0.849315,
+        "semantic_f1": 0.60274,
+        "major_external_precision": 0.804878,
+        "major_external_recall": 0.647059,
+        "major_external_f1": 0.717391
+      },
+      "promotion_impact": {
+        "beneficial_retained": 7,
+        "beneficial_lost": 3,
+        "harmful_retained": 5,
+        "harmful_removed": 3,
+        "beneficial_retained_ids": [
+          "XAUUSD_H1_001:173:HIGH",
+          "XAUUSD_H1_002:56:HIGH",
+          "XAUUSD_H1_003:51:HIGH",
+          "XAUUSD_H1_003:70:LOW",
+          "XAUUSD_H1_005:267:HIGH",
+          "XAUUSD_H1_005:293:LOW",
+          "XAUUSD_H1_007:98:LOW"
+        ],
+        "beneficial_lost_ids": [
+          "XAUUSD_H1_001:190:LOW",
+          "XAUUSD_H1_006:193:LOW",
+          "XAUUSD_H1_007:119:HIGH"
+        ],
+        "harmful_retained_ids": [
+          "XAUUSD_H1_003:223:LOW",
+          "XAUUSD_H1_003:235:HIGH",
+          "XAUUSD_H1_004:195:HIGH",
+          "XAUUSD_H1_005:343:LOW",
+          "XAUUSD_H1_006:149:HIGH"
+        ],
+        "harmful_removed_ids": [
+          "XAUUSD_H1_004:198:LOW",
+          "XAUUSD_H1_004:341:HIGH",
+          "XAUUSD_H1_004:346:LOW"
+        ],
+        "affected_samples": [
+          "XAUUSD_H1_001",
+          "XAUUSD_H1_003",
+          "XAUUSD_H1_004",
+          "XAUUSD_H1_005",
+          "XAUUSD_H1_006",
+          "XAUUSD_H1_007"
+        ]
+      },
+      "all_features_causal": true,
+      "acceptance_checks": {
+        "location_unchanged": true,
+        "me_precision_ge_0_85": false,
+        "me_recall_gt_0_686": false,
+        "me_f1_ge_v2_3": false,
+        "semantic_f1_gt_v2_3": false
+      },
+      "passes_full_train": false,
+      "prefix_failures": 0,
+      "prefix_note": "Scope-only refinement preserves hierarchy confirmation indexes from the raw-4.25 override run",
+      "leave_one_sample_out": {
+        "folds": [
+          {
+            "held_out_sample": "XAUUSD_H1_001",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 8,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.7777777777777778,
+              "recall": 0.6363636363636364,
+              "f1": 0.7000000000000001
+            },
+            "semantic_f1": 0.579235,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_002",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 8,
+              "fn": 11
+            },
+            "major_external_metrics": {
+              "precision": 0.7894736842105263,
+              "recall": 0.7317073170731707,
+              "f1": 0.7594936708860759
+            },
+            "semantic_f1": 0.638298,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": true
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_003",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 3,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.9090909090909091,
+              "recall": 0.6521739130434783,
+              "f1": 0.759493670886076
+            },
+            "semantic_f1": 0.611399,
+            "precision_ge_0_85": true,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_004",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 7,
+              "fn": 17
+            },
+            "major_external_metrics": {
+              "precision": 0.8108108108108109,
+              "recall": 0.6382978723404256,
+              "f1": 0.7142857142857143
+            },
+            "semantic_f1": 0.611399,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_005",
+            "major_external_counts": {
+              "tp": 26,
+              "fp": 7,
+              "fn": 18
+            },
+            "major_external_metrics": {
+              "precision": 0.7878787878787878,
+              "recall": 0.5909090909090909,
+              "f1": 0.6753246753246752
+            },
+            "semantic_f1": 0.587629,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_006",
+            "major_external_counts": {
+              "tp": 29,
+              "fp": 7,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.8055555555555556,
+              "recall": 0.6444444444444445,
+              "f1": 0.7160493827160493
+            },
+            "semantic_f1": 0.587629,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_007",
+            "major_external_counts": {
+              "tp": 28,
+              "fp": 8,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.7777777777777778,
+              "recall": 0.6363636363636364,
+              "f1": 0.7000000000000001
+            },
+            "semantic_f1": 0.590674,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          },
+          {
+            "held_out_sample": "XAUUSD_H1_008",
+            "major_external_counts": {
+              "tp": 30,
+              "fp": 8,
+              "fn": 16
+            },
+            "major_external_metrics": {
+              "precision": 0.7894736842105263,
+              "recall": 0.6521739130434783,
+              "f1": 0.7142857142857143
+            },
+            "semantic_f1": 0.615385,
+            "precision_ge_0_85": false,
+            "recall_gt_v2_3": false
+          }
+        ],
+        "precision_ge_0_85_every_fold": false,
+        "recall_gt_v2_3_every_fold": false
+      },
+      "passes_full_and_loso": false
+    }
+  },
+  "supported_rules": [],
+  "selected_rule": null,
+  "decision": {
+    "implement": false,
+    "reason": "No supported v2.4 semantic rule among predeclared A\u2013C"
+  }
+}

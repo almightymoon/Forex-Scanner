@@ -1,0 +1,201 @@
+{
+  "classification": "DEVELOPMENT_ONLY",
+  "scope": "TRAIN_001_008_ONLY",
+  "decision_status": "NOT_A_RELEASE_DECISION",
+  "viable_v2_4_development_candidate": false,
+  "active_v2_4_profile": false,
+  "latest_version": "2.3.0",
+  "excluded_datasets_not_used": true,
+  "generated_at_utc": "2026-07-22T20:18:17.005227Z",
+  "samples": [
+    "XAUUSD_H1_001",
+    "XAUUSD_H1_002",
+    "XAUUSD_H1_003",
+    "XAUUSD_H1_004",
+    "XAUUSD_H1_005",
+    "XAUUSD_H1_006",
+    "XAUUSD_H1_007",
+    "XAUUSD_H1_008"
+  ],
+  "forbidden_unused": [
+    "XAUUSD_H1_009-012",
+    "XAUUSD_H1_2026H1",
+    "retrospective AI-draft windows",
+    "post-2026H1 quarantine"
+  ],
+  "threshold_only_experiment": {
+    "experiment_label": "V2_4_THRESHOLD_ONLY_HYPOTHESIS",
+    "engine_version": "2.3.0",
+    "hierarchy_reversal_atr_override": 4.25,
+    "active_v2_4_profile": false,
+    "accepted_candidate": false
+  },
+  "variants": {
+    "v2_3": {
+      "engine_version": "2.3.0",
+      "hierarchy_reversal_atr": 5.0,
+      "aggregate": {
+        "datasets": 8,
+        "predicted": 115,
+        "ground_truth": 104,
+        "hierarchy_states": {
+          "CONFIRMED_MAJOR": 35,
+          "INTERNAL": 51,
+          "PENDING": 1,
+          "PROVISIONAL_MAJOR": 3,
+          "SUPERSEDED": 25
+        },
+        "location": {
+          "true_positives": 93,
+          "false_positives": 22,
+          "false_negatives": 11,
+          "precision": 0.808696,
+          "recall": 0.894231,
+          "f1": 0.849315
+        },
+        "semantic": {
+          "true_positives": 76,
+          "false_positives": 39,
+          "false_negatives": 28,
+          "precision": 0.66087,
+          "recall": 0.730769,
+          "f1": 0.694064,
+          "macro_sample_f1": 0.693887,
+          "worst_sample_f1": 0.5385,
+          "tier_accuracy_on_location_matches": 0.827971,
+          "scope_accuracy_on_location_matches": 0.827961
+        },
+        "major_external": {
+          "true_positives": 35,
+          "predicted": 38,
+          "ground_truth": 51,
+          "precision": 0.921053,
+          "recall": 0.686275,
+          "f1": 0.786517
+        }
+      },
+      "major_external_counts": {
+        "tp": 35,
+        "fp": 3,
+        "fn": 16
+      },
+      "location_counts": {
+        "tp": 93,
+        "fp": 22,
+        "fn": 11
+      }
+    },
+    "threshold_only_hypothesis": {
+      "experiment_label": "V2_4_THRESHOLD_ONLY_HYPOTHESIS",
+      "engine_version": "2.3.0",
+      "hierarchy_reversal_atr_override": 4.25,
+      "active_v2_4_profile": false,
+      "accepted_candidate": false,
+      "aggregate": {
+        "datasets": 8,
+        "predicted": 115,
+        "ground_truth": 104,
+        "hierarchy_states": {
+          "CONFIRMED_MAJOR": 53,
+          "INTERNAL": 40,
+          "PROVISIONAL_MAJOR": 3,
+          "SUPERSEDED": 19
+        },
+        "location": {
+          "true_positives": 93,
+          "false_positives": 22,
+          "false_negatives": 11,
+          "precision": 0.808696,
+          "recall": 0.894231,
+          "f1": 0.849315
+        },
+        "semantic": {
+          "true_positives": 78,
+          "false_positives": 37,
+          "false_negatives": 26,
+          "precision": 0.678261,
+          "recall": 0.75,
+          "f1": 0.712329,
+          "macro_sample_f1": 0.706612,
+          "worst_sample_f1": 0.5385,
+          "tier_accuracy_on_location_matches": 0.849471,
+          "scope_accuracy_on_location_matches": 0.849461
+        },
+        "major_external": {
+          "true_positives": 45,
+          "predicted": 56,
+          "ground_truth": 51,
+          "precision": 0.803571,
+          "recall": 0.882353,
+          "f1": 0.841121
+        }
+      },
+      "major_external_counts": {
+        "tp": 45,
+        "fp": 11,
+        "fn": 6
+      },
+      "location_counts": {
+        "tp": 93,
+        "fp": 22,
+        "fn": 11
+      }
+    },
+    "predeclared_structural_rules": {
+      "source": "benchmarks/reports/XAUUSD_H1_v2_4_close_break_audit.json",
+      "supported_rules": [],
+      "decision": {
+        "implement": false,
+        "reason": "No supported v2.4 semantic rule among predeclared A\u2013C"
+      },
+      "rule_results": {
+        "A": {
+          "major_external_counts": {
+            "tp": 31,
+            "fp": 4,
+            "fn": 20
+          },
+          "major_external_metrics": {
+            "precision": 0.8857142857142857,
+            "recall": 0.6078431372549019,
+            "f1": 0.7209302325581395
+          },
+          "semantic_f1": 0.584475,
+          "passes_full_and_loso": false
+        },
+        "B": {
+          "major_external_counts": {
+            "tp": 33,
+            "fp": 8,
+            "fn": 18
+          },
+          "major_external_metrics": {
+            "precision": 0.8048780487804879,
+            "recall": 0.6470588235294118,
+            "f1": 0.717391304347826
+          },
+          "semantic_f1": 0.60274,
+          "passes_full_and_loso": false
+        },
+        "C": {
+          "major_external_counts": {
+            "tp": 33,
+            "fp": 8,
+            "fn": 18
+          },
+          "major_external_metrics": {
+            "precision": 0.8048780487804879,
+            "recall": 0.6470588235294118,
+            "f1": 0.717391304347826
+          },
+          "semantic_f1": 0.60274,
+          "passes_full_and_loso": false
+        }
+      }
+    }
+  },
+  "acceptance": {
+    "viable_v2_4_development_candidate": false,
+    "reason": "Threshold-only 4.25 fails ME precision floor; Rules A\u2013C fail full TRAIN and/or leave-one-sample-out acceptance. No engine 2.4.0 profile accepted."
+  }
+}

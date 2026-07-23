@@ -1,0 +1,32 @@
+{
+  "classification": "DEVELOPMENT_ONLY",
+  "scope": "TRAIN_001_008_ONLY",
+  "decision_status": "NOT_A_RELEASE_DECISION",
+  "viable_v2_4_development_candidate": false,
+  "active_v2_4_profile": false,
+  "latest_version": "2.3.0",
+  "threshold_only_experiment": {
+    "experiment_label": "V2_4_THRESHOLD_ONLY_HYPOTHESIS",
+    "engine_version": "2.3.0",
+    "hierarchy_reversal_atr_override": 4.25,
+    "active_v2_4_profile": false,
+    "accepted_candidate": false
+  },
+  "selected_using": "TRAIN XAUUSD_H1_001 through XAUUSD_H1_008 only",
+  "no_holdout_inference": true,
+  "excluded_datasets_not_used": true,
+  "observed_failure_mode": "True MAJOR/EXTERNAL swings remain MINOR/INTERNAL because opposite hierarchy reversals of roughly 3.8-4.8 ATR fail the fixed hierarchy_reversal_atr=5.0 gate (hierarchy_reason=insufficient_hierarchy_reversal).",
+  "supporting_counts": {
+    "location_matches": 93,
+    "semantic_correct": 76,
+    "major_external_truth_predicted_minor_internal": 13,
+    "insufficient_hierarchy_reversal_among_those": 8,
+    "v2_3_semantic_f1": 0.694064,
+    "v2_3_major_external_f1": 0.786517,
+    "v2_3_major_external_precision": 0.921053,
+    "v2_3_major_external_recall": 0.686275
+  },
+  "proposed_minimal_change_was": "Development version 2.4.0 lowering hierarchy_reversal_atr 5.00 -> 4.25 (threshold-only). Evaluated and refused.",
+  "final_disposition": "REFUSED: threshold-only 4.25 fails ME precision floor; predeclared structural Rules A-C also fail TRAIN acceptance. No active 2.4.0 profile. v2.3 remains latest.",
+  "explicit_statement": "Hypothesis and negative result use TRAIN samples XAUUSD_H1_001 through XAUUSD_H1_008 only. Validation 009-012, 2026H1, retrospective AI-draft windows, and post-2026H1 quarantine data were not used."
+}

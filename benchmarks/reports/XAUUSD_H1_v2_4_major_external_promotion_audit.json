@@ -1,0 +1,2157 @@
+{
+  "classification": "DEVELOPMENT_ONLY",
+  "scope": "TRAIN_001_008_ONLY",
+  "decision_status": "NOT_A_RELEASE_DECISION",
+  "viable_v2_4_development_candidate": false,
+  "active_v2_4_profile": false,
+  "latest_version": "2.3.0",
+  "generated_at_utc": "2026-07-22T20:12:07.896912Z",
+  "samples": [
+    "XAUUSD_H1_001",
+    "XAUUSD_H1_002",
+    "XAUUSD_H1_003",
+    "XAUUSD_H1_004",
+    "XAUUSD_H1_005",
+    "XAUUSD_H1_006",
+    "XAUUSD_H1_007",
+    "XAUUSD_H1_008"
+  ],
+  "forbidden_unused": [
+    "XAUUSD_H1_009-012",
+    "XAUUSD_H1_2026H1",
+    "retrospective AI-draft windows / evaluation report",
+    "post-2026H1 quarantine candles",
+    "locked or prospective benchmarks beyond TRAIN 001-008"
+  ],
+  "excluded_datasets_not_used": true,
+  "baseline_engine": {
+    "engine_version": "2.3.0",
+    "hierarchy_reversal_atr": 5.0
+  },
+  "threshold_only_experiment": {
+    "experiment_label": "V2_4_THRESHOLD_ONLY_HYPOTHESIS",
+    "engine_version": "2.3.0",
+    "hierarchy_reversal_atr_override": 4.25,
+    "active_v2_4_profile": false,
+    "accepted_candidate": false
+  },
+  "major_external_confusion": {
+    "v2_3": {
+      "tp": 35,
+      "fp": 3,
+      "fn": 16
+    },
+    "threshold_only_hypothesis": {
+      "tp": 45,
+      "fp": 11,
+      "fn": 6
+    }
+  },
+  "promotion_summary": {
+    "semantic_classification_changes": 21,
+    "major_external_promotions": 18,
+    "beneficial_promotions": 10,
+    "harmful_promotions": 8,
+    "newly_recovered_major_external_true_positives": 10,
+    "newly_introduced_major_external_false_positives": 8,
+    "remaining_major_external_false_negatives": 6,
+    "benefit_counts": {
+      "beneficial": 10,
+      "harmful": 8
+    },
+    "extends_prior_external_by_benefit": {
+      "beneficial:False": 5,
+      "beneficial:True": 5,
+      "harmful:False": 6,
+      "harmful:True": 2
+    }
+  },
+  "structural_discriminator": {
+    "hypothesis": "EXTERNAL requires extending/breaking the prior confirmed external same-direction extreme; otherwise MAJOR/INTERNAL.",
+    "separates_beneficial_from_harmful": false,
+    "if_require_extends_kept": {
+      "count": 7,
+      "benefit_counts": {
+        "beneficial": 5,
+        "harmful": 2
+      }
+    },
+    "if_require_extends_dropped": {
+      "count": 11,
+      "benefit_counts": {
+        "beneficial": 5,
+        "harmful": 6
+      }
+    },
+    "decision": "REFUSE_4_25_THRESHOLD_CHANGE",
+    "rationale": "Prior-external extension does not cleanly separate newly recovered MAJOR/EXTERNAL true positives from newly introduced false positives on TRAIN 001-008; enabling it with 4.25 would be an unjustified coupling change rather than a validated structural fix."
+  },
+  "semantic_changes": [
+    {
+      "sample_id": "XAUUSD_H1_001",
+      "pivot_index": 173,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 193,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 256,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 6.307,
+        "leg_amplitude_atr": 7.002,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 245,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 193,
+        "hierarchy_confirmation_index": 221,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6858,
+        "structural_prominence_atr": 6.307,
+        "leg_amplitude_atr": 7.002,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.6858,
+      "prominence_atr": 6.307,
+      "leg_amplitude_atr": 7.002,
+      "confirmation_index": 193,
+      "hierarchy_confirmation_index": 221,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_001",
+      "pivot_index": 190,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 221,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6858,
+        "structural_prominence_atr": 5.103,
+        "leg_amplitude_atr": 4.7,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 221,
+        "hierarchy_confirmation_index": 256,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 12.443,
+        "structural_prominence_atr": 5.103,
+        "leg_amplitude_atr": 4.7,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 4,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 12.443,
+      "prominence_atr": 5.103,
+      "leg_amplitude_atr": 4.7,
+      "confirmation_index": 221,
+      "hierarchy_confirmation_index": 256,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_002",
+      "pivot_index": 56,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 66,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3043,
+        "structural_prominence_atr": 4.699,
+        "leg_amplitude_atr": 4.685,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 66,
+        "hierarchy_confirmation_index": 92,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 6.5115,
+        "structural_prominence_atr": 4.699,
+        "leg_amplitude_atr": 4.685,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 0,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 6.5115,
+      "prominence_atr": 4.699,
+      "leg_amplitude_atr": 4.685,
+      "confirmation_index": 66,
+      "hierarchy_confirmation_index": 92,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 51,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 68,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.4213,
+        "structural_prominence_atr": 5.026,
+        "leg_amplitude_atr": 5.791,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 68,
+        "hierarchy_confirmation_index": 84,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3959,
+        "structural_prominence_atr": 5.026,
+        "leg_amplitude_atr": 5.791,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 0,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.3959,
+      "prominence_atr": 5.026,
+      "leg_amplitude_atr": 5.791,
+      "confirmation_index": 68,
+      "hierarchy_confirmation_index": 84,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 70,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 84,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.219,
+        "leg_amplitude_atr": 4.979,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "less_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 84,
+        "hierarchy_confirmation_index": 88,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 5.7793,
+        "structural_prominence_atr": 5.219,
+        "leg_amplitude_atr": 4.979,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 1,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 5.7793,
+      "prominence_atr": 5.219,
+      "leg_amplitude_atr": 4.979,
+      "confirmation_index": 84,
+      "hierarchy_confirmation_index": 88,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 223,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 238,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 290,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 6.184,
+        "leg_amplitude_atr": 6.854,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 268,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 238,
+        "hierarchy_confirmation_index": 271,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6214,
+        "structural_prominence_atr": 6.184,
+        "leg_amplitude_atr": 6.854,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.6214,
+      "prominence_atr": 6.184,
+      "leg_amplitude_atr": 6.854,
+      "confirmation_index": 238,
+      "hierarchy_confirmation_index": 271,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 235,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 271,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6214,
+        "structural_prominence_atr": 7.861,
+        "leg_amplitude_atr": 3.997,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 271,
+        "hierarchy_confirmation_index": 290,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 16.8784,
+        "structural_prominence_atr": 7.861,
+        "leg_amplitude_atr": 3.997,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 4,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 16.8784,
+      "prominence_atr": 7.861,
+      "leg_amplitude_atr": 3.997,
+      "confirmation_index": 271,
+      "hierarchy_confirmation_index": 290,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 81,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 88,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.9608,
+        "structural_prominence_atr": 4.851,
+        "leg_amplitude_atr": 5.246,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 88,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 200,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 4.851,
+        "leg_amplitude_atr": 5.246,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": 189,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "neutral",
+      "major_external_promotion": false,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 7,
+        "prior_same_direction_external_count": 4,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": null,
+      "prominence_atr": 4.851,
+      "leg_amplitude_atr": 5.246,
+      "confirmation_index": 88,
+      "hierarchy_confirmation_index": null,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "SUPERSEDED"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 195,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 201,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 234,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 12.032,
+        "leg_amplitude_atr": 15.132,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 217,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 201,
+        "hierarchy_confirmation_index": 220,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7998,
+        "structural_prominence_atr": 12.032,
+        "leg_amplitude_atr": 15.132,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 1,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.7998,
+      "prominence_atr": 12.032,
+      "leg_amplitude_atr": 15.132,
+      "confirmation_index": 201,
+      "hierarchy_confirmation_index": 220,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 198,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 220,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7998,
+        "structural_prominence_atr": 4.715,
+        "leg_amplitude_atr": 3.843,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 220,
+        "hierarchy_confirmation_index": 234,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 6.7491,
+        "structural_prominence_atr": 4.715,
+        "leg_amplitude_atr": 3.843,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 2,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 6.7491,
+      "prominence_atr": 4.715,
+      "leg_amplitude_atr": 3.843,
+      "confirmation_index": 220,
+      "hierarchy_confirmation_index": 234,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 341,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 349,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 396,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.072,
+        "leg_amplitude_atr": 5.224,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 384,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 349,
+        "hierarchy_confirmation_index": 373,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7159,
+        "structural_prominence_atr": 5.072,
+        "leg_amplitude_atr": 5.224,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 5,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.7159,
+      "prominence_atr": 5.072,
+      "leg_amplitude_atr": 5.224,
+      "confirmation_index": 349,
+      "hierarchy_confirmation_index": 373,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 346,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 373,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7159,
+        "structural_prominence_atr": 4.73,
+        "leg_amplitude_atr": 4.54,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 373,
+        "hierarchy_confirmation_index": 396,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 5.3306,
+        "structural_prominence_atr": 4.73,
+        "leg_amplitude_atr": 4.54,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 6,
+        "prior_same_direction_external_count": 3,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 5.3306,
+      "prominence_atr": 4.73,
+      "leg_amplitude_atr": 4.54,
+      "confirmation_index": 373,
+      "hierarchy_confirmation_index": 396,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 267,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 296,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 336,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 9.506,
+        "leg_amplitude_atr": 11.713,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 318,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 296,
+        "hierarchy_confirmation_index": 300,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3573,
+        "structural_prominence_atr": 9.506,
+        "leg_amplitude_atr": 11.713,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 4,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.3573,
+      "prominence_atr": 9.506,
+      "leg_amplitude_atr": 11.713,
+      "confirmation_index": 296,
+      "hierarchy_confirmation_index": 300,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 293,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 300,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3573,
+        "structural_prominence_atr": 4.532,
+        "leg_amplitude_atr": 4.768,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 300,
+        "hierarchy_confirmation_index": 336,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 8.6885,
+        "structural_prominence_atr": 4.532,
+        "leg_amplitude_atr": 4.768,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 5,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 8.6885,
+      "prominence_atr": 4.532,
+      "leg_amplitude_atr": 4.768,
+      "confirmation_index": 300,
+      "hierarchy_confirmation_index": 336,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 343,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "PENDING",
+        "confirmation_index": 371,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 4.952,
+        "leg_amplitude_atr": 5.216,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 371,
+        "hierarchy_confirmation_index": 394,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.4779,
+        "structural_prominence_atr": 4.952,
+        "leg_amplitude_atr": 5.216,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 7,
+        "prior_same_direction_external_count": 3,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.4779,
+      "prominence_atr": 4.952,
+      "leg_amplitude_atr": 5.216,
+      "confirmation_index": 371,
+      "hierarchy_confirmation_index": 394,
+      "superseded_or_provisional": {
+        "v2_3_state": "PENDING",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 149,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 160,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 196,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 9.186,
+        "leg_amplitude_atr": 11.177,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 186,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 160,
+        "hierarchy_confirmation_index": 173,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.5412,
+        "structural_prominence_atr": 9.186,
+        "leg_amplitude_atr": 11.177,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 2,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.5412,
+      "prominence_atr": 9.186,
+      "leg_amplitude_atr": 11.177,
+      "confirmation_index": 160,
+      "hierarchy_confirmation_index": 173,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 193,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 206,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.1405,
+        "structural_prominence_atr": 3.611,
+        "leg_amplitude_atr": 3.854,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 206,
+        "hierarchy_confirmation_index": 250,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6028,
+        "structural_prominence_atr": 3.611,
+        "leg_amplitude_atr": 3.854,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.6028,
+      "prominence_atr": 3.611,
+      "leg_amplitude_atr": 3.854,
+      "confirmation_index": 206,
+      "hierarchy_confirmation_index": 250,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 157,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 173,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.5412,
+        "structural_prominence_atr": 4.042,
+        "leg_amplitude_atr": 3.735,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 173,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 206,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 4.042,
+        "leg_amplitude_atr": 3.735,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": 193,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "neutral",
+      "major_external_promotion": false,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 6,
+        "prior_same_direction_external_count": 3,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": null,
+      "prominence_atr": 4.042,
+      "leg_amplitude_atr": 3.735,
+      "confirmation_index": 173,
+      "hierarchy_confirmation_index": null,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "SUPERSEDED"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 186,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 196,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 250,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 3.486,
+        "leg_amplitude_atr": 3.205,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": 222,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 196,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.0964,
+        "structural_prominence_atr": 3.486,
+        "leg_amplitude_atr": 3.205,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "truth": null,
+      "benefit": "neutral",
+      "major_external_promotion": false,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 6,
+        "prior_same_direction_external_count": 3,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.0964,
+      "prominence_atr": 3.486,
+      "leg_amplitude_atr": 3.205,
+      "confirmation_index": 196,
+      "hierarchy_confirmation_index": null,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "INTERNAL"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_007",
+      "pivot_index": 98,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 108,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 136,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.761,
+        "leg_amplitude_atr": 6.593,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 131,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 108,
+        "hierarchy_confirmation_index": 128,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7836,
+        "structural_prominence_atr": 5.761,
+        "leg_amplitude_atr": 6.593,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 2,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.7836,
+      "prominence_atr": 5.761,
+      "leg_amplitude_atr": 6.593,
+      "confirmation_index": 108,
+      "hierarchy_confirmation_index": 128,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_007",
+      "pivot_index": 119,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 128,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7836,
+        "structural_prominence_atr": 5.738,
+        "leg_amplitude_atr": 5.033,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 128,
+        "hierarchy_confirmation_index": 136,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 10.0839,
+        "structural_prominence_atr": 5.738,
+        "leg_amplitude_atr": 5.033,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 10.0839,
+      "prominence_atr": 5.738,
+      "leg_amplitude_atr": 5.033,
+      "confirmation_index": 128,
+      "hierarchy_confirmation_index": 136,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    }
+  ],
+  "major_external_promotions": [
+    {
+      "sample_id": "XAUUSD_H1_001",
+      "pivot_index": 173,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 193,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 256,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 6.307,
+        "leg_amplitude_atr": 7.002,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 245,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 193,
+        "hierarchy_confirmation_index": 221,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6858,
+        "structural_prominence_atr": 6.307,
+        "leg_amplitude_atr": 7.002,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.6858,
+      "prominence_atr": 6.307,
+      "leg_amplitude_atr": 7.002,
+      "confirmation_index": 193,
+      "hierarchy_confirmation_index": 221,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_001",
+      "pivot_index": 190,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 221,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6858,
+        "structural_prominence_atr": 5.103,
+        "leg_amplitude_atr": 4.7,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 221,
+        "hierarchy_confirmation_index": 256,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 12.443,
+        "structural_prominence_atr": 5.103,
+        "leg_amplitude_atr": 4.7,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 4,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 12.443,
+      "prominence_atr": 5.103,
+      "leg_amplitude_atr": 4.7,
+      "confirmation_index": 221,
+      "hierarchy_confirmation_index": 256,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_002",
+      "pivot_index": 56,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 66,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3043,
+        "structural_prominence_atr": 4.699,
+        "leg_amplitude_atr": 4.685,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 66,
+        "hierarchy_confirmation_index": 92,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 6.5115,
+        "structural_prominence_atr": 4.699,
+        "leg_amplitude_atr": 4.685,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 0,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 6.5115,
+      "prominence_atr": 4.699,
+      "leg_amplitude_atr": 4.685,
+      "confirmation_index": 66,
+      "hierarchy_confirmation_index": 92,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 51,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 68,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.4213,
+        "structural_prominence_atr": 5.026,
+        "leg_amplitude_atr": 5.791,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 68,
+        "hierarchy_confirmation_index": 84,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3959,
+        "structural_prominence_atr": 5.026,
+        "leg_amplitude_atr": 5.791,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 0,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.3959,
+      "prominence_atr": 5.026,
+      "leg_amplitude_atr": 5.791,
+      "confirmation_index": 68,
+      "hierarchy_confirmation_index": 84,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 70,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 84,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.219,
+        "leg_amplitude_atr": 4.979,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "less_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 84,
+        "hierarchy_confirmation_index": 88,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 5.7793,
+        "structural_prominence_atr": 5.219,
+        "leg_amplitude_atr": 4.979,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 1,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 5.7793,
+      "prominence_atr": 5.219,
+      "leg_amplitude_atr": 4.979,
+      "confirmation_index": 84,
+      "hierarchy_confirmation_index": 88,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 223,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 238,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 290,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 6.184,
+        "leg_amplitude_atr": 6.854,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 268,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 238,
+        "hierarchy_confirmation_index": 271,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6214,
+        "structural_prominence_atr": 6.184,
+        "leg_amplitude_atr": 6.854,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.6214,
+      "prominence_atr": 6.184,
+      "leg_amplitude_atr": 6.854,
+      "confirmation_index": 238,
+      "hierarchy_confirmation_index": 271,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_003",
+      "pivot_index": 235,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 271,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6214,
+        "structural_prominence_atr": 7.861,
+        "leg_amplitude_atr": 3.997,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 271,
+        "hierarchy_confirmation_index": 290,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 16.8784,
+        "structural_prominence_atr": 7.861,
+        "leg_amplitude_atr": 3.997,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 4,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 16.8784,
+      "prominence_atr": 7.861,
+      "leg_amplitude_atr": 3.997,
+      "confirmation_index": 271,
+      "hierarchy_confirmation_index": 290,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 195,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 201,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 234,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 12.032,
+        "leg_amplitude_atr": 15.132,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 217,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 201,
+        "hierarchy_confirmation_index": 220,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7998,
+        "structural_prominence_atr": 12.032,
+        "leg_amplitude_atr": 15.132,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 1,
+        "prior_same_direction_external_count": 0,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.7998,
+      "prominence_atr": 12.032,
+      "leg_amplitude_atr": 15.132,
+      "confirmation_index": 201,
+      "hierarchy_confirmation_index": 220,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 198,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 220,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7998,
+        "structural_prominence_atr": 4.715,
+        "leg_amplitude_atr": 3.843,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 220,
+        "hierarchy_confirmation_index": 234,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 6.7491,
+        "structural_prominence_atr": 4.715,
+        "leg_amplitude_atr": 3.843,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 2,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 6.7491,
+      "prominence_atr": 4.715,
+      "leg_amplitude_atr": 3.843,
+      "confirmation_index": 220,
+      "hierarchy_confirmation_index": 234,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 341,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 349,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 396,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.072,
+        "leg_amplitude_atr": 5.224,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 384,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 349,
+        "hierarchy_confirmation_index": 373,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7159,
+        "structural_prominence_atr": 5.072,
+        "leg_amplitude_atr": 5.224,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 5,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.7159,
+      "prominence_atr": 5.072,
+      "leg_amplitude_atr": 5.224,
+      "confirmation_index": 349,
+      "hierarchy_confirmation_index": 373,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_004",
+      "pivot_index": 346,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 373,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7159,
+        "structural_prominence_atr": 4.73,
+        "leg_amplitude_atr": 4.54,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 373,
+        "hierarchy_confirmation_index": 396,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 5.3306,
+        "structural_prominence_atr": 4.73,
+        "leg_amplitude_atr": 4.54,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 6,
+        "prior_same_direction_external_count": 3,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 5.3306,
+      "prominence_atr": 4.73,
+      "leg_amplitude_atr": 4.54,
+      "confirmation_index": 373,
+      "hierarchy_confirmation_index": 396,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 267,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 296,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 336,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 9.506,
+        "leg_amplitude_atr": 11.713,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 318,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 296,
+        "hierarchy_confirmation_index": 300,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3573,
+        "structural_prominence_atr": 9.506,
+        "leg_amplitude_atr": 11.713,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 4,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.3573,
+      "prominence_atr": 9.506,
+      "leg_amplitude_atr": 11.713,
+      "confirmation_index": 296,
+      "hierarchy_confirmation_index": 300,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 293,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 300,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.3573,
+        "structural_prominence_atr": 4.532,
+        "leg_amplitude_atr": 4.768,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 300,
+        "hierarchy_confirmation_index": 336,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 8.6885,
+        "structural_prominence_atr": 4.532,
+        "leg_amplitude_atr": 4.768,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 5,
+        "prior_same_direction_external_count": 2,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 8.6885,
+      "prominence_atr": 4.532,
+      "leg_amplitude_atr": 4.768,
+      "confirmation_index": 300,
+      "hierarchy_confirmation_index": 336,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_005",
+      "pivot_index": 343,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "PENDING",
+        "confirmation_index": 371,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 4.952,
+        "leg_amplitude_atr": 5.216,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 371,
+        "hierarchy_confirmation_index": 394,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.4779,
+        "structural_prominence_atr": 4.952,
+        "leg_amplitude_atr": 5.216,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 7,
+        "prior_same_direction_external_count": 3,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.4779,
+      "prominence_atr": 4.952,
+      "leg_amplitude_atr": 5.216,
+      "confirmation_index": 371,
+      "hierarchy_confirmation_index": 394,
+      "superseded_or_provisional": {
+        "v2_3_state": "PENDING",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 149,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 160,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 196,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 9.186,
+        "leg_amplitude_atr": 11.177,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 186,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 160,
+        "hierarchy_confirmation_index": 173,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.5412,
+        "structural_prominence_atr": 9.186,
+        "leg_amplitude_atr": 11.177,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MINOR",
+        "scope": "INTERNAL"
+      },
+      "benefit": "harmful",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 2,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.5412,
+      "prominence_atr": 9.186,
+      "leg_amplitude_atr": 11.177,
+      "confirmation_index": 160,
+      "hierarchy_confirmation_index": 173,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_006",
+      "pivot_index": 193,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 206,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.1405,
+        "structural_prominence_atr": 3.611,
+        "leg_amplitude_atr": 3.854,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 206,
+        "hierarchy_confirmation_index": 250,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.6028,
+        "structural_prominence_atr": 3.611,
+        "leg_amplitude_atr": 3.854,
+        "hierarchy_was_provisional": false,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 4.6028,
+      "prominence_atr": 3.611,
+      "leg_amplitude_atr": 3.854,
+      "confirmation_index": 206,
+      "hierarchy_confirmation_index": 250,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_007",
+      "pivot_index": 98,
+      "direction": "LOW",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "SUPERSEDED",
+        "confirmation_index": 108,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": 136,
+        "hierarchy_reversal_atr": null,
+        "structural_prominence_atr": 5.761,
+        "leg_amplitude_atr": 6.593,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": 131,
+        "hierarchy_reason": "more_extreme_same_direction"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 108,
+        "hierarchy_confirmation_index": 128,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7836,
+        "structural_prominence_atr": 5.761,
+        "leg_amplitude_atr": 6.593,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 2,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": true
+      },
+      "hierarchy_reversal_atr": 4.7836,
+      "prominence_atr": 5.761,
+      "leg_amplitude_atr": 6.593,
+      "confirmation_index": 108,
+      "hierarchy_confirmation_index": 128,
+      "superseded_or_provisional": {
+        "v2_3_state": "SUPERSEDED",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    },
+    {
+      "sample_id": "XAUUSD_H1_007",
+      "pivot_index": 119,
+      "direction": "HIGH",
+      "v2_3": {
+        "tier": "MINOR",
+        "scope": "INTERNAL",
+        "hierarchy_state": "INTERNAL",
+        "confirmation_index": 128,
+        "hierarchy_confirmation_index": null,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 4.7836,
+        "structural_prominence_atr": 5.738,
+        "leg_amplitude_atr": 5.033,
+        "hierarchy_was_provisional": null,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": "insufficient_hierarchy_reversal"
+      },
+      "v2_4": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL",
+        "hierarchy_state": "CONFIRMED_MAJOR",
+        "confirmation_index": 128,
+        "hierarchy_confirmation_index": 136,
+        "hierarchy_revision_index": null,
+        "hierarchy_reversal_atr": 10.0839,
+        "structural_prominence_atr": 5.738,
+        "leg_amplitude_atr": 5.033,
+        "hierarchy_was_provisional": true,
+        "hierarchy_superseded_by_index": null,
+        "hierarchy_reason": null
+      },
+      "truth": {
+        "tier": "MAJOR",
+        "scope": "EXTERNAL"
+      },
+      "benefit": "beneficial",
+      "major_external_promotion": true,
+      "prior_confirmed_major_relationship": {
+        "prior_confirmed_external_count": 3,
+        "prior_same_direction_external_count": 1,
+        "extends_or_breaks_prior_external": false
+      },
+      "hierarchy_reversal_atr": 10.0839,
+      "prominence_atr": 5.738,
+      "leg_amplitude_atr": 5.033,
+      "confirmation_index": 128,
+      "hierarchy_confirmation_index": 136,
+      "superseded_or_provisional": {
+        "v2_3_state": "INTERNAL",
+        "v2_4_state": "CONFIRMED_MAJOR"
+      }
+    }
+  ]
+}
