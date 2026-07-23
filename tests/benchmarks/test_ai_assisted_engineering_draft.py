@@ -45,7 +45,8 @@ from swing_engine.benchmark_data import write_canonical_candles_csv  # noqa: E40
 
 
 CANDIDATE_COMMIT = "3fd5d7c74b82c3728d7badaa6cd72044bdd6bd1d"
-PASS1 = (
+# Abandoned blind template — must not live in the repository or be required by tests.
+PASS1_REPO_PATH = (
     ROOT
     / "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/labels/pass_1.json"
 )
@@ -56,8 +57,12 @@ SELECTION = (
 )
 WINDOWS_ROOT = SELECTION.parent
 
+# Historical SHA of the empty DRAFT human template (not a repository fixture).
 EXPECTED_PASS1 = (
     "d1fe3440c0cc21eb888a07caadeb6893830c0354b7341b8157a64debca1bd0ca"
+)
+FROZEN_AI_PACKAGE = (
+    ROOT / "benchmarks/data/engineering/XAUUSD/H1_2022_2024_ai_draft_v1"
 )
 EXPECTED_SELECTION = (
     "9bdaa635b71b09287def03bd38a0a8fe3c1a50a5f0fd431ee686e685bbc369e8"
@@ -574,9 +579,9 @@ def create_frozen_ai_package(tmp_path: Path) -> dict:
 def test_ai_draft_schema_validation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
     patch_expected_selection(monkeypatch, selection_root)
-    monkeypatch.setattr(FREEZER, "EXPECTED_PASS1_SHA", sha256(PASS1))
     validated = FREEZER.validate_draft_inputs(draft_root, selection_root)
     assert validated["counts"] == {1: 4, 2: 8, 3: 4, 4: 9, 5: 6, 6: 11}
+    assert validated["pass1_sha"] is None
 
 
 def test_wrong_label_origin_refusal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -788,7 +793,6 @@ def test_deterministic_canonical_gzip(
 ):
     draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
     patch_expected_selection(monkeypatch, selection_root)
-    monkeypatch.setattr(FREEZER, "EXPECTED_PASS1_SHA", sha256(PASS1))
 
     out1 = tmp_path / "pkg1"
     out2 = tmp_path / "pkg2"
@@ -821,7 +825,6 @@ def test_deterministic_canonical_gzip(
 def test_immutable_package_refusal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
     patch_expected_selection(monkeypatch, selection_root)
-    monkeypatch.setattr(FREEZER, "EXPECTED_PASS1_SHA", sha256(PASS1))
     output = tmp_path / "pkg"
     monkeypatch.setattr(
         sys,
@@ -1045,8 +1048,98 @@ def test_prefix_failure_inconclusive():
     )
 
 
-def test_pass_1_remains_byte_identical():
-    assert sha256(PASS1) == EXPECTED_PASS1
+def test_repository_does_not_require_pass_1_json():
+    """Abandoned blind template must not be a repository test dependency."""
+    assert not PASS1_REPO_PATH.exists()
+
+
+def test_freezer_historical_pass_template_sha_constant():
+    assert FREEZER.EXPECTED_PASS1_SHA == EXPECTED_PASS1
+    assert EXPECTED_PASS1 == (
+        "d1fe3440c0cc21eb888a07caadeb6893830c0354b7341b8157a64debca1bd0ca"
+    )
+
+
+def test_committed_ai_draft_receipt_records_historical_pass_template_sha():
+    """Frozen package receipt preserves the known empty-template SHA evidence."""
+    receipt_path = FROZEN_AI_PACKAGE / "freeze_receipt.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    pass1_evidence = receipt["source_evidence"]["pass_1_json"]
+    assert pass1_evidence["sha256"] == EXPECTED_PASS1
+    assert pass1_evidence["sha256"] == FREEZER.EXPECTED_PASS1_SHA
+    assert pass1_evidence["path"].endswith("labels/pass_1.json")
+    assert pass1_evidence["unchanged"] is True
+
+
+def test_ai_draft_freezer_runs_without_repository_pass_1(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    assert not PASS1_REPO_PATH.exists()
+    draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
+    patch_expected_selection(monkeypatch, selection_root)
+    validated = FREEZER.validate_draft_inputs(draft_root, selection_root)
+    assert validated["pass1_sha"] is None
+    assert validated["pass1_present_in_repository"] is False
+
+
+def test_freezer_receipt_metadata_when_pass_template_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Future receipts retain historical SHA while marking repository absence."""
+    assert not PASS1_REPO_PATH.exists()
+    draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
+    patch_expected_selection(monkeypatch, selection_root)
+    output = tmp_path / "pkg_absent_pass"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "freeze",
+            "--draft-root",
+            str(draft_root),
+            "--selection-root",
+            str(selection_root),
+            "--output-root",
+            str(output),
+            "--frozen-at",
+            "2026-07-21T12:00:00Z",
+        ],
+    )
+    assert FREEZER.main() == 0
+    receipt = json.loads(
+        (output / "freeze_receipt.json").read_text(encoding="utf-8")
+    )
+    pass1_meta = receipt["source_evidence"]["pass_1_json"]
+    assert pass1_meta["sha256"] is None
+    assert pass1_meta["present_in_repository"] is False
+    assert pass1_meta["historical_empty_template_sha256"] == EXPECTED_PASS1
+    assert pass1_meta["historical_empty_template_sha256"] == (
+        FREEZER.EXPECTED_PASS1_SHA
+    )
+
+
+def test_freezer_accepts_synthetic_pass_template_under_tmp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Optional-present path: synthetic tmp file + monkeypatched expected SHA."""
+    draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
+    patch_expected_selection(monkeypatch, selection_root)
+    synthetic = tmp_path / "synthetic_pass_1.json"
+    write_json(
+        synthetic,
+        {
+            "schema_version": "SYNTHETIC_PASS_TEMPLATE_V1",
+            "status": "DRAFT",
+            "labels": [],
+        },
+    )
+    digest = sha256(synthetic)
+    monkeypatch.setattr(FREEZER, "PASS1_PATH", synthetic)
+    monkeypatch.setattr(FREEZER, "EXPECTED_PASS1_SHA", digest)
+    validated = FREEZER.validate_draft_inputs(draft_root, selection_root)
+    assert validated["pass1_present_in_repository"] is True
+    assert validated["pass1_sha"] == digest
+    assert not PASS1_REPO_PATH.exists()
 
 
 def test_frozen_selection_and_windows_remain_byte_identical():
@@ -1077,7 +1170,6 @@ def test_annotations_py_matches_head():
 def test_exact_ai_origin_accepted_locally(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     draft_root, selection_root = create_synthetic_draft_and_selection(tmp_path)
     patch_expected_selection(monkeypatch, selection_root)
-    monkeypatch.setattr(FREEZER, "EXPECTED_PASS1_SHA", sha256(PASS1))
     validated = FREEZER.validate_draft_inputs(draft_root, selection_root)
     assert validated["labels_doc"]["origin"] == FREEZER.AI_DRAFT_ORIGIN
     assert FREEZER.refuse_non_ai_draft_origin(

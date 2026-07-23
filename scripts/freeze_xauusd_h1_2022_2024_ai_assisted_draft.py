@@ -68,6 +68,11 @@ EXPECTED_SELECTION_SHA = (
 EXPECTED_PASS1_SHA = (
     "d1fe3440c0cc21eb888a07caadeb6893830c0354b7341b8157a64debca1bd0ca"
 )
+# Abandoned empty human template path. Optional; must not be required by tests.
+PASS1_PATH = (
+    ROOT
+    / "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/labels/pass_1.json"
+)
 EXPECTED_WINDOW_COUNTS = {1: 4, 2: 8, 3: 4, 4: 9, 5: 6, 6: 11}
 EXPECTED_TOTAL = 42
 
@@ -334,10 +339,7 @@ def validate_draft_inputs(
                     f"REFUSED: directions do not alternate in window {wi}"
                 )
 
-    pass1 = (
-        ROOT
-        / "benchmarks/data/locked/XAUUSD/H1/retrospective_2022_2024/labels/pass_1.json"
-    )
+    pass1 = PASS1_PATH
     if pass1.exists():
         pass1_sha = sha256(pass1)
         if pass1_sha != EXPECTED_PASS1_SHA:
@@ -363,6 +365,7 @@ def validate_draft_inputs(
         "counts": counts,
         "flat_labels": flat,
         "pass1_sha": EXPECTED_PASS1_SHA if pass1.exists() else None,
+        "pass1_present_in_repository": pass1.exists(),
     }
 
 
@@ -798,10 +801,18 @@ def main() -> int:
                         "retrospective_2022_2024/labels/pass_1.json"
                     ),
                     "sha256": validated["pass1_sha"],
+                    "present_in_repository": validated[
+                        "pass1_present_in_repository"
+                    ],
+                    "historical_empty_template_sha256": EXPECTED_PASS1_SHA,
                     "unchanged": True,
                     "note": (
-                        "Formal empty human template; AI labels were not "
-                        "inserted."
+                        "Abandoned empty human template is optional and must "
+                        "not be required for freeze or tests. When absent, "
+                        "sha256 is null and historical_empty_template_sha256 "
+                        "retains the known empty-template reference. When "
+                        "present it must match that historical SHA. AI labels "
+                        "were not inserted."
                     ),
                 },
                 "ai_draft_inputs": validated["input_hashes"],
