@@ -1,9 +1,15 @@
 """Normalized market feature set — single source of truth for all engines."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 from services.quant_engine.swing_analysis import MarketStructureState, TrendContext
-from shared.types.models import IndicatorValues, SMCPattern, TrendDirection
+from shared.types.models import TrendDirection
+
+if TYPE_CHECKING:
+    from services.quant_engine.market_structure.models import StructureSnapshot
 
 
 @dataclass
@@ -44,6 +50,22 @@ class MarketFeatures:
     last_structure_event: str | None = None
     structure_continuation: bool = True
 
+    # Market Structure Engine v1 fields (backward-compatible defaults).
+    structure_snapshot: StructureSnapshot | None = None
+    external_bias: TrendDirection = TrendDirection.RANGING
+    pending_external_bias: TrendDirection = TrendDirection.RANGING
+    internal_bias: TrendDirection = TrendDirection.RANGING
+    pending_internal_bias: TrendDirection = TrendDirection.RANGING
+    latest_external_high: float | None = None
+    latest_external_low: float | None = None
+    latest_internal_high: float | None = None
+    latest_internal_low: float | None = None
+    structural_sequence: list[str] = field(default_factory=list)
+    structure_event_ids: list[str] = field(default_factory=list)
+    latest_structure_event_id: str | None = None
+    latest_bos_choch: dict[str, Any] | None = None
+    structure_metadata: dict[str, Any] = field(default_factory=dict)
+
     liquidity_pools: list[str] = field(default_factory=list)
     session_tags: list[str] = field(default_factory=list)
     equal_highs: bool = False
@@ -72,6 +94,20 @@ class MarketFeatures:
             "swing_strength_avg": round(self.swing_strength_avg, 1),
             "bos_kind": self.bos_kind,
             "last_structure_event": self.last_structure_event,
+            "structure_continuation": self.structure_continuation,
+            "external_bias": self.external_bias.value,
+            "pending_external_bias": self.pending_external_bias.value,
+            "internal_bias": self.internal_bias.value,
+            "pending_internal_bias": self.pending_internal_bias.value,
+            "latest_external_high": self.latest_external_high,
+            "latest_external_low": self.latest_external_low,
+            "latest_internal_high": self.latest_internal_high,
+            "latest_internal_low": self.latest_internal_low,
+            "structural_sequence": list(self.structural_sequence),
+            "structure_event_ids": list(self.structure_event_ids),
+            "latest_structure_event_id": self.latest_structure_event_id,
+            "latest_bos_choch": self.latest_bos_choch,
+            "structure_metadata": dict(sorted(self.structure_metadata.items())),
             "liquidity_pools": self.liquidity_pools,
             "session": self.session,
             "ob_quality": round(self.best_ob.overall, 1) if self.best_ob else 0,

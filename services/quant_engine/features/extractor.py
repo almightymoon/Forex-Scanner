@@ -1,45 +1,112 @@
-"""Extract normalized market features from candles, indicators, and patterns."""
+"""Extract normalized market features from candles, indicators, and patterns.
 
-from services.quant_engine.features.types import FVGFeatures, MarketFeatures, OrderBlockFeatures
+Market structure is sourced exclusively from Market Structure Engine v1 over
+confirmed swings. The extractor does not call legacy zigzag helpers or the
+legacy structure analyzer for structure fields.
+"""
+
+from __future__ import annotations
+
 from services.quant_engine.decision.session import current_session
-from services.quant_engine.swing_analysis import (
-    analyze_market_structure,
-    analyze_trend_context,
-    detect_session_liquidity,
+from services.quant_engine.features.types import FVGFeatures, MarketFeatures, OrderBlockFeatures
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.market_structure.integration import (
+    build_trend_context_from_structure,
+    structure_snapshot_to_features,
 )
+from services.quant_engine.market_structure.models import StructureInputError
+from services.quant_engine.swing_analysis import detect_session_liquidity
 from shared.types.models import Candle, IndicatorValues, SMCPattern, SignalDirection
+from swing_engine import SwingEngine, get_config
+from swing_engine.models import DetectedSwing
+
+# Explicit swing profile for the feature integration boundary.
+# Matches the scanner's current live SwingEngine version (DEFAULT_VERSION).
+# Does not change swing_engine.DEFAULT_VERSION. Upgrading this boundary to
+# 2.3.0 is a separate, explicit decision.
+FEATURE_SWING_VERSION = "2.0.0"
 
 
 class FeatureExtractor:
     """Single pass feature extraction — all engines consume this output."""
+
+    def __init__(self, swing_version: str = FEATURE_SWING_VERSION) -> None:
+        self.swing_version = swing_version
 
     def extract(
         self,
         candles: list[Candle],
         indicators: IndicatorValues,
         patterns: list[SMCPattern],
+        *,
+        confirmed_swings: list[DetectedSwing] | None = None,
+        as_of_index: int | None = None,
     ) -> MarketFeatures:
         features = MarketFeatures()
         if not candles:
             return features
 
-        ctx = analyze_trend_context(candles, indicators.ema_20, indicators.ema_50)
-        structure = ctx.structure or analyze_market_structure(candles)
+        swings = (
+            list(confirmed_swings)
+            if confirmed_swings is not None
+            else self._obtain_confirmed_swings(candles)
+        )
+        end = len(candles) - 1 if as_of_index is None else int(as_of_index)
+        # Only swings confirmed within the analyzed prefix.
+        swings = [
+            s
+            for s in swings
+            if s.confirmation_index is not None and int(s.confirmation_index) <= end
+        ]
 
+        try:
+            snapshot = analyze_structure(
+                candles,
+                swings,
+                as_of_index=end,
+            )
+        except StructureInputError:
+            snapshot = analyze_structure(candles, [], as_of_index=end)
+
+        mapped = structure_snapshot_to_features(snapshot, confirmed_swings=swings)
+        ctx = build_trend_context_from_structure(
+            snapshot,
+            candles[: end + 1],
+            indicators.ema_20,
+            indicators.ema_50,
+            confirmed_swings=swings,
+        )
+
+        features.structure_snapshot = mapped["structure_snapshot"]
+        features.structure = mapped["structure"]
         features.trend_context = ctx
-        features.structure = structure
         features.trend_strength = ctx.strength
-        features.trend_direction = ctx.direction
+        features.trend_direction = mapped["trend_direction"]
         features.trend_maturity = ctx.maturity
         features.compression = ctx.compression
         features.expansion = ctx.expansion
         features.pullback = ctx.pullback
 
-        features.swing_count = len(structure.swings)
-        features.swing_strength_avg = structure.swing_strength_avg
-        features.bos_kind = structure.bos_kind
-        features.last_structure_event = structure.last_event
-        features.structure_continuation = structure.continuation
+        features.swing_count = mapped["swing_count"]
+        features.swing_strength_avg = mapped["swing_strength_avg"]
+        features.bos_kind = mapped["bos_kind"]
+        features.last_structure_event = mapped["last_structure_event"]
+        features.structure_continuation = mapped["structure_continuation"]
+
+        features.external_bias = mapped["external_bias"]
+        features.pending_external_bias = mapped["pending_external_bias"]
+        features.internal_bias = mapped["internal_bias"]
+        features.pending_internal_bias = mapped["pending_internal_bias"]
+        features.latest_external_high = mapped["latest_external_high"]
+        features.latest_external_low = mapped["latest_external_low"]
+        features.latest_internal_high = mapped["latest_internal_high"]
+        features.latest_internal_low = mapped["latest_internal_low"]
+        features.structural_sequence = list(mapped["structural_sequence"])
+        features.structure_event_ids = list(mapped["structure_event_ids"])
+        features.latest_structure_event_id = mapped["latest_structure_event_id"]
+        features.latest_bos_choch = mapped["latest_bos_choch"]
+        features.structure_metadata = dict(mapped["structure_metadata"])
+        features.structure_metadata["swing_version"] = self.swing_version
 
         features.session = current_session(candles[-1].timestamp)
         features.session_tags = detect_session_liquidity(candles)
@@ -85,6 +152,21 @@ class FeatureExtractor:
             features.best_fvg = self._best_fvg(fvgs[-1], candles, features.atr)
 
         return features
+
+    def _obtain_confirmed_swings(self, candles: list[Candle]) -> list[DetectedSwing]:
+        """Obtain confirmed swings once at the integration boundary (explicit version)."""
+
+        if not candles:
+            return []
+        tf = candles[0].timeframe
+        symbol = candles[0].symbol
+        cfg = get_config(tf, version=self.swing_version, symbol=symbol)
+        result = SwingEngine(cfg, version=self.swing_version).detect(
+            candles,
+            symbol=symbol,
+            timeframe=tf,
+        )
+        return list(result.confirmed_swings)
 
     def _best_ob(self, p: SMCPattern, candles: list[Candle]) -> OrderBlockFeatures:
         idx = p.metadata.get("index", len(candles) - 1)
