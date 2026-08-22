@@ -1,4 +1,10 @@
-"""Market structure event quality scoring — BOS/CHoCH dimensions."""
+"""Market structure event quality scoring — BOS/CHoCH dimensions.
+
+WARNING (Market Structure Engine v1): the ``follow_through`` dimension below
+inspects candles *after* the break index. That is offline / lookahead-sensitive
+and must not be used for live causal event confirmation until separately
+refactored. The v1 structure detector does not call this scorer.
+"""
 
 from dataclasses import dataclass
 

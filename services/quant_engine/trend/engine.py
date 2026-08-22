@@ -2,10 +2,12 @@
 
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
 from shared.types.models import Candle, IndicatorValues, TrendDirection
+from swing_engine.models import SwingScope
 
 from services.quant_engine.features.types import MarketFeatures
 
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
+from services.quant_engine.market_structure.models import StructureRelation
 from services.quant_engine.trend.models import TrendAnalysis
 from services.quant_engine.swing_analysis import analyze_trend_context
 
@@ -43,6 +45,11 @@ class TrendEngine:
                 "compression": analysis.compression,
                 "expansion": analysis.expansion,
                 "pullback": analysis.pullback,
+                "structure_source": (
+                    "market_structure_v1"
+                    if features and features.structure_snapshot is not None
+                    else "legacy_fallback"
+                ),
             },
         )
 
@@ -95,24 +102,8 @@ class TrendEngine:
             score += rules.get("adx_strong", 4)
             result.reasons.append(f"ADX strong at {indicators.adx_14:.1f}")
 
-        if len(candles) >= 10:
-            highs = [c.high for c in candles[-10:]]
-            lows = [c.low for c in candles[-10:]]
-            mid = len(highs) // 2
-            if max(highs[mid:]) > max(highs[:mid]):
-                result.higher_highs = True
-                score += rules.get("higher_highs", 2)
-                result.reasons.append("Higher highs detected")
-            if min(lows[mid:]) > min(lows[:mid]):
-                result.higher_lows = True
-                score += rules.get("higher_lows", 2)
-                result.reasons.append("Higher lows detected")
-            if max(highs[mid:]) < max(highs[:mid]):
-                score += rules.get("lower_highs", 2)
-                result.reasons.append("Lower highs detected")
-            if min(lows[mid:]) < min(lows[:mid]):
-                score += rules.get("lower_lows", 2)
-                result.reasons.append("Lower lows detected")
+        # Structure HH/HL/LH/LL from Market Structure Engine v1 — not raw candles.
+        score += self._apply_structure_relations(result, features, rules)
 
         if indicators.vwap and price > indicators.vwap:
             result.price_above_vwap = True
@@ -122,29 +113,108 @@ class TrendEngine:
             score += rules.get("price_above_vwap", 2)
             result.reasons.append("Price below VWAP")
 
-        ctx = features.trend_context if features and features.trend_context else analyze_trend_context(
-            candles,
-            indicators.ema_20,
-            indicators.ema_50,
-        )
-        if ctx.direction != TrendDirection.RANGING and result.direction == TrendDirection.RANGING:
-            result.direction = ctx.direction
-        if ctx.strength > 0.5:
-            score += rules.get("swing_structure", 4)
-        if ctx.compression:
-            score += rules.get("compression", 2)
-            result.compression = True
-        if ctx.expansion:
-            score += rules.get("expansion", 2)
-            result.expansion = True
-        if ctx.pullback:
-            score += rules.get("pullback", 3)
-            result.pullback = True
-        result.maturity = ctx.maturity
-        result.trend_strength = ctx.strength
-        for reason in ctx.reasons:
-            if reason not in result.reasons:
-                result.reasons.append(reason)
+        if features and features.trend_context is not None:
+            ctx = features.trend_context
+        elif features and features.structure_snapshot is not None:
+            # Prefer already-mapped feature fields when trend_context is absent.
+            ctx = None
+        else:
+            # Legacy fallback only when no v1 structure features are present.
+            ctx = analyze_trend_context(
+                candles,
+                indicators.ema_20,
+                indicators.ema_50,
+            )
+
+        if ctx is not None:
+            if ctx.direction != TrendDirection.RANGING and result.direction == TrendDirection.RANGING:
+                result.direction = ctx.direction
+            if ctx.strength > 0.5:
+                score += rules.get("swing_structure", 4)
+            if ctx.compression:
+                score += rules.get("compression", 2)
+                result.compression = True
+            if ctx.expansion:
+                score += rules.get("expansion", 2)
+                result.expansion = True
+            if ctx.pullback:
+                score += rules.get("pullback", 3)
+                result.pullback = True
+            result.maturity = ctx.maturity
+            result.trend_strength = ctx.strength
+            for reason in ctx.reasons:
+                if reason not in result.reasons:
+                    result.reasons.append(reason)
+        elif features is not None:
+            if (
+                features.external_bias is not TrendDirection.RANGING
+                and result.direction == TrendDirection.RANGING
+            ):
+                result.direction = features.external_bias
+            if features.trend_strength > 0.5:
+                score += rules.get("swing_structure", 4)
+            if features.compression:
+                score += rules.get("compression", 2)
+                result.compression = True
+            if features.expansion:
+                score += rules.get("expansion", 2)
+                result.expansion = True
+            if features.pullback:
+                score += rules.get("pullback", 3)
+                result.pullback = True
+            result.maturity = features.trend_maturity
+            result.trend_strength = features.trend_strength
+            if features.pending_external_bias is not TrendDirection.RANGING:
+                result.reasons.append(
+                    f"Pending external reversal: {features.pending_external_bias.value}"
+                )
 
         result.score = clamp_score(score, max_score)
         return result
+
+    @staticmethod
+    def _apply_structure_relations(
+        result: TrendAnalysis,
+        features: MarketFeatures | None,
+        rules: dict,
+    ) -> int:
+        """Score HH/HL/LH/LL from the v1 snapshot; never from a raw ten-candle split."""
+
+        if features is None or features.structure_snapshot is None:
+            return 0
+
+        score = 0
+        snapshot = features.structure_snapshot
+        seen: set[str] = set()
+        for rel in snapshot.swing_relations:
+            if rel.scope is not SwingScope.EXTERNAL:
+                continue
+            key = rel.relation.value
+            if key in seen:
+                continue
+            if rel.relation is StructureRelation.HH:
+                seen.add(key)
+                result.higher_highs = True
+                score += rules.get("higher_highs", 2)
+                result.reasons.append("Higher highs detected")
+            elif rel.relation is StructureRelation.HL:
+                seen.add(key)
+                result.higher_lows = True
+                score += rules.get("higher_lows", 2)
+                result.reasons.append("Higher lows detected")
+            elif rel.relation is StructureRelation.LH:
+                seen.add(key)
+                score += rules.get("lower_highs", 2)
+                result.reasons.append("Lower highs detected")
+            elif rel.relation is StructureRelation.LL:
+                seen.add(key)
+                score += rules.get("lower_lows", 2)
+                result.reasons.append("Lower lows detected")
+
+        if features.internal_bias is not TrendDirection.RANGING:
+            # Internal bias is informational only — must not overwrite external.
+            result.reasons.append(
+                f"Internal bias {features.internal_bias.value} "
+                f"(external {features.external_bias.value})"
+            )
+        return score
