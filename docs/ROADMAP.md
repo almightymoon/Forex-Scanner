@@ -8,7 +8,7 @@ dependencies.
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| Swing Engine | ✅ v2.0.0 default | `swing_engine/` |
+| Swing Engine | ✅ v2.3.0 default | `swing_engine/` |
 | Human-review benchmarks | ✅ fractal ground truth | `benchmarks/datasets/manifest.json` |
 | Score breakdown studio | ✅ weighted points panel | `swing_engine/visualization.py` |
 | Benchmark history + version table | ✅ | `swing_engine/regression.py` |

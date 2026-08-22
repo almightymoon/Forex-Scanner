@@ -32,11 +32,16 @@ from services.quant_engine.market_structure.regime import (
     StructureRegimeAssessment,
     classify_structure_regime,
 )
+from services.quant_engine.market_structure.confluence import (
+    SetupConfluenceAssessment,
+    assess_setup_confluence,
+)
 
 __all__ = [
     "MarketStructureDetectorV1",
     "MarketStructureEngine",
     "ProjectedSwingFact",
+    "SetupConfluenceAssessment",
     "StructureDetectorConfig",
     "StructureEvent",
     "StructureEventType",
@@ -48,6 +53,7 @@ __all__ = [
     "StructureSnapshot",
     "StructureSwingRelation",
     "analyze_structure",
+    "assess_setup_confluence",
     "build_market_structure_state",
     "build_trend_context_from_structure",
     "classify_structure_regime",

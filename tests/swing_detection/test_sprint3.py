@@ -30,8 +30,8 @@ from tests.swing_detection.fixtures import gold_candles, range_candles, trend_ca
 
 class TestDefaultVersion(unittest.TestCase):
     def test_default_is_v2_0(self):
-        self.assertEqual(DEFAULT_VERSION, "2.0.0")
-        self.assertEqual(SwingEngine().version, "2.0.0")
+        self.assertEqual(DEFAULT_VERSION, "2.3.0")
+        self.assertEqual(SwingEngine().version, "2.3.0")
 
 
 class TestGoldPipSizing(unittest.TestCase):

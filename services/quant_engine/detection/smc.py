@@ -12,7 +12,7 @@ from services.quant_engine.market_structure.models import (
     StructureEventType,
     StructureSnapshot,
 )
-from services.quant_engine.swing_analysis import MarketStructureState, build_zigzag_swings
+from services.quant_engine.swing_analysis import MarketStructureState
 from services.quant_engine.swings.boundary import (
     SCAN_SWING_VERSION,
     obtain_confirmed_swings,
@@ -328,11 +328,3 @@ class SMCEngine:
                     )
                     break
         return patterns
-
-    def _find_swing_points(
-        self, candles: list[Candle], point_type: str, lookback: int = 3
-    ) -> list[tuple[int, float]]:
-        """Backward-compatible — delegates to shared zigzag detection."""
-        swings = build_zigzag_swings(candles, lookback=lookback)
-        filtered = [s for s in swings if s.kind == ("high" if point_type == "high" else "low")]
-        return [(s.index, s.price) for s in filtered]

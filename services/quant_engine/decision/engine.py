@@ -48,6 +48,7 @@ from services.quant_engine.decision.engines.news import NewsEngine
 from services.quant_engine.order_blocks.engine import OrderBlockEngine
 from services.quant_engine.decision.engines.risk import RiskEngine
 from services.quant_engine.decision.session import current_session, session_weight
+from services.quant_engine.decision.structure_policy import apply_structure_decision_policy
 from services.quant_engine.trend.engine import TrendEngine
 from services.quant_engine.decision.engines.volatility import VolatilityEngine
 from swing_engine.models import DetectedSwing
@@ -136,17 +137,34 @@ class DecisionEngine:
         outputs.append(mtf_out)
 
         direction = self._resolve_direction(outputs, primary_trend)
-        risk_out = self.risk_engine.run(candles, indicators, primary_trend, direction)
+        structure_adj = apply_structure_decision_policy(
+            features=features,
+            patterns=smc_patterns,
+            direction=direction,
+            primary_trend=primary_trend,
+        )
+        if structure_adj.force_neutral:
+            direction = SignalDirection.NEUTRAL
+
+        risk_out = self.risk_engine.run(
+            candles, indicators, primary_trend, direction, features=features
+        )
         outputs.append(risk_out)
 
-        total = sum(o.score for o in outputs)
+        total = max(0, min(100, sum(o.score for o in outputs) + structure_adj.score_delta))
         score_v2 = {self._key(o.name): o.score for o in outputs}
+        score_v2["structure_policy"] = structure_adj.score_delta
         warnings = [w for o in outputs for w in o.warnings]
+        warnings.extend(structure_adj.warnings)
         if news_ctx.has_high_impact_soon and news_ctx.minutes_until_event and news_ctx.minutes_until_event <= 30:
             warnings.append("High-impact news may block this setup")
 
         session = current_session()
         confidence = self._compute_confidence(total, outputs, news_ctx, session)
+        confidence = round(
+            min(max(confidence * structure_adj.confidence_multiplier, 0.0), 1.0),
+            3,
+        )
         legacy_breakdown = self._legacy_breakdown(outputs)
         mtf_alignment = self._mtf_model(mtf_out, mtf_map)
 
@@ -189,10 +207,21 @@ class DecisionEngine:
         )
         if historical.confidence_adjustment:
             explainability.setdefault("adjustments", []).append(historical.confidence_adjustment)
+        explainability.setdefault("adjustments", []).append(
+            {
+                "source": "structure_policy",
+                **structure_adj.to_dict(),
+            }
+        )
+        explainability["setup_confluence"] = structure_adj.confluence.to_dict()
 
         explanation = self._build_explanation(
             symbol, direction, total, confidence, session, outputs, warnings, historical,
         )
+
+        market_features = features.to_dict()
+        market_features["setup_confluence"] = structure_adj.confluence.to_dict()
+        market_features["structure_decision_policy"] = structure_adj.to_dict()
 
         return ScannerSignal(
             symbol=symbol,
@@ -227,7 +256,7 @@ class DecisionEngine:
             trade_type=self._trade_type(direction, outputs),
             expected_duration=self._expected_duration(session, historical),
             historical_evidence=historical.to_dict() if historical.sample_size > 0 else None,
-            market_features=features.to_dict(),
+            market_features=market_features,
         )
 
     def _resolve_direction(

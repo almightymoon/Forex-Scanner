@@ -73,15 +73,19 @@ what remains legacy versus what the new v1 core will replace later.
 ## Swing version decision
 
 Live boundary uses **`SCAN_SWING_VERSION = 2.3.0`** (explicit cutover).
-`swing_engine.DEFAULT_VERSION` remains unchanged for callers that omit
-`version=`. Prefer gold / XAUUSD synthetic fixtures when exercising the live
-boundary; EURUSD micro-wave fixtures may yield zero confirmed swings under 2.3.
+`swing_engine.DEFAULT_VERSION` is also **`2.3.0`**. Prefer gold / XAUUSD
+synthetic fixtures when exercising the live boundary; EURUSD micro-wave
+fixtures may yield zero confirmed swings under 2.3.
 
-## Structure regime consumer
+## Structure regime + confluence consumers
 
 `classify_structure_regime(snapshot)` maps causal snapshot state into
 trending / reversal-pending / ranging / transitional labels and is attached to
 `MarketFeatures.structure_regime*`.
+
+`assess_setup_confluence(...)` scores agreement between external bias/events
+and OB/FVG/liquidity patterns; `DecisionEngine` applies regime + confluence
+via `apply_structure_decision_policy`.
 
 ## Live-safe structure quality scoring
 

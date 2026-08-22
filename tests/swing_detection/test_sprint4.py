@@ -26,7 +26,7 @@ from tests.swing_detection.fixtures import gold_candles, trend_candles
 
 class TestSprint4Version(unittest.TestCase):
     def test_default_v2_0(self):
-        self.assertEqual(DEFAULT_VERSION, "2.0.0")
+        self.assertEqual(DEFAULT_VERSION, "2.3.0")
 
 
 class TestLifecycle(unittest.TestCase):

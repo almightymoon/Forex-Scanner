@@ -20,7 +20,10 @@ class TestDecisionEngine(unittest.TestCase):
         self.assertGreater(signal.confidence, 0)
         self.assertIsNotNone(signal.session)
         self.assertGreater(len(signal.engine_outputs), 0)
-        self.assertEqual(signal.score, sum(o["score"] for o in signal.engine_outputs))
+        engine_sum = sum(o["score"] for o in signal.engine_outputs)
+        policy_delta = (signal.score_breakdown_v2 or {}).get("structure_policy", 0)
+        self.assertEqual(signal.score, max(0, min(100, engine_sum + policy_delta)))
+        self.assertIn("setup_confluence", signal.market_features or {})
 
     def test_explainability_payload(self):
         engine = DecisionEngine()

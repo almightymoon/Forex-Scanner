@@ -2,12 +2,13 @@
 
 Decision (explicit cutover):
     SCAN_SWING_VERSION = \"2.3.0\"
+    swing_engine.DEFAULT_VERSION = \"2.3.0\"
 
 Rationale:
-- Aligns the live scan boundary with the architecture production candidate.
-- Does **not** change ``swing_engine.DEFAULT_VERSION`` (still ``2.0.0`` unless
-  callers omit ``version=``).
-- Callers must pass an explicit version through :func:`obtain_confirmed_swings`.
+- Aligns the live scan boundary and the engine default with the architecture
+  production candidate (v2.3.0).
+- Callers may still pass an explicit older version through
+  :func:`obtain_confirmed_swings` or ``SwingEngine(version=...)``.
 - Synthetic EURUSD micro-wave fixtures may yield zero confirmed swings under
   2.3.0; integration tests should use gold/synthetic XAUUSD fixtures or inject
   confirmed swings.

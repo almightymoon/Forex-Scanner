@@ -21,8 +21,8 @@ from scripts.run_benchmark_suite import load_bars
 
 class TestSprint5Version(unittest.TestCase):
     def test_default_v2_0(self):
-        self.assertEqual(DEFAULT_VERSION, "2.0.0")
-        self.assertEqual(SwingEngine().version, "2.0.0")
+        self.assertEqual(DEFAULT_VERSION, "2.3.0")
+        self.assertEqual(SwingEngine().version, "2.3.0")
 
 
 class TestConfirmationScore(unittest.TestCase):
