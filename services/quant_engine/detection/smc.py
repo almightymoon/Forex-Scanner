@@ -1,25 +1,54 @@
-"""Smart Money Concepts detection engine — uses shared swing analysis."""
+"""Smart Money Concepts detection engine.
 
-from services.quant_engine.swing_analysis import (
-    MarketStructureState,
-    analyze_market_structure,
-    build_zigzag_swings,
+BOS / CHoCH / swing-based liquidity and equal levels consume Market Structure
+Engine v1 over confirmed swings. Order blocks and FVGs remain candle-local.
+"""
+
+from __future__ import annotations
+
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.market_structure.integration import build_market_structure_state
+from services.quant_engine.market_structure.models import (
+    StructureEventType,
+    StructureSnapshot,
 )
-from shared.types.models import Candle, SMCPattern, SignalDirection, Timeframe
+from services.quant_engine.swing_analysis import MarketStructureState, build_zigzag_swings
+from services.quant_engine.swings.boundary import (
+    SCAN_SWING_VERSION,
+    obtain_confirmed_swings,
+)
+from shared.types.models import Candle, SMCPattern, SignalDirection, Timeframe, TrendDirection
+from swing_engine.models import DetectedSwing, SwingScope
 
 
 class SMCEngine:
     """Detects institutional price action patterns."""
 
     def detect_all(
-        self, candles: list[Candle], symbol: str, timeframe: Timeframe
+        self,
+        candles: list[Candle],
+        symbol: str,
+        timeframe: Timeframe,
+        *,
+        confirmed_swings: list[DetectedSwing] | None = None,
+        structure_snapshot: StructureSnapshot | None = None,
     ) -> list[SMCPattern]:
         if len(candles) < 20:
             return []
 
-        structure = analyze_market_structure(candles)
+        swings = (
+            list(confirmed_swings)
+            if confirmed_swings is not None
+            else obtain_confirmed_swings(candles, version=SCAN_SWING_VERSION)
+        )
+        if structure_snapshot is not None:
+            snapshot = structure_snapshot
+        else:
+            snapshot = analyze_structure(candles, swings)
+
+        structure = build_market_structure_state(snapshot, swings)
         patterns: list[SMCPattern] = []
-        patterns.extend(self._detect_bos_choch(candles, structure))
+        patterns.extend(self._detect_bos_choch(snapshot, structure))
         patterns.extend(self._detect_order_blocks(candles))
         patterns.extend(self._detect_fvg(candles))
         patterns.extend(self._detect_liquidity_sweeps(candles, structure))
@@ -27,75 +56,80 @@ class SMCEngine:
         return patterns
 
     def _detect_bos_choch(
-        self, candles: list[Candle], structure: MarketStructureState
+        self,
+        snapshot: StructureSnapshot,
+        structure: MarketStructureState,
     ) -> list[SMCPattern]:
+        """Emit BOS/CHoCH patterns from causal v1 structure events."""
+
         patterns: list[SMCPattern] = []
         strength = int(structure.swing_strength_avg) if structure.swing_strength_avg else 70
 
-        if len(structure.swing_highs) >= 2:
-            prev_high = structure.swing_highs[-2]
-            curr_high = structure.swing_highs[-1]
-            if curr_high.price > prev_high.price:
+        # Prefer recent events (external first, then internal).
+        events = sorted(
+            snapshot.events,
+            key=lambda e: (e.break_index, 0 if e.scope is SwingScope.EXTERNAL else 1),
+        )
+        for event in events[-6:]:
+            direction = (
+                SignalDirection.BUY
+                if event.direction is TrendDirection.BULLISH
+                else SignalDirection.SELL
+            )
+            pattern_type = (
+                "bos"
+                if event.event_type is StructureEventType.BOS
+                else "choch"
+            )
+            bos_kind = (
+                "external" if event.scope is SwingScope.EXTERNAL else "internal"
+            )
+            meta = {
+                "event_id": event.event_id,
+                "bos_kind": bos_kind,
+                "break_index": event.break_index,
+                "level_pivot_index": event.level_pivot_index,
+                "continuation": event.is_continuation,
+                "structure_source": "market_structure_v1",
+                "scope": event.scope.value,
+            }
+            if event.direction is TrendDirection.BULLISH:
                 patterns.append(
                     SMCPattern(
-                        pattern_type="bos",
-                        direction=SignalDirection.BUY,
-                        price_high=curr_high.price,
-                        strength=strength,
-                        metadata={
-                            "swing_index": curr_high.index,
-                            "swing_strength": curr_high.strength,
-                            "bos_kind": structure.bos_kind,
-                        },
+                        pattern_type=pattern_type,
+                        direction=direction,
+                        price_high=event.level_price,
+                        strength=strength if pattern_type == "bos" else max(55, strength - 10),
+                        metadata=meta,
                     )
                 )
-            elif curr_high.price < prev_high.price:
+            else:
                 patterns.append(
                     SMCPattern(
-                        pattern_type="choch",
-                        direction=SignalDirection.SELL,
-                        price_high=curr_high.price,
-                        strength=max(55, strength - 10),
-                        metadata={"swing_strength": curr_high.strength},
-                    )
-                )
-
-        if len(structure.swing_lows) >= 2:
-            prev_low = structure.swing_lows[-2]
-            curr_low = structure.swing_lows[-1]
-            if curr_low.price < prev_low.price:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="bos",
-                        direction=SignalDirection.SELL,
-                        price_low=curr_low.price,
-                        strength=strength,
-                        metadata={
-                            "swing_index": curr_low.index,
-                            "swing_strength": curr_low.strength,
-                            "bos_kind": structure.bos_kind,
-                        },
-                    )
-                )
-            elif curr_low.price > prev_low.price:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="choch",
-                        direction=SignalDirection.BUY,
-                        price_low=curr_low.price,
-                        strength=max(55, strength - 10),
-                        metadata={"swing_strength": curr_low.strength},
+                        pattern_type=pattern_type,
+                        direction=direction,
+                        price_low=event.level_price,
+                        strength=strength if pattern_type == "bos" else max(55, strength - 10),
+                        metadata=meta,
                     )
                 )
 
         if structure.last_event and not patterns:
-            direction = SignalDirection.BUY if structure.event_direction == "buy" else SignalDirection.SELL
+            direction = (
+                SignalDirection.BUY
+                if structure.event_direction == "buy"
+                else SignalDirection.SELL
+            )
             patterns.append(
                 SMCPattern(
                     pattern_type=structure.last_event,
                     direction=direction,
                     strength=strength,
-                    metadata={"bos_kind": structure.bos_kind, "continuation": structure.continuation},
+                    metadata={
+                        "bos_kind": structure.bos_kind,
+                        "continuation": structure.continuation,
+                        "structure_source": "market_structure_v1",
+                    },
                 )
             )
 

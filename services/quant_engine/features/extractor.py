@@ -14,17 +14,14 @@ from services.quant_engine.market_structure.integration import (
     build_trend_context_from_structure,
     structure_snapshot_to_features,
 )
-from services.quant_engine.market_structure.models import StructureInputError
+from services.quant_engine.market_structure.models import StructureInputError, StructureSnapshot
 from services.quant_engine.swing_analysis import detect_session_liquidity
+from services.quant_engine.swings.boundary import (
+    FEATURE_SWING_VERSION,
+    obtain_confirmed_swings,
+)
 from shared.types.models import Candle, IndicatorValues, SMCPattern, SignalDirection
-from swing_engine import SwingEngine, get_config
 from swing_engine.models import DetectedSwing
-
-# Explicit swing profile for the feature integration boundary.
-# Matches the scanner's current live SwingEngine version (DEFAULT_VERSION).
-# Does not change swing_engine.DEFAULT_VERSION. Upgrading this boundary to
-# 2.3.0 is a separate, explicit decision.
-FEATURE_SWING_VERSION = "2.0.0"
 
 
 class FeatureExtractor:
@@ -40,6 +37,7 @@ class FeatureExtractor:
         patterns: list[SMCPattern],
         *,
         confirmed_swings: list[DetectedSwing] | None = None,
+        structure_snapshot: StructureSnapshot | None = None,
         as_of_index: int | None = None,
     ) -> MarketFeatures:
         features = MarketFeatures()
@@ -49,7 +47,7 @@ class FeatureExtractor:
         swings = (
             list(confirmed_swings)
             if confirmed_swings is not None
-            else self._obtain_confirmed_swings(candles)
+            else obtain_confirmed_swings(candles, version=self.swing_version)
         )
         end = len(candles) - 1 if as_of_index is None else int(as_of_index)
         # Only swings confirmed within the analyzed prefix.
@@ -59,14 +57,17 @@ class FeatureExtractor:
             if s.confirmation_index is not None and int(s.confirmation_index) <= end
         ]
 
-        try:
-            snapshot = analyze_structure(
-                candles,
-                swings,
-                as_of_index=end,
-            )
-        except StructureInputError:
-            snapshot = analyze_structure(candles, [], as_of_index=end)
+        if structure_snapshot is not None and structure_snapshot.as_of_index == end:
+            snapshot = structure_snapshot
+        else:
+            try:
+                snapshot = analyze_structure(
+                    candles,
+                    swings,
+                    as_of_index=end,
+                )
+            except StructureInputError:
+                snapshot = analyze_structure(candles, [], as_of_index=end)
 
         mapped = structure_snapshot_to_features(snapshot, confirmed_swings=swings)
         ctx = build_trend_context_from_structure(
@@ -152,21 +153,6 @@ class FeatureExtractor:
             features.best_fvg = self._best_fvg(fvgs[-1], candles, features.atr)
 
         return features
-
-    def _obtain_confirmed_swings(self, candles: list[Candle]) -> list[DetectedSwing]:
-        """Obtain confirmed swings once at the integration boundary (explicit version)."""
-
-        if not candles:
-            return []
-        tf = candles[0].timeframe
-        symbol = candles[0].symbol
-        cfg = get_config(tf, version=self.swing_version, symbol=symbol)
-        result = SwingEngine(cfg, version=self.swing_version).detect(
-            candles,
-            symbol=symbol,
-            timeframe=tf,
-        )
-        return list(result.confirmed_swings)
 
     def _best_ob(self, p: SMCPattern, candles: list[Candle]) -> OrderBlockFeatures:
         idx = p.metadata.get("index", len(candles) - 1)

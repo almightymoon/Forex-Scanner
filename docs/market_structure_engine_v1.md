@@ -105,13 +105,13 @@ v1 detector does not call it.
 
 # Production wiring
 
-FeatureExtractor obtains confirmed swings once at the integration boundary
-(explicit `swing_version="2.3.0"`, or injected `confirmed_swings`) and calls
-`analyze_structure`. It does not use legacy `build_zigzag_swings` /
-`analyze_market_structure` for structure fields.
+Live scan path (unified):
 
-Adapter: `services/quant_engine/market_structure/integration.py`
-(`structure_snapshot_to_features`).
+1. Obtain confirmed swings once (`SCAN_SWING_VERSION`, currently `2.0.0`)
+2. Run `analyze_structure` once
+3. Feed swings + snapshot into SMC BOS/CHoCH and FeatureExtractor
+4. DecisionEngine passes `features` into `TrendEngine.analyze` and scores via
+   `run_from_structure_snapshot`
 
-TrendEngine scores HH/HL/LH/LL from the v1 snapshot relations, not a raw
-ten-candle half-split heuristic.
+Adapter: `services/quant_engine/market_structure/integration.py`  
+Boundary: `services/quant_engine/swings/boundary.py`

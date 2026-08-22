@@ -59,22 +59,27 @@ what remains legacy versus what the new v1 core will replace later.
 - Legacy `build_zigzag_swings` currently consumes `result.swings` (not the
   confirmed contract) — a known defect for v1 integration boundaries
 
-## What remains legacy (unchanged runtime for SMC / scoring helpers)
+## Live scan path (unified)
 
-- `services/quant_engine/swing_analysis.py` — still used by SMC pattern
-  detection and legacy helpers; FeatureExtractor no longer calls it for
-  structure fields
-- `services/quant_engine/market_structure/scoring.py` — lookahead-sensitive
-  follow-through (offline only until refactored)
-- `services/quant_engine/detection/smc.py` BOS/CHoCH pattern emission still
-  uses legacy `analyze_market_structure`
+1. `DataLoader.load` obtains confirmed swings once (`SCAN_SWING_VERSION=2.0.0`)
+2. Runs Market Structure Engine v1 once → `StructureSnapshot`
+3. `SMCEngine.detect_all` consumes those swings/snapshot (no legacy
+   `analyze_market_structure`)
+4. `DecisionEngine.evaluate` receives the same swings/snapshot, extracts
+   features without a second SwingEngine call, passes features into
+   `TrendEngine.analyze`, and scores structure via
+   `run_from_structure_snapshot`
 
-## What is now live on the feature path
+## Swing version decision
 
-- FeatureExtractor → confirmed swings (explicit `FEATURE_SWING_VERSION`) →
-  Market Structure Engine v1 → MarketFeatures
-- TrendEngine scores HH/HL/LH/LL from the v1 snapshot (no raw ten-candle split)
-- Adapter: `market_structure/integration.py`
+Keep **2.0.0** at the scan boundary until an explicit, tested cutover to
+2.3.0. Do not silently change `swing_engine.DEFAULT_VERSION`.
+
+## Later (not done here)
+
+- Refactor lookahead-sensitive `score_structure_event` follow-through for live use
+- Remove remaining legacy zigzag helpers from non-live paths
+- Regime / setup / confluence consumers on `StructureSnapshot`
 
 The v1 detector is **not wired** into FeatureExtractor or the live scanner in
 this task. Integration is a separate follow-up after review.

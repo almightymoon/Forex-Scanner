@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from services.indicator_service.indicators import compute_all
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.swings.boundary import SCAN_SWING_VERSION, obtain_confirmed_swings
 from services.scanner_service.engine import DecisionEngine
 from services.smc_service.smc import SMCEngine
 from shared.types.models import (
@@ -91,7 +93,17 @@ class BacktestEngine:
 
             window = candles[: i + 1]
             indicators = compute_all(window, symbol, timeframe)
-            smc_patterns = self.smc.detect_all(window[-50:], symbol, timeframe)
+            confirmed_swings = obtain_confirmed_swings(
+                window, version=SCAN_SWING_VERSION
+            )
+            structure_snapshot = analyze_structure(window, confirmed_swings)
+            smc_patterns = self.smc.detect_all(
+                window,
+                symbol,
+                timeframe,
+                confirmed_swings=confirmed_swings,
+                structure_snapshot=structure_snapshot,
+            )
 
             mtf_trends: dict[str, TrendDirection] = {}
             if indicators.ema_20 and indicators.ema_50:
@@ -108,6 +120,8 @@ class BacktestEngine:
                 smc_patterns=smc_patterns,
                 mtf_trends=mtf_trends,
                 news=NewsContext(score=10),
+                confirmed_swings=confirmed_swings,
+                structure_snapshot=structure_snapshot,
             )
 
             if signal.score < min_score or signal.direction == SignalDirection.NEUTRAL:
