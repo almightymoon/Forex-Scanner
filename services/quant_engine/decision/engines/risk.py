@@ -14,6 +14,8 @@ from shared.types.models import (
 
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.decision.models import SRAnalysis, VolumeAnalysis
+from services.quant_engine.features.types import MarketFeatures
+from services.quant_engine.market_structure.regime import StructureRegime
 
 
 class RiskEngine:
@@ -26,6 +28,7 @@ class RiskEngine:
         indicators: IndicatorValues,
         trend: TrendDirection,
         direction: SignalDirection,
+        features: MarketFeatures | None = None,
     ) -> EngineOutput:
         sr = self.analyze_support_resistance(candles, indicators, trend)
         max_score = self._v2.weights.risk
@@ -42,6 +45,13 @@ class RiskEngine:
         elif rr and rr < 1.5:
             warnings.append("Suboptimal risk/reward ratio")
 
+        if features is not None:
+            if features.structure_regime == StructureRegime.REVERSAL_PENDING.value:
+                warnings.append("Structure reversal pending — tighter risk")
+                score = max(0, score - 1)
+            elif features.structure_regime == StructureRegime.RANGING.value:
+                warnings.append("Ranging structure — size down")
+
         score = clamp_score(score, max_score)
         return EngineOutput(
             name="Risk",
@@ -51,7 +61,14 @@ class RiskEngine:
             direction="NEUTRAL",
             reasons=reasons,
             warnings=warnings,
-            metadata={"stop_loss": sl, "take_profit_1": tp1, "risk_reward": rr},
+            metadata={
+                "stop_loss": sl,
+                "take_profit_1": tp1,
+                "risk_reward": rr,
+                "structure_regime": (
+                    None if features is None else features.structure_regime
+                ),
+            },
         )
 
     def analyze_support_resistance(

@@ -18,7 +18,6 @@ from services.quant_engine.decision.pattern_scoring import filter_patterns
 from services.quant_engine.market_structure.detector import analyze_structure
 from services.quant_engine.market_structure.models import StructureSnapshot
 from services.quant_engine.market_structure.scoring import quality_label, score_structure_event
-from services.quant_engine.swing_analysis import classify_bos, find_swings
 
 _STRUCTURE_TYPES = {"bos", "choch"}
 
@@ -101,7 +100,6 @@ class MarketStructureEngine:
         bos_kind = "external"
         atr = features.atr if features else 0.0
 
-        price = candles[-1].close if candles else 0
         swing_highs, swing_lows = [], []
         if features and features.structure_snapshot is not None:
             bos_kind = features.bos_kind or "external"
@@ -111,11 +109,8 @@ class MarketStructureEngine:
             # Legacy MarketStructureState path (deprecated for new callers).
             swing_highs = features.structure.swing_highs
             swing_lows = features.structure.swing_lows
-            bos_kind = features.bos_kind
-        elif candles:
-            swing_highs, swing_lows = find_swings(candles)
-            if swing_highs and swing_lows:
-                bos_kind = classify_bos(swing_highs, swing_lows, price)
+            bos_kind = features.bos_kind or "external"
+        # No zigzag rediscovery fallback — live path must supply snapshot/features.
 
         for p in filtered:
             quality = score_structure_event(

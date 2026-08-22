@@ -43,8 +43,8 @@ Bars → Market Context (adaptive) → Pivots → Noise Filter → ATR Validatio
 from swing_engine import SwingEngine, SwingVisualizer, SUPPORTED_VERSIONS
 from shared.types.models import Timeframe
 
-# Versioned engine. The frozen default is v2.0.0; v2.2.0 is an opt-in hierarchy candidate.
-engine = SwingEngine(version="2.2.0")
+# Versioned engine. The default is v2.3.0 (aligned with the live scan boundary).
+engine = SwingEngine(version="2.3.0")
 result = engine.detect(bars, symbol="XAUUSD", timeframe=Timeframe.H1)
 
 result.swings                        # List[DetectedSwing] (+ quality_score, explanation)
@@ -67,9 +67,10 @@ swings = detect_swings(bars)
 | `1.2.0` | Adaptive thresholds, quality score, and structured explainability |
 | `1.3.0` | Candidate lifecycle, replay, MTF hierarchy |
 | `1.4.0` | Score-gated confirmation and dataset suite |
-| `2.0.0` | **Frozen default** — causal multi-detector production baseline |
-| `2.1.0` | **Opt-in location candidate** — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
-| `2.2.0` | **Opt-in hierarchy candidate** — recursive, revision-aware Major/Minor structure over frozen v2.1 pivots |
+| `2.0.0` | Causal multi-detector production baseline (pin explicitly for benchmarks) |
+| `2.1.0` | Opt-in location candidate — reversal-confirmed structural pivots tuned on XAUUSD H1 development data |
+| `2.2.0` | Opt-in hierarchy candidate — recursive, revision-aware Major/Minor structure over frozen v2.1 pivots |
+| `2.3.0` | **Default** — structural boundary cutover; live scan / `DEFAULT_VERSION` |
 
 Profiles in `config/swing_detection.yaml` under `version_profiles`. Per-symbol
 overrides (e.g. `XAUUSD`) live under `symbol_overrides` and are passed via
@@ -181,12 +182,12 @@ PYTHONPATH=. python scripts/run_benchmark_suite.py --version 1.4.0
 
 `build_swing_explanation()` includes per-factor pass/fail audit from `confirmation_checks`.
 
-## v2.0.0 Frozen Default
+## v2.0.0 Historical Baseline
 
-v2.0.0 remains the default API version so existing scanner behavior and historical
-reports do not change when v2.1.0 is installed. The real XAUUSD H1 benchmark is
-AI-assisted expert draft data pending independent human adjudication; it is not
-claimed as independently verified ground truth.
+v2.0.0 remains available as an explicit pin for historical reports and
+benchmarks. Live scan and `DEFAULT_VERSION` use **v2.3.0**. The real XAUUSD H1
+benchmark is AI-assisted expert draft data pending independent human
+adjudication; it is not claimed as independently verified ground truth.
 
 ```bash
 PYTHONPATH=. python scripts/run_benchmark_suite.py \
@@ -267,7 +268,7 @@ Core rules:
   marking it as revisable.
 - Record `hierarchy_confirmation_index` for confirmed Major swings and
   `hierarchy_revision_index` for superseded candidates.
-- Keep `2.0.0` as the frozen default.
+- Prefer `2.3.0` as the live / API default; pin `2.0.0` explicitly for frozen baselines.
 
 Hierarchy states:
 

@@ -33,7 +33,7 @@ def test_no_active_v2_4_engine_profile_or_module():
 
 
 def test_default_and_latest_versions_unchanged():
-    assert DEFAULT_VERSION == "2.0.0"
+    assert DEFAULT_VERSION == "2.3.0"
     assert LATEST_VERSION == "2.3.0"
 
 

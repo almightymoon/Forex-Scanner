@@ -16,7 +16,7 @@ SUPPORTED_VERSIONS: dict[str, str] = {
     "2.3.0": "v2_3",
 }
 
-DEFAULT_VERSION = "2.0.0"
+DEFAULT_VERSION = "2.3.0"
 LATEST_VERSION = "2.3.0"
 
 

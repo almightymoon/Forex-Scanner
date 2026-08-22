@@ -119,7 +119,7 @@ class TestPerformance(unittest.TestCase):
 class TestVersioning(unittest.TestCase):
     def test_default_version(self):
         engine = SwingEngine()
-        self.assertEqual(engine.version, "2.0.0")
+        self.assertEqual(engine.version, "2.3.0")
 
     def test_explicit_version(self):
         from swing_engine import SUPPORTED_VERSIONS

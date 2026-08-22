@@ -7,6 +7,7 @@ is delegated entirely to SwingEngine; this module only interprets results.
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field, replace
 
 from shared.types.models import Candle, TrendDirection
@@ -69,7 +70,18 @@ def build_zigzag_swings(
     lookback: int = 3,
     min_atr_mult: float = 0.35,
 ) -> list[SwingPoint]:
-    """Build zigzag swing points via SwingEngine."""
+    """Build zigzag swing points via SwingEngine.
+
+    .. deprecated::
+        Prefer ``obtain_confirmed_swings`` + Market Structure Engine v1.
+        Kept for legacy tests and offline diagnostics only.
+    """
+    warnings.warn(
+        "build_zigzag_swings is deprecated; use obtain_confirmed_swings + "
+        "analyze_structure for the live scan path.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if not candles:
         return []
 
@@ -103,7 +115,15 @@ def _zigzag_alternate(points: list[SwingPoint]) -> list[SwingPoint]:
 
 
 def find_swings(candles: list[Candle], lookback: int = 3) -> tuple[list[SwingPoint], list[SwingPoint]]:
-    swings = build_zigzag_swings(candles, lookback=lookback)
+    """Deprecated zigzag helper — prefer confirmed swings from the scan boundary."""
+    warnings.warn(
+        "find_swings is deprecated; use obtain_confirmed_swings for live paths.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        swings = build_zigzag_swings(candles, lookback=lookback)
     highs = [s for s in swings if s.kind == "high"]
     lows = [s for s in swings if s.kind == "low"]
     return highs, lows

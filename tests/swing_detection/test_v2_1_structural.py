@@ -29,7 +29,7 @@ def _detect_v21(candles):
 
 
 def test_v21_is_opt_in_and_v20_remains_the_default():
-    assert DEFAULT_VERSION == "2.0.0"
+    assert DEFAULT_VERSION == "2.3.0"
     assert LATEST_VERSION == "2.3.0"
     assert "2.1.0" in SUPPORTED_VERSIONS
 
