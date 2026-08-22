@@ -142,6 +142,7 @@ class DecisionEngine:
             patterns=smc_patterns,
             direction=direction,
             primary_trend=primary_trend,
+            mtf_trends=mtf_map,
         )
         if structure_adj.force_neutral:
             direction = SignalDirection.NEUTRAL

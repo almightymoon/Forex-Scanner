@@ -53,5 +53,10 @@ class MultiTimeframeEngine:
             confidence=confidence_from_score(score, max_score),
             direction=direction,
             reasons=reasons,
-            metadata={"aligned": aligned, "checked": checked, "timeframes": breakdown},
+            metadata={
+                "aligned": aligned,
+                "checked": checked,
+                "timeframes": breakdown,
+                "source": "structure_preferred",
+            },
         )

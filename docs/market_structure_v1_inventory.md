@@ -95,8 +95,6 @@ candles after the break index. Offline diagnostics may pass
 
 ## Later
 
-- Broader confluence / setup filters on `StructureSnapshot`
+- Liquidity depth as a first-class confluence input
+- Session-aware structure / OB–FVG quality gates
 - Further retirement of legacy zigzag helpers outside compatibility shims
-
-The v1 detector is **not wired** into FeatureExtractor or the live scanner in
-this task. Integration is a separate follow-up after review.

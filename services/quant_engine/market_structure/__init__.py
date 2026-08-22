@@ -36,10 +36,23 @@ from services.quant_engine.market_structure.confluence import (
     SetupConfluenceAssessment,
     assess_setup_confluence,
 )
+from services.quant_engine.market_structure.mtf_bias import (
+    MTFStructureBiasResult,
+    TimeframeStructureBias,
+    compute_mtf_structure_bias,
+    compute_mtf_structure_bias_from_h1,
+)
+from services.quant_engine.market_structure.studio import (
+    structure_context_for_studio,
+    structure_events_for_studio,
+    structure_overlay_payload,
+)
+from services.quant_engine.market_structure.aggregate import aggregate_candles
 
 __all__ = [
     "MarketStructureDetectorV1",
     "MarketStructureEngine",
+    "MTFStructureBiasResult",
     "ProjectedSwingFact",
     "SetupConfluenceAssessment",
     "StructureDetectorConfig",
@@ -52,16 +65,23 @@ __all__ = [
     "StructureRelation",
     "StructureSnapshot",
     "StructureSwingRelation",
+    "TimeframeStructureBias",
+    "aggregate_candles",
     "analyze_structure",
     "assess_setup_confluence",
     "build_market_structure_state",
     "build_trend_context_from_structure",
     "classify_structure_regime",
+    "compute_mtf_structure_bias",
+    "compute_mtf_structure_bias_from_h1",
     "event_id_for",
     "project_swing_facts",
     "quality_label",
     "score_structure_event",
     "structural_available_index",
+    "structure_context_for_studio",
+    "structure_events_for_studio",
+    "structure_overlay_payload",
     "structure_snapshot_to_features",
     "swing_id_for",
 ]
