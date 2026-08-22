@@ -5,6 +5,8 @@ from datetime import datetime, time, timedelta, timezone
 
 from services.indicator_service.indicators import compute_all
 from services.market_data_service.factory import create_market_data_provider
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.swings.boundary import SCAN_SWING_VERSION, obtain_confirmed_swings
 from services.scanner_service.decision_engine import DecisionEngine
 from services.smc_service.smc import SMCEngine
 from shared.types.models import ScannerSignal, Timeframe, to_dict
@@ -64,13 +66,25 @@ class ReplayEngine:
         for i in range(min_window, len(candles)):
             window = candles[: i + 1]
             indicators = compute_all(window, symbol.upper(), timeframe)
-            smc_patterns = self.smc_engine.detect_all(window, symbol.upper(), timeframe)
+            confirmed_swings = obtain_confirmed_swings(
+                window, version=SCAN_SWING_VERSION
+            )
+            structure_snapshot = analyze_structure(window, confirmed_swings)
+            smc_patterns = self.smc_engine.detect_all(
+                window,
+                symbol.upper(),
+                timeframe,
+                confirmed_swings=confirmed_swings,
+                structure_snapshot=structure_snapshot,
+            )
             signal: ScannerSignal = self.decision_engine.evaluate(
                 symbol.upper(),
                 timeframe,
                 window,
                 indicators,
                 smc_patterns,
+                confirmed_swings=confirmed_swings,
+                structure_snapshot=structure_snapshot,
             )
             c = candles[i]
             frames.append(

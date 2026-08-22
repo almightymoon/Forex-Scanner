@@ -23,6 +23,12 @@ from shared.types.models import (
 )
 
 from services.quant_engine.features import FeatureExtractor, MarketFeatures
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.market_structure.models import StructureSnapshot
+from services.quant_engine.swings.boundary import (
+    SCAN_SWING_VERSION,
+    obtain_confirmed_swings,
+)
 from services.setup_intelligence import HistoricalSetupAnalyzer, SetupFingerprint
 from services.quant_engine.confidence.output import EngineOutput
 from services.quant_engine.decision.explainability import (
@@ -44,6 +50,7 @@ from services.quant_engine.decision.engines.risk import RiskEngine
 from services.quant_engine.decision.session import current_session, session_weight
 from services.quant_engine.trend.engine import TrendEngine
 from services.quant_engine.decision.engines.volatility import VolatilityEngine
+from swing_engine.models import DetectedSwing
 
 
 class DecisionEngine:
@@ -74,14 +81,44 @@ class DecisionEngine:
         smc_patterns: list[SMCPattern],
         mtf_trends: Optional[dict[str, TrendDirection]] = None,
         news: Optional[NewsContext] = None,
+        confirmed_swings: Optional[list[DetectedSwing]] = None,
+        structure_snapshot: Optional[StructureSnapshot] = None,
     ) -> ScannerSignal:
         news_ctx = news or NewsContext()
         mtf_map = mtf_trends or {}
-        features = self._features.extract(candles, indicators, smc_patterns)
+
+        swings = (
+            list(confirmed_swings)
+            if confirmed_swings is not None
+            else obtain_confirmed_swings(candles, version=SCAN_SWING_VERSION)
+        )
+        snapshot = structure_snapshot
+        if snapshot is None:
+            snapshot = analyze_structure(candles, swings)
+
+        features = self._features.extract(
+            candles,
+            indicators,
+            smc_patterns,
+            confirmed_swings=swings,
+            structure_snapshot=snapshot,
+        )
+
+        if features.structure_snapshot is not None:
+            structure_output = self.market_structure_engine.run_from_structure_snapshot(
+                features.structure_snapshot,
+                smc_patterns,
+                candles=candles,
+                features=features,
+            )
+        else:
+            structure_output = self.market_structure_engine.run(
+                smc_patterns, candles, features
+            )
 
         outputs: list[EngineOutput] = [
             self.trend_engine.run(candles, indicators, features),
-            self.market_structure_engine.run(smc_patterns, candles, features),
+            structure_output,
             self.liquidity_engine.run(smc_patterns, candles, features),
             self.order_block_engine.run(smc_patterns, candles, features),
             self.fvg_engine.run(smc_patterns, candles, features),
@@ -90,7 +127,7 @@ class DecisionEngine:
             self.news_engine.run(news_ctx),
         ]
 
-        trend_analysis = self.trend_engine.analyze(candles, indicators)
+        trend_analysis = self.trend_engine.analyze(candles, indicators, features)
         primary_trend = trend_analysis.direction
         momentum_analysis = self.momentum_engine.analyze(indicators, primary_trend)
         sr_analysis = self.risk_engine.analyze_support_resistance(candles, indicators, primary_trend)

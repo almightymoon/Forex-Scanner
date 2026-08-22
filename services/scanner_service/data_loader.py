@@ -2,12 +2,18 @@
 
 import asyncio
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from services.indicator_service.indicators import compute_all
 from services.market_data_service.exceptions import MarketDataProviderError
 from services.market_data_service.factory import create_market_data_provider
 from services.news_service.calendar import NewsService
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.market_structure.models import StructureSnapshot
+from services.quant_engine.swings.boundary import (
+    SCAN_SWING_VERSION,
+    obtain_confirmed_swings,
+)
 from services.smc_service.smc import SMCEngine
 from shared.types.models import (
     Candle,
@@ -17,6 +23,7 @@ from shared.types.models import (
     Timeframe,
     TrendDirection,
 )
+from swing_engine.models import DetectedSwing
 
 logger = logging.getLogger("fxnav.scanner")
 
@@ -33,6 +40,9 @@ class ScanContext:
     smc_patterns: list[SMCPattern]
     mtf_trends: dict[str, TrendDirection]
     news: NewsContext
+    confirmed_swings: list[DetectedSwing] = field(default_factory=list)
+    structure_snapshot: StructureSnapshot | None = None
+    swing_version: str = SCAN_SWING_VERSION
 
 
 class DataLoader:
@@ -61,7 +71,19 @@ class DataLoader:
             return None
 
         indicators = compute_all(candles, symbol, timeframe)
-        smc_patterns = self.smc_engine.detect_all(candles, symbol, timeframe)
+
+        # Single confirmed-swing + structure pass for the whole scan.
+        confirmed_swings = obtain_confirmed_swings(
+            candles, version=SCAN_SWING_VERSION
+        )
+        structure_snapshot = analyze_structure(candles, confirmed_swings)
+        smc_patterns = self.smc_engine.detect_all(
+            candles,
+            symbol,
+            timeframe,
+            confirmed_swings=confirmed_swings,
+            structure_snapshot=structure_snapshot,
+        )
         mtf_trends = await self._load_mtf_trends(symbol)
 
         if not self._events:
@@ -76,6 +98,9 @@ class DataLoader:
             smc_patterns=smc_patterns,
             mtf_trends=mtf_trends,
             news=news,
+            confirmed_swings=confirmed_swings,
+            structure_snapshot=structure_snapshot,
+            swing_version=SCAN_SWING_VERSION,
         )
 
     async def _fetch_candles_safe(self, symbol: str, timeframe: Timeframe, count: int) -> list[Candle]:

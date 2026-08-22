@@ -30,6 +30,8 @@ class SignalBuilder:
             smc_patterns=ctx.smc_patterns,
             mtf_trends=ctx.mtf_trends,
             news=ctx.news,
+            confirmed_swings=ctx.confirmed_swings,
+            structure_snapshot=ctx.structure_snapshot,
         )
         if signal.score >= get_scanner_config().scoring.min_alert_score:
             self.validator.register(signal)

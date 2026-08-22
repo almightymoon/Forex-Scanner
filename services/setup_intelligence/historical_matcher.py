@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 
 from services.indicator_service.indicators import compute_all
+from services.quant_engine.market_structure.detector import analyze_structure
+from services.quant_engine.swings.boundary import SCAN_SWING_VERSION, obtain_confirmed_swings
 from services.scanner_service.swing_analysis import session_from_hour
 from services.smc_service.smc import SMCEngine
 from shared.types.models import Candle, SignalDirection, Timeframe, TrendDirection
@@ -112,7 +114,15 @@ class HistoricalSetupAnalyzer:
         for i in range(60, len(candles) - forward_bars, step):
             window = candles[: i + 1]
             sub = window[-50:]
-            patterns = self.smc.detect_all(sub, symbol, timeframe)
+            confirmed_swings = obtain_confirmed_swings(sub, version=SCAN_SWING_VERSION)
+            structure_snapshot = analyze_structure(sub, confirmed_swings)
+            patterns = self.smc.detect_all(
+                sub,
+                symbol,
+                timeframe,
+                confirmed_swings=confirmed_swings,
+                structure_snapshot=structure_snapshot,
+            )
             ind = compute_all(window, symbol, timeframe)
 
             trend = TrendDirection.RANGING
