@@ -25,6 +25,8 @@ class SwingVisualizer:
         window_end: datetime | None = None,
         include_unconfirmed: bool = True,
         include_rejected: bool = True,
+        structure_events: list[dict[str, Any]] | None = None,
+        structure_context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         visible_bars = self._filter_bars(bars, window_start, window_end)
         visible_swings = self._filter_swings(swings, window_start, window_end, include_unconfirmed)
@@ -39,6 +41,11 @@ class SwingVisualizer:
                 "end": window_end.isoformat() if window_end else None,
             },
         }
+
+        if structure_events is not None:
+            payload["structure_events"] = structure_events
+        if structure_context is not None:
+            payload["structure_context"] = structure_context
 
         if artifacts:
             payload["candidates"] = [p.to_dict() for p in artifacts.pivot_candidates]
@@ -69,10 +76,14 @@ class SwingVisualizer:
         show_atr: bool = True,
         show_timeline: bool = True,
         replay_frames: list[dict] | None = None,
+        structure_events: list[dict[str, Any]] | None = None,
+        structure_context: dict[str, Any] | None = None,
     ) -> Path:
         data = self.build(
             bars, result.swings, artifacts=result.artifacts,
             include_unconfirmed=True, include_rejected=show_rejected,
+            structure_events=structure_events,
+            structure_context=structure_context,
         )
         data["lifecycle"] = [t.to_dict() for t in result.artifacts.lifecycle_tracks]
         data["repainting_stats"] = result.artifacts.repainting_stats
@@ -209,9 +220,13 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
     <span><span class="dot" style="background:#a78bfa"></span>Int High</span>
     <span><span class="dot" style="background:#64748b"></span>Candidate</span>
     <span><span class="dot" style="background:#f97316"></span>Rejected</span>
+    <span><span class="dot" style="background:#22c55e"></span>BOS↑</span>
+    <span><span class="dot" style="background:#ef4444"></span>BOS↓</span>
+    <span><span class="dot" style="background:#f59e0b"></span>CHoCH</span>
   </div>
   <label><input type="checkbox" id="showRejected" checked> Rejected</label>
   <label><input type="checkbox" id="showCandidates" checked> Candidates</label>
+  <label><input type="checkbox" id="showStructure" checked> Structure</label>
   <label><input type="checkbox" id="showATR" checked> ATR</label>
   <label><input type="checkbox" id="showZigzag" checked> Zigzag</label>
 </div>
@@ -312,12 +327,24 @@ function rebuildMarkers(){
   (DATA.confirmation_markers||[]).forEach(m=>{
     allMarkers.push({time:m.time.slice(0,19),position:'inBar',color:'#fbbf24',shape:'circle',text:`C+${m.delay}`});
   });
+  if(document.getElementById('showStructure').checked){
+    (DATA.structure_events||[]).forEach(e=>{
+      allMarkers.push({
+        time:e.time.slice(0,19),
+        position:e.position||'aboveBar',
+        color:e.color||'#f59e0b',
+        shape:e.shape||'circle',
+        text:e.label||e.event_type||'EVT'
+      });
+    });
+  }
   allMarkers.sort((a,b)=>a.time.localeCompare(b.time));
   cs.setMarkers(allMarkers);
 }
 rebuildMarkers();
 document.getElementById('showRejected').onchange=rebuildMarkers;
 document.getElementById('showCandidates').onchange=rebuildMarkers;
+document.getElementById('showStructure').onchange=rebuildMarkers;
 
 const tip=document.getElementById('tooltip');
 chart.subscribeCrosshairMove(param=>{
@@ -335,15 +362,27 @@ chart.subscribeCrosshairMove(param=>{
 });
 
 const ctxEl=document.getElementById('context');
+let ctxHtml='';
+if(DATA.structure_context){
+  const s=DATA.structure_context;
+  ctxHtml+='<h3>Structure (v1)</h3>'+
+    '<div style="line-height:1.6">'+
+    'Regime: <b>'+s.structure_regime+'</b> ('+((s.structure_regime_confidence||0)*100).toFixed(0)+'%)<br>'+
+    'External bias: <b>'+s.external_bias+'</b>'+
+    (s.pending_external_bias && s.pending_external_bias!=='ranging' ? ' → pending <b>'+s.pending_external_bias+'</b>' : '')+'<br>'+
+    'Internal bias: <b>'+s.internal_bias+'</b><br>'+
+    'Events: <b>'+(s.event_count||0)+'</b></div>';
+}
 if(DATA.market_context){
   const c=DATA.market_context;
-  ctxEl.innerHTML='<h3>Market Context</h3>'+
+  ctxHtml+='<h3>Market Context</h3>'+
     '<div style="line-height:1.6">'+
     'Volatility: <b>'+c.volatility_regime+'</b> ('+c.atr_percentile+'%ile)<br>'+
     'Structure: <b>'+c.structure_regime+'</b> (ER '+c.efficiency_ratio+')<br>'+
     'Session: <b>'+c.session+'</b><br>'+
     'Spread/ATR: '+c.spread_atr_ratio+'</div>';
 }
+ctxEl.innerHTML=ctxHtml;
 
 const tl=document.getElementById('timeline');
 (DATA.timeline||[]).forEach(item=>{

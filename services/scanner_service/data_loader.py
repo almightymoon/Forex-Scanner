@@ -112,11 +112,21 @@ class DataLoader:
             return []
 
     async def _load_mtf_trends(self, symbol: str) -> dict[str, TrendDirection]:
+        """Prefer Market Structure v1 external bias; fall back to EMA20/50."""
+
+        from services.quant_engine.market_structure.mtf_bias import structure_bias_for_candles
+
         trends: dict[str, TrendDirection] = {}
         for tf in [Timeframe.M15, Timeframe.H4, Timeframe.D1]:
             tf_candles = await self._fetch_candles_safe(symbol, tf, 100)
             if len(tf_candles) < 50:
                 continue
+
+            bias, _snapshot = structure_bias_for_candles(tf_candles)
+            if bias.source == "structure" and bias.bias is not TrendDirection.RANGING:
+                trends[tf.value] = bias.bias
+                continue
+
             tf_ind = compute_all(tf_candles, symbol, tf)
             if tf_ind.ema_20 and tf_ind.ema_50:
                 if tf_ind.ema_20 > tf_ind.ema_50:

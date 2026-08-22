@@ -40,6 +40,7 @@ def apply_structure_decision_policy(
     patterns: list[SMCPattern],
     direction: SignalDirection,
     primary_trend: TrendDirection,
+    mtf_trends: dict[str, TrendDirection] | None = None,
 ) -> StructureDecisionAdjustment:
     """Derive confidence/score adjustments from regime + setup confluence."""
 
@@ -63,7 +64,6 @@ def apply_structure_decision_policy(
         mult *= 0.82
         delta -= 3
         reasons.append("Regime reversal_pending soft penalty")
-        # Fighting the still-committed external bias while pending is worse.
         if (
             direction is SignalDirection.BUY
             and features.external_bias is TrendDirection.BEARISH
@@ -105,7 +105,6 @@ def apply_structure_decision_policy(
             mult *= 0.92
             delta -= 1
 
-    # Confluence overlay.
     if confluence.aligned:
         mult *= 1.0 + min(0.08, confluence.score * 0.1)
         delta += 1 if confluence.score >= 0.7 else 0
@@ -116,7 +115,37 @@ def apply_structure_decision_policy(
         delta -= 2
         reasons.extend(list(confluence.blockers[:2]))
 
-    # Hard soft-block: strong counter-trend + reversal pending + low confluence.
+    # HTF structure bias (H4/D1).
+    htf_biases: list[tuple[str, TrendDirection]] = []
+    for tf in ("H4", "D1"):
+        t = (mtf_trends or {}).get(tf)
+        if t is not None and t is not TrendDirection.RANGING:
+            htf_biases.append((tf, t))
+    if htf_biases and direction in (SignalDirection.BUY, SignalDirection.SELL):
+        agrees_htf = 0
+        fights_htf = 0
+        for tf, t in htf_biases:
+            if (direction is SignalDirection.BUY and t is TrendDirection.BULLISH) or (
+                direction is SignalDirection.SELL and t is TrendDirection.BEARISH
+            ):
+                agrees_htf += 1
+                reasons.append(f"{tf} structure bias aligned ({t.value})")
+            else:
+                fights_htf += 1
+                warnings.append(f"{tf} structure bias conflicts ({t.value})")
+        if agrees_htf and not fights_htf:
+            mult *= 1.08
+            delta += 2
+            reasons.append("HTF structure bias aligned")
+        elif fights_htf and not agrees_htf:
+            mult *= 0.85
+            delta -= 3
+            reasons.append("HTF structure bias conflict")
+        elif fights_htf and agrees_htf:
+            mult *= 0.95
+            delta -= 1
+            reasons.append("Mixed HTF structure bias")
+
     if (
         regime == StructureRegime.REVERSAL_PENDING.value
         and confluence.score < 0.4
@@ -131,7 +160,6 @@ def apply_structure_decision_policy(
         warnings.append("Blocked: counter-bias trade during pending reversal with weak confluence")
         reasons.append("force_neutral")
 
-    # Prefer structure bias over ambiguous primary_trend when ranging indicators.
     if (
         primary_trend is TrendDirection.RANGING
         and features.external_bias is not TrendDirection.RANGING
