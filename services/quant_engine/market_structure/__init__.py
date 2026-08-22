@@ -27,6 +27,11 @@ from services.quant_engine.market_structure.scoring import (
     quality_label,
     score_structure_event,
 )
+from services.quant_engine.market_structure.regime import (
+    StructureRegime,
+    StructureRegimeAssessment,
+    classify_structure_regime,
+)
 
 __all__ = [
     "MarketStructureDetectorV1",
@@ -37,12 +42,15 @@ __all__ = [
     "StructureEventType",
     "StructureInputError",
     "StructureQuality",
+    "StructureRegime",
+    "StructureRegimeAssessment",
     "StructureRelation",
     "StructureSnapshot",
     "StructureSwingRelation",
     "analyze_structure",
     "build_market_structure_state",
     "build_trend_context_from_structure",
+    "classify_structure_regime",
     "event_id_for",
     "project_swing_facts",
     "quality_label",

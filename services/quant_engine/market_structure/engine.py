@@ -118,7 +118,13 @@ class MarketStructureEngine:
                 bos_kind = classify_bos(swing_highs, swing_lows, price)
 
         for p in filtered:
-            quality = score_structure_event(p, candles or [], atr)
+            quality = score_structure_event(
+                p,
+                candles or [],
+                atr,
+                allow_lookahead=False,
+                as_of_index=(len(candles) - 1) if candles else None,
+            )
             qualities.append({"type": p.pattern_type, **quality.to_dict()})
 
             base = rules.get(p.pattern_type, 6)
@@ -163,6 +169,12 @@ class MarketStructureEngine:
                 ),
                 "pending_external_bias": (
                     features.pending_external_bias.value if features else None
+                ),
+                "structure_regime": (
+                    features.structure_regime if features else None
+                ),
+                "structure_regime_confidence": (
+                    features.structure_regime_confidence if features else None
                 ),
                 "qualities": qualities,
                 "best_quality": best_quality,

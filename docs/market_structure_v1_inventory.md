@@ -72,14 +72,27 @@ what remains legacy versus what the new v1 core will replace later.
 
 ## Swing version decision
 
-Keep **2.0.0** at the scan boundary until an explicit, tested cutover to
-2.3.0. Do not silently change `swing_engine.DEFAULT_VERSION`.
+Live boundary uses **`SCAN_SWING_VERSION = 2.3.0`** (explicit cutover).
+`swing_engine.DEFAULT_VERSION` remains unchanged for callers that omit
+`version=`. Prefer gold / XAUUSD synthetic fixtures when exercising the live
+boundary; EURUSD micro-wave fixtures may yield zero confirmed swings under 2.3.
 
-## Later (not done here)
+## Structure regime consumer
 
-- Refactor lookahead-sensitive `score_structure_event` follow-through for live use
-- Remove remaining legacy zigzag helpers from non-live paths
-- Regime / setup / confluence consumers on `StructureSnapshot`
+`classify_structure_regime(snapshot)` maps causal snapshot state into
+trending / reversal-pending / ranging / transitional labels and is attached to
+`MarketFeatures.structure_regime*`.
+
+## Live-safe structure quality scoring
+
+`score_structure_event(..., allow_lookahead=False)` (default) does not read
+candles after the break index. Offline diagnostics may pass
+`allow_lookahead=True`.
+
+## Later
+
+- Broader confluence / setup filters on `StructureSnapshot`
+- Further retirement of legacy zigzag helpers outside compatibility shims
 
 The v1 detector is **not wired** into FeatureExtractor or the live scanner in
 this task. Integration is a separate follow-up after review.
