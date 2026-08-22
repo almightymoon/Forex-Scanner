@@ -65,6 +65,9 @@ class MarketFeatures:
     latest_structure_event_id: str | None = None
     latest_bos_choch: dict[str, Any] | None = None
     structure_metadata: dict[str, Any] = field(default_factory=dict)
+    structure_regime: str = "ranging"
+    structure_regime_confidence: float = 0.0
+    structure_regime_assessment: dict[str, Any] = field(default_factory=dict)
 
     liquidity_pools: list[str] = field(default_factory=list)
     session_tags: list[str] = field(default_factory=list)
@@ -108,6 +111,9 @@ class MarketFeatures:
             "latest_structure_event_id": self.latest_structure_event_id,
             "latest_bos_choch": self.latest_bos_choch,
             "structure_metadata": dict(sorted(self.structure_metadata.items())),
+            "structure_regime": self.structure_regime,
+            "structure_regime_confidence": round(self.structure_regime_confidence, 3),
+            "structure_regime_assessment": self.structure_regime_assessment,
             "liquidity_pools": self.liquidity_pools,
             "session": self.session,
             "ob_quality": round(self.best_ob.overall, 1) if self.best_ob else 0,

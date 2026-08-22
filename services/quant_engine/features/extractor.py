@@ -15,6 +15,7 @@ from services.quant_engine.market_structure.integration import (
     structure_snapshot_to_features,
 )
 from services.quant_engine.market_structure.models import StructureInputError, StructureSnapshot
+from services.quant_engine.market_structure.regime import classify_structure_regime
 from services.quant_engine.swing_analysis import detect_session_liquidity
 from services.quant_engine.swings.boundary import (
     FEATURE_SWING_VERSION,
@@ -108,6 +109,11 @@ class FeatureExtractor:
         features.latest_bos_choch = mapped["latest_bos_choch"]
         features.structure_metadata = dict(mapped["structure_metadata"])
         features.structure_metadata["swing_version"] = self.swing_version
+
+        regime = classify_structure_regime(snapshot)
+        features.structure_regime = regime.regime.value
+        features.structure_regime_confidence = regime.confidence
+        features.structure_regime_assessment = regime.to_dict()
 
         features.session = current_session(candles[-1].timestamp)
         features.session_tags = detect_session_liquidity(candles)

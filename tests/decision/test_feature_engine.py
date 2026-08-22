@@ -38,8 +38,17 @@ class TestZigzagSwings(unittest.TestCase):
 
 class TestFeatureExtractor(unittest.TestCase):
     def test_extract_produces_normalized_features(self):
-        cs = candles(_wavy_closes(60))
-        ind = indicators(ema_20=1.12, ema_50=1.11, atr_14=0.002, adx_14=28, rsi_14=58)
+        from tests.swing_detection.fixtures import gold_candles
+
+        cs = gold_candles(120, wave=10.0, trend=0.04, period=16, seed=3)
+        ind = indicators(
+            symbol=cs[0].symbol,
+            ema_20=2350.0,
+            ema_50=2340.0,
+            atr_14=5.0,
+            adx_14=28,
+            rsi_14=58,
+        )
         patterns = [
             SMCPattern(pattern_type="bos", direction=SignalDirection.BUY, strength=75),
             SMCPattern(pattern_type="order_block", direction=SignalDirection.BUY, metadata={"index": 40, "impulse_ratio": 2.0}),
@@ -48,6 +57,7 @@ class TestFeatureExtractor(unittest.TestCase):
         self.assertGreater(features.swing_count, 0)
         self.assertIn("trend_direction", features.to_dict())
         self.assertEqual(features.ob_count, 1)
+        self.assertIn("structure_regime", features.to_dict())
 
     def test_ob_quality_in_features(self):
         cs = candles(_wavy_closes(60))

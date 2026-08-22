@@ -46,8 +46,8 @@ def _swing(pivot: int, direction: SwingDirection, price: float, confirmation: in
     )
 
 
-def test_scan_swing_version_decision_is_2_0_0():
-    assert SCAN_SWING_VERSION == "2.0.0"
+def test_scan_swing_version_decision_is_2_3_0():
+    assert SCAN_SWING_VERSION == "2.3.0"
 
 
 def test_smc_does_not_call_legacy_analyze_market_structure():
@@ -101,15 +101,18 @@ def test_smc_bos_from_v1_snapshot_with_injected_swings():
 
 
 def test_smc_reuses_injected_swings_without_second_obtain():
-    cs = candles(_wavy(60))
+    from tests.swing_detection.fixtures import gold_candles
+
+    cs = gold_candles(120, wave=10.0, trend=0.04, period=16, seed=3)
     swings = obtain_confirmed_swings(cs, version=SCAN_SWING_VERSION)
+    assert swings, "v2.3 gold fixture should yield confirmed swings"
     snap = analyze_structure(cs, swings)
     with patch(
         "services.quant_engine.detection.smc.obtain_confirmed_swings"
     ) as obtain_mock:
         SMCEngine().detect_all(
             cs,
-            "EURUSD",
+            cs[0].symbol,
             Timeframe.H1,
             confirmed_swings=swings,
             structure_snapshot=snap,
@@ -124,13 +127,22 @@ def test_decision_engine_passes_features_into_trend_analyze():
 
 
 def test_decision_evaluate_reuses_snapshot_and_swings():
-    cs = candles(_wavy(60))
-    ind = indicators(ema_20=1.12, ema_50=1.11, ema_200=1.10, atr_14=0.002, adx_14=28)
+    from tests.swing_detection.fixtures import gold_candles
+
+    cs = gold_candles(120, wave=10.0, trend=0.04, period=16, seed=3)
+    ind = indicators(
+        symbol=cs[0].symbol,
+        ema_20=2350.0,
+        ema_50=2340.0,
+        ema_200=2320.0,
+        atr_14=5.0,
+        adx_14=28,
+    )
     swings = obtain_confirmed_swings(cs, version=SCAN_SWING_VERSION)
     snap = analyze_structure(cs, swings)
     patterns = SMCEngine().detect_all(
         cs,
-        "EURUSD",
+        cs[0].symbol,
         Timeframe.H1,
         confirmed_swings=swings,
         structure_snapshot=snap,
@@ -145,7 +157,7 @@ def test_decision_evaluate_reuses_snapshot_and_swings():
         ) as analyze_mock,
     ):
         signal = DecisionEngine().evaluate(
-            symbol="EURUSD",
+            symbol=cs[0].symbol,
             timeframe=Timeframe.H1,
             candles=cs,
             indicators=ind,
@@ -165,8 +177,10 @@ def test_decision_evaluate_reuses_snapshot_and_swings():
 
 
 def test_feature_extractor_accepts_shared_snapshot():
-    cs = candles(_wavy(60))
-    ind = indicators(ema_20=1.12, ema_50=1.11, atr_14=0.002)
+    from tests.swing_detection.fixtures import gold_candles
+
+    cs = gold_candles(120, wave=10.0, trend=0.04, period=16, seed=3)
+    ind = indicators(symbol=cs[0].symbol, ema_20=2350.0, ema_50=2340.0, atr_14=5.0)
     swings = obtain_confirmed_swings(cs, version=SCAN_SWING_VERSION)
     snap = analyze_structure(cs, swings)
     with patch(
@@ -183,3 +197,4 @@ def test_feature_extractor_accepts_shared_snapshot():
         assert not analyze_mock.called
         assert features.structure_snapshot is snap
         assert features.structure_metadata.get("swing_version") == SCAN_SWING_VERSION
+        assert features.structure_regime

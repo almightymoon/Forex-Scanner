@@ -1,18 +1,16 @@
 """Shared confirmed-swing boundary for the live scan / feature path.
 
-Decision (deliberate, documented):
-    SCAN_SWING_VERSION = \"2.0.0\"
+Decision (explicit cutover):
+    SCAN_SWING_VERSION = \"2.3.0\"
 
 Rationale:
-- Matches ``swing_engine.DEFAULT_VERSION`` and the scanner's current live path.
-- Does **not** change the repository-wide default.
-- v2.3.0 remains the architecture production candidate, but an explicit cutover
-  is deferred: on existing EURUSD synthetic fixtures v2.3 returns zero confirmed
-  swings without parameter tuning (out of scope here).
-
-Callers must obtain confirmed swings through :func:`obtain_confirmed_swings`
-rather than instantiating ad-hoc SwingEngine configs inside SMC or structure
-scoring.
+- Aligns the live scan boundary with the architecture production candidate.
+- Does **not** change ``swing_engine.DEFAULT_VERSION`` (still ``2.0.0`` unless
+  callers omit ``version=``).
+- Callers must pass an explicit version through :func:`obtain_confirmed_swings`.
+- Synthetic EURUSD micro-wave fixtures may yield zero confirmed swings under
+  2.3.0; integration tests should use gold/synthetic XAUUSD fixtures or inject
+  confirmed swings.
 """
 
 from __future__ import annotations
@@ -21,8 +19,8 @@ from shared.types.models import Candle
 from swing_engine import SwingEngine, get_config
 from swing_engine.models import DetectedSwing, SwingScope, SwingTier
 
-# Live scan / feature boundary version. Upgrade only via an explicit task.
-SCAN_SWING_VERSION = "2.0.0"
+# Live scan / feature boundary version (explicit 2.3.0 cutover).
+SCAN_SWING_VERSION = "2.3.0"
 
 # Backward-compatible alias used by FeatureExtractor.
 FEATURE_SWING_VERSION = SCAN_SWING_VERSION
