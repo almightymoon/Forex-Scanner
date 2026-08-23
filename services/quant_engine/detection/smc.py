@@ -41,10 +41,24 @@ class SMCEngine:
             if confirmed_swings is not None
             else obtain_confirmed_swings(candles, version=SCAN_SWING_VERSION)
         )
+        if confirmed_swings is None:
+            # Standalone SMC entry — not the live DataLoader path.
+            import logging
+
+            logging.getLogger("fxnav.smc").warning(
+                "SMCEngine.detect_all obtained swings internally; "
+                "live scan must pass confirmed_swings + structure_snapshot"
+            )
         if structure_snapshot is not None:
             snapshot = structure_snapshot
         else:
             snapshot = analyze_structure(candles, swings)
+            if confirmed_swings is not None:
+                import logging
+
+                logging.getLogger("fxnav.smc").debug(
+                    "SMCEngine rebuilt StructureSnapshot from provided swings"
+                )
 
         structure = build_market_structure_state(snapshot, swings)
         patterns: list[SMCPattern] = []

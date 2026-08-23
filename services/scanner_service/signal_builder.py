@@ -32,6 +32,7 @@ class SignalBuilder:
             news=ctx.news,
             confirmed_swings=ctx.confirmed_swings,
             structure_snapshot=ctx.structure_snapshot,
+            structure_input=ctx.structure_input,
         )
         if signal.score >= get_scanner_config().scoring.min_alert_score:
             self.validator.register(signal)
