@@ -48,6 +48,10 @@ from services.quant_engine.market_structure.studio import (
     structure_overlay_payload,
 )
 from services.quant_engine.market_structure.aggregate import aggregate_candles
+from services.quant_engine.market_structure.proximity import (
+    StructureProximity,
+    assess_structure_proximity,
+)
 
 __all__ = [
     "MarketStructureDetectorV1",
@@ -59,6 +63,7 @@ __all__ = [
     "StructureEvent",
     "StructureEventType",
     "StructureInputError",
+    "StructureProximity",
     "StructureQuality",
     "StructureRegime",
     "StructureRegimeAssessment",
@@ -69,6 +74,7 @@ __all__ = [
     "aggregate_candles",
     "analyze_structure",
     "assess_setup_confluence",
+    "assess_structure_proximity",
     "build_market_structure_state",
     "build_trend_context_from_structure",
     "classify_structure_regime",
