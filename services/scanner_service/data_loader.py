@@ -8,11 +8,11 @@ from services.indicator_service.indicators import compute_all
 from services.market_data_service.exceptions import MarketDataProviderError
 from services.market_data_service.factory import create_market_data_provider
 from services.news_service.calendar import NewsService
-from services.quant_engine.market_structure.detector import analyze_structure
 from services.quant_engine.market_structure.models import StructureSnapshot
 from services.quant_engine.swings.boundary import (
     SCAN_SWING_VERSION,
-    obtain_confirmed_swings,
+    ScanStructureInput,
+    build_scan_structure,
 )
 from services.smc_service.smc import SMCEngine
 from shared.types.models import (
@@ -43,6 +43,7 @@ class ScanContext:
     confirmed_swings: list[DetectedSwing] = field(default_factory=list)
     structure_snapshot: StructureSnapshot | None = None
     swing_version: str = SCAN_SWING_VERSION
+    structure_input: ScanStructureInput | None = None
 
 
 class DataLoader:
@@ -73,10 +74,11 @@ class DataLoader:
         indicators = compute_all(candles, symbol, timeframe)
 
         # Single confirmed-swing + structure pass for the whole scan.
-        confirmed_swings = obtain_confirmed_swings(
+        structure_input = build_scan_structure(
             candles, version=SCAN_SWING_VERSION
         )
-        structure_snapshot = analyze_structure(candles, confirmed_swings)
+        confirmed_swings = list(structure_input.confirmed_swings)
+        structure_snapshot = structure_input.structure_snapshot
         smc_patterns = self.smc_engine.detect_all(
             candles,
             symbol,
@@ -100,7 +102,8 @@ class DataLoader:
             news=news,
             confirmed_swings=confirmed_swings,
             structure_snapshot=structure_snapshot,
-            swing_version=SCAN_SWING_VERSION,
+            swing_version=structure_input.swing_version,
+            structure_input=structure_input,
         )
 
     async def _fetch_candles_safe(self, symbol: str, timeframe: Timeframe, count: int) -> list[Candle]:

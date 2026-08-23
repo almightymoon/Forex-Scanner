@@ -96,22 +96,45 @@ Internal track mirrors the same machine but never mutates external bias.
 
 No event depends on candles after its `break_index` / `as_of_index`.
 
-# Legacy scoring warning
+# CAUSAL STRUCTURE DETECTION vs OFFLINE STRUCTURE QUALITY SCORING
 
-`score_structure_event` in `market_structure/scoring.py` uses forward candles
-for follow-through. That dimension is offline / lookahead-sensitive and must
-**not** be used for live event confirmation until separately refactored. The
-v1 detector does not call it.
+## Causal structure detection
+
+`analyze_structure(candles, confirmed_swings, as_of_index=...)` is the only
+live structure event source. It:
+
+* consumes caller-supplied confirmed swings only;
+* never instantiates `SwingEngine` / `get_config`;
+* never reads candles after `as_of_index`;
+* emits BOS/CHoCH with `break_index <= as_of_index`.
+
+## Offline structure quality scoring
+
+`score_structure_event` in `market_structure/scoring.py` is a **separate**
+quality rubric used by MarketStructureEngine scoring:
+
+* Live default: `allow_lookahead=False` — follow-through is zeroed; candles
+  after the break index are not inspected.
+* Offline / diagnostic: `allow_lookahead=True` — historical follow-through
+  may use forward candles.
+
+**TODO (separate refactor):** replace lookahead follow-through with a causal
+quality dimension for all paths. Until then, never use lookahead scoring for
+event *confirmation*.
+
+The v1 detector does not call `score_structure_event`.
 
 # Production wiring
 
 Live scan path (unified):
 
-1. Obtain confirmed swings once (`SCAN_SWING_VERSION`, currently `2.0.0`)
-2. Run `analyze_structure` once
+1. `build_scan_structure` / `obtain_confirmed_swings` once
+   (`SCAN_SWING_VERSION`, currently **`2.3.0`**)
+2. Run `analyze_structure` once → `StructureSnapshot`
 3. Feed swings + snapshot into SMC BOS/CHoCH and FeatureExtractor
 4. DecisionEngine passes `features` into `TrendEngine.analyze` and scores via
    `run_from_structure_snapshot`
 
-Adapter: `services/quant_engine/market_structure/integration.py`  
+Adapter: `services/quant_engine/market_structure/integration.py`
 Boundary: `services/quant_engine/swings/boundary.py`
+Inventory: `docs/single_swing_pass_inventory.md`

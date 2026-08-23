@@ -149,8 +149,8 @@ def test_decision_evaluate_reuses_snapshot_and_swings():
     )
     with (
         patch(
-            "services.quant_engine.decision.engine.obtain_confirmed_swings"
-        ) as obtain_mock,
+            "services.quant_engine.decision.engine.build_scan_structure"
+        ) as build_mock,
         patch(
             "services.quant_engine.decision.engine.analyze_structure",
             wraps=analyze_structure,
@@ -165,7 +165,7 @@ def test_decision_evaluate_reuses_snapshot_and_swings():
             confirmed_swings=swings,
             structure_snapshot=snap,
         )
-        assert not obtain_mock.called
+        assert not build_mock.called
         # Snapshot supplied → DecisionEngine should not re-run analyze_structure.
         assert not analyze_mock.called
         assert signal.market_features is not None

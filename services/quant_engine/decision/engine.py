@@ -27,7 +27,8 @@ from services.quant_engine.market_structure.detector import analyze_structure
 from services.quant_engine.market_structure.models import StructureSnapshot
 from services.quant_engine.swings.boundary import (
     SCAN_SWING_VERSION,
-    obtain_confirmed_swings,
+    ScanStructureInput,
+    build_scan_structure,
 )
 from services.setup_intelligence import HistoricalSetupAnalyzer, SetupFingerprint
 from services.quant_engine.confidence.output import EngineOutput
@@ -84,18 +85,35 @@ class DecisionEngine:
         news: Optional[NewsContext] = None,
         confirmed_swings: Optional[list[DetectedSwing]] = None,
         structure_snapshot: Optional[StructureSnapshot] = None,
+        structure_input: Optional[ScanStructureInput] = None,
     ) -> ScannerSignal:
         news_ctx = news or NewsContext()
         mtf_map = mtf_trends or {}
 
-        swings = (
-            list(confirmed_swings)
-            if confirmed_swings is not None
-            else obtain_confirmed_swings(candles, version=SCAN_SWING_VERSION)
-        )
-        snapshot = structure_snapshot
-        if snapshot is None:
-            snapshot = analyze_structure(candles, swings)
+        if structure_input is not None:
+            if structure_input.swing_version != SCAN_SWING_VERSION and (
+                confirmed_swings is None and structure_snapshot is None
+            ):
+                # Explicit alternate version from ScanStructureInput is honored.
+                pass
+            swings = list(structure_input.confirmed_swings)
+            snapshot = structure_input.structure_snapshot
+            if snapshot is None:
+                snapshot = analyze_structure(candles, swings)
+        elif confirmed_swings is not None:
+            swings = list(confirmed_swings)
+            snapshot = structure_snapshot
+            if snapshot is None:
+                snapshot = analyze_structure(candles, swings)
+        else:
+            # Standalone evaluate entry: one canonical producer call.
+            built = build_scan_structure(candles, version=SCAN_SWING_VERSION)
+            swings = list(built.confirmed_swings)
+            snapshot = (
+                structure_snapshot
+                if structure_snapshot is not None
+                else built.structure_snapshot
+            )
 
         features = self._features.extract(
             candles,
