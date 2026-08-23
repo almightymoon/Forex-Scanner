@@ -9,6 +9,7 @@ from services.quant_engine.features.types import MarketFeatures
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.market_structure.models import StructureRelation
 from services.quant_engine.trend.models import TrendAnalysis
+from services.quant_engine.trend.session_context import assess_session_trend
 from services.quant_engine.swing_analysis import analyze_trend_context
 
 
@@ -50,6 +51,7 @@ class TrendEngine:
                     if features and features.structure_snapshot is not None
                     else "legacy_fallback"
                 ),
+                "session_trend": assess_session_trend(candles).to_dict(),
             },
         )
 
@@ -168,6 +170,23 @@ class TrendEngine:
                 result.reasons.append(
                     f"Pending external reversal: {features.pending_external_bias.value}"
                 )
+
+        session_trend = assess_session_trend(candles)
+        score += session_trend.score_delta
+        for reason in session_trend.reasons:
+            if reason not in result.reasons:
+                result.reasons.append(reason)
+        if (
+            session_trend.bias_hint is not TrendDirection.RANGING
+            and result.direction is TrendDirection.RANGING
+        ):
+            result.direction = session_trend.bias_hint
+        if session_trend.expansion_vs_asia:
+            result.expansion = True
+            if result.maturity == "developing":
+                result.maturity = "expanding"
+        if session_trend.compression_in_asia:
+            result.compression = True
 
         result.score = clamp_score(score, max_score)
         return result

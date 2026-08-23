@@ -5,6 +5,7 @@ from shared.types.models import Candle, SMCPattern, SignalDirection
 
 from services.quant_engine.features.types import MarketFeatures
 
+from services.quant_engine.market_structure.proximity import assess_structure_proximity
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.decision.pattern_scoring import filter_patterns
 
@@ -32,6 +33,16 @@ class OrderBlockEngine:
                 q = self._quality_from_features(p, features.best_ob)
             else:
                 q = self._quality_score(p, candles or [], rules)
+            proximity = assess_structure_proximity(
+                p,
+                features.structure_snapshot if features else None,
+                candle_count=len(candles or []),
+                atr=features.atr if features else 0.0,
+            )
+            if proximity.boost:
+                q["points"] += proximity.boost
+                q["label"] = f"{q['label']} · {proximity.label}"
+                q["structure_proximity"] = proximity.to_dict()
             score += q["points"]
             qualities.append(q)
             reasons.append(q["label"])

@@ -27,6 +27,7 @@ class SwingVisualizer:
         include_rejected: bool = True,
         structure_events: list[dict[str, Any]] | None = None,
         structure_context: dict[str, Any] | None = None,
+        liquidity_overlay: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         visible_bars = self._filter_bars(bars, window_start, window_end)
         visible_swings = self._filter_swings(swings, window_start, window_end, include_unconfirmed)
@@ -46,6 +47,8 @@ class SwingVisualizer:
             payload["structure_events"] = structure_events
         if structure_context is not None:
             payload["structure_context"] = structure_context
+        if liquidity_overlay is not None:
+            payload["liquidity_overlay"] = liquidity_overlay
 
         if artifacts:
             payload["candidates"] = [p.to_dict() for p in artifacts.pivot_candidates]
@@ -78,12 +81,14 @@ class SwingVisualizer:
         replay_frames: list[dict] | None = None,
         structure_events: list[dict[str, Any]] | None = None,
         structure_context: dict[str, Any] | None = None,
+        liquidity_overlay: dict[str, Any] | None = None,
     ) -> Path:
         data = self.build(
             bars, result.swings, artifacts=result.artifacts,
             include_unconfirmed=True, include_rejected=show_rejected,
             structure_events=structure_events,
             structure_context=structure_context,
+            liquidity_overlay=liquidity_overlay,
         )
         data["lifecycle"] = [t.to_dict() for t in result.artifacts.lifecycle_tracks]
         data["repainting_stats"] = result.artifacts.repainting_stats
@@ -223,10 +228,13 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
     <span><span class="dot" style="background:#22c55e"></span>BOS↑</span>
     <span><span class="dot" style="background:#ef4444"></span>BOS↓</span>
     <span><span class="dot" style="background:#f59e0b"></span>CHoCH</span>
+    <span><span class="dot" style="background:#38bdf8"></span>Buy Liq</span>
+    <span><span class="dot" style="background:#fb7185"></span>Sell Liq</span>
   </div>
   <label><input type="checkbox" id="showRejected" checked> Rejected</label>
   <label><input type="checkbox" id="showCandidates" checked> Candidates</label>
   <label><input type="checkbox" id="showStructure" checked> Structure</label>
+  <label><input type="checkbox" id="showLiquidity" checked> Liquidity</label>
   <label><input type="checkbox" id="showATR" checked> ATR</label>
   <label><input type="checkbox" id="showZigzag" checked> Zigzag</label>
 </div>
@@ -296,8 +304,30 @@ function toggleZigzag(show){
     zigzagSeries.setData(pts.sort((a,b)=>a.time.localeCompare(b.time)));
   } else if(!show && zigzagSeries){chart.removeSeries(zigzagSeries);zigzagSeries=null;}
 }
+let liquidityLines=[];
+function clearLiquidity(){
+  liquidityLines.forEach(l=>{try{cs.removePriceLine(l);}catch(e){}});
+  liquidityLines=[];
+}
+function toggleLiquidity(show){
+  clearLiquidity();
+  if(!show) return;
+  const ov=DATA.liquidity_overlay||{};
+  (ov.liquidity_levels||[]).forEach(lv=>{
+    if(lv.price==null) return;
+    liquidityLines.push(cs.createPriceLine({
+      price:lv.price,
+      color:lv.color||'#38bdf8',
+      lineWidth:1,
+      lineStyle:2,
+      axisLabelVisible:true,
+      title:lv.label||lv.kind||'LIQ'
+    }));
+  });
+}
 toggleATR(DATA.meta?.show_atr!==false);
 toggleZigzag(true);
+toggleLiquidity(true);
 document.getElementById('showATR').onchange=e=>toggleATR(e.target.checked);
 document.getElementById('showZigzag').onchange=e=>toggleZigzag(e.target.checked);
 
@@ -338,6 +368,19 @@ function rebuildMarkers(){
       });
     });
   }
+  if(document.getElementById('showLiquidity').checked){
+    const lastT=candleData.length?candleData[candleData.length-1].time:null;
+    ((DATA.liquidity_overlay||{}).liquidity_sweeps||[]).forEach(sw=>{
+      if(!lastT) return;
+      allMarkers.push({
+        time:lastT,
+        position:sw.direction==='BUY'?'belowBar':'aboveBar',
+        color:sw.color||'#94a3b8',
+        shape:'square',
+        text:sw.label||'SWP'
+      });
+    });
+  }
   allMarkers.sort((a,b)=>a.time.localeCompare(b.time));
   cs.setMarkers(allMarkers);
 }
@@ -345,6 +388,10 @@ rebuildMarkers();
 document.getElementById('showRejected').onchange=rebuildMarkers;
 document.getElementById('showCandidates').onchange=rebuildMarkers;
 document.getElementById('showStructure').onchange=rebuildMarkers;
+document.getElementById('showLiquidity').onchange=e=>{
+  toggleLiquidity(e.target.checked);
+  rebuildMarkers();
+};
 
 const tip=document.getElementById('tooltip');
 chart.subscribeCrosshairMove(param=>{
@@ -372,6 +419,18 @@ if(DATA.structure_context){
     (s.pending_external_bias && s.pending_external_bias!=='ranging' ? ' → pending <b>'+s.pending_external_bias+'</b>' : '')+'<br>'+
     'Internal bias: <b>'+s.internal_bias+'</b><br>'+
     'Events: <b>'+(s.event_count||0)+'</b></div>';
+}
+if(DATA.liquidity_overlay){
+  const L=DATA.liquidity_overlay;
+  const nLevels=(L.liquidity_levels||[]).length;
+  const sweeps=L.liquidity_sweeps||[];
+  const cont=sweeps.filter(s=>s.quality==='continuation').length;
+  const hunt=sweeps.filter(s=>s.quality==='stop_hunt').length;
+  ctxHtml+='<h3>Liquidity</h3>'+
+    '<div style="line-height:1.6">'+
+    'Levels: <b>'+nLevels+'</b> · Sweeps: <b>'+sweeps.length+'</b><br>'+
+    'Continuation: <b>'+cont+'</b> · Stop-hunt: <b>'+hunt+'</b><br>'+
+    'Tags: <b>'+((L.session_tags&&L.session_tags.length)?L.session_tags.join(', '):'—')+'</b></div>';
 }
 if(DATA.market_context){
   const c=DATA.market_context;

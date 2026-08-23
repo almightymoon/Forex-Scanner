@@ -1,8 +1,9 @@
 # FX Navigators Scanner — Project Roadmap
 
 This document is the master plan toward a production-ready institutional
-market-structure scanner. Status reflects the **structure-studio-mtf** cutover
-(Market Structure Engine v1 + decision/confluence + MTF structure bias).
+market-structure scanner. **Scanner product v1 is complete** (structure →
+liquidity → session/OB–FVG quality → paper-scan audits). Live broker
+execution remains Phase 2.
 
 ## Current State
 
@@ -14,9 +15,12 @@ market-structure scanner. Status reflects the **structure-studio-mtf** cutover
 | Structure regime + confluence | ✅ wired into DecisionEngine | `regime.py`, `confluence.py`, `structure_policy.py` |
 | MTF structure bias (H4/D1) | ✅ structure-preferred | `mtf_bias.py`, DataLoader |
 | Studio BOS/CHoCH overlays | ✅ | `studio.py` + `SwingVisualizer` |
-| Live-path smoke (real CSV) | ✅ | `scripts/smoke_structure_live_path.py` |
-| Liquidity / OB / FVG engines | 🟡 present, deepen next | `liquidity/`, `order_blocks/`, `fvg/` |
-| Decision engine (live) | 🟡 structure-aware | `services/quant_engine/decision/` |
+| Liquidity maps + sweep quality | ✅ | `liquidity/` |
+| Studio liquidity toggle | ✅ | `SwingVisualizer` + `liquidity/studio.py` |
+| OB/FVG structure proximity | ✅ | `market_structure/proximity.py` |
+| Session-aware trend | ✅ | `trend/session_context.py` |
+| Paper-scan / live-path smoke | ✅ | `scripts/smoke_structure_live_path.py` |
+| Decision engine (live) | ✅ structure + liquidity aware | `services/quant_engine/decision/` |
 | Live broker execution | ⏳ Phase 2 | — |
 
 ---
@@ -30,13 +34,13 @@ Swing Layer         swing_engine/          ← v2.3.0 DEFAULT
         ↓
 Structure Layer     market_structure/      ← v1 DONE (causal BOS/CHoCH)
         ↓
-Liquidity Layer     liquidity/             ← next focus
+Liquidity Layer     liquidity/             ← DONE (typed maps + studio)
         ↓
 Signal Layer        scanner_service/       ← structure-aware scan path
         ↓
 Decision Layer      decision/              ← regime + confluence + HTF bias
         ↓
-Validation Layer    validation + paper     ← Ongoing
+Validation Layer    validation + paper     ← smoke + unit coverage
 ```
 
 **Rule:** Each layer only consumes outputs from the layer below. Never re-implement
@@ -56,42 +60,38 @@ zigzag helpers.
 - [x] Studio overlays for BOS/CHoCH + structure regime
 - [x] MTF structure bias (H4/D1) into `mtf_trends` + decision policy
 
-### Smoke
-
-```bash
-.venv/bin/python scripts/smoke_structure_live_path.py \
-  --csv chart_csv/FXNavigators_XAUUSD_H1.csv --tail 500 \
-  --html debug/xauusd_structure_smoke.html
-```
-
 ---
 
-## Next — Liquidity depth (priority)
+## Done — Liquidity depth
 
-**Goal:** First-class liquidity pools and sweeps that score against external bias.
-
-### Deliverables
 - [x] Typed `LiquidityLevel` / `LiquidityMap` / sweep quality models
 - [x] Build pools from SMC equals + structure equals + session tags
 - [x] Sweep quality vs structure bias (continuation vs stop-hunt)
 - [x] Feed confluence from liquidity map (equals + sweeps)
 - [x] Studio payload helper for pool lines + sweep markers
-- [ ] HTML studio toggle wired into SwingVisualizer (follow-up)
-- [ ] Paper-scan E2E audits on real XAUUSD
+- [x] HTML studio toggle wired into SwingVisualizer
 
 ---
 
-## Next — Session / OB–FVG quality
+## Done — Session / OB–FVG quality + paper scan
 
-- [ ] Session-aware trend (Asia range vs London expansion)
-- [ ] OB/FVG strength gated by structure event proximity
-- [ ] Paper-scan E2E on real XAUUSD with structure HTML audits
+- [x] Session-aware trend (Asia range vs London/NY expansion)
+- [x] OB/FVG strength gated by structure event proximity
+- [x] Paper-scan E2E on real/synthetic XAUUSD with structure + liquidity HTML
+
+### Smoke
+
+```bash
+.venv/bin/python scripts/smoke_structure_live_path.py \
+  --csv chart_csv/FXNavigators_XAUUSD_H1.csv --tail 500 \
+  --html debug/xauusd_paper_scan.html
+```
 
 ---
 
-## Later — Execution
+## Later — Execution (Phase 2)
 
-- [ ] Live broker execution (Phase 2)
+- [ ] Live broker execution
 - [ ] Broader retirement of legacy zigzag compatibility shims
 
 ---
