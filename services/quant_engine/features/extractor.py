@@ -148,6 +148,17 @@ class FeatureExtractor:
             elif p.pattern_type == "liquidity_sweep":
                 features.liquidity_sweep = True
 
+        from services.quant_engine.liquidity.pools import build_liquidity_map
+
+        features.liquidity_map = build_liquidity_map(
+            patterns,
+            features=features,
+            candles=candles,
+            snapshot=features.structure_snapshot,
+        )
+        if not features.liquidity_pools:
+            features.liquidity_pools = features.liquidity_map.pool_labels
+
         obs = [p for p in patterns if p.pattern_type == "order_block"]
         features.ob_count = len(obs)
         if obs:

@@ -71,10 +71,13 @@ zigzag helpers.
 **Goal:** First-class liquidity pools and sweeps that score against external bias.
 
 ### Deliverables
-- [ ] Promote equal-high/low + session liquidity to typed `LiquidityLevel` models
-- [ ] Sweep quality vs structure bias (continuation vs stop-hunt)
-- [ ] Studio layer: liquidity pools + sweep markers
-- [ ] Feed confluence from liquidity events (not only OB/FVG pattern list)
+- [x] Typed `LiquidityLevel` / `LiquidityMap` / sweep quality models
+- [x] Build pools from SMC equals + structure equals + session tags
+- [x] Sweep quality vs structure bias (continuation vs stop-hunt)
+- [x] Feed confluence from liquidity map (equals + sweeps)
+- [x] Studio payload helper for pool lines + sweep markers
+- [ ] HTML studio toggle wired into SwingVisualizer (follow-up)
+- [ ] Paper-scan E2E audits on real XAUUSD
 
 ---
 

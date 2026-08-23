@@ -115,7 +115,15 @@ def assess_setup_confluence(
         blockers.append("No structure events")
 
     # Pattern confluence with structure side.
-    setup_types = {"order_block", "fvg", "liquidity_sweep", "bos", "choch"}
+    setup_types = {
+        "order_block",
+        "fvg",
+        "liquidity_sweep",
+        "equal_highs",
+        "equal_lows",
+        "bos",
+        "choch",
+    }
     setup_patterns = [p for p in patterns if p.pattern_type in setup_types]
     max_points += 3.0
     agreeing = 0
@@ -135,6 +143,31 @@ def assess_setup_confluence(
     if conflicting:
         points -= min(1.5, 0.75 * conflicting)
         blockers.append(f"{conflicting} setup pattern(s) conflict with structure")
+
+    # Typed liquidity map (continuation vs stop-hunt).
+    liquidity_meta: dict[str, Any] = {}
+    if features is not None and getattr(features, "liquidity_map", None):
+        from services.quant_engine.liquidity.models import SweepQuality
+
+        liq = features.liquidity_map
+        liquidity_meta = liq.to_dict() if hasattr(liq, "to_dict") else {}
+        max_points += 1.5
+        cont = sum(1 for s in liq.sweeps if s.quality is SweepQuality.CONTINUATION)
+        hunts = sum(1 for s in liq.sweeps if s.quality is SweepQuality.STOP_HUNT)
+        if cont:
+            points += min(1.5, 0.75 * cont)
+            factors.append(f"{cont} continuation liquidity sweep(s)")
+        if hunts:
+            points -= min(1.0, 0.5 * hunts)
+            blockers.append(f"{hunts} stop-hunt liquidity sweep(s)")
+        equal_buy = sum(1 for lv in liq.levels if lv.kind.value == "equal_lows")
+        equal_sell = sum(1 for lv in liq.levels if lv.kind.value == "equal_highs")
+        if hint is SignalDirection.BUY and equal_buy:
+            points += 0.25
+            factors.append("Equal lows pool supports buy bias")
+        elif hint is SignalDirection.SELL and equal_sell:
+            points += 0.25
+            factors.append("Equal highs pool supports sell bias")
 
     # Pending reversal soft-block when proposing with the old bias.
     if pending is not TrendDirection.RANGING:
@@ -174,5 +207,6 @@ def assess_setup_confluence(
             "conflicting_patterns": conflicting,
             "pending_external_bias": pending.value,
             "last_event_id": None if last is None else last.event_id,
+            "liquidity": liquidity_meta,
         },
     )
