@@ -55,9 +55,12 @@ Indicator Engine ──→ EMA, RSI, MACD, ATR, ADX, VWAP, BB
 SMC Engine ──→ BOS, CHoCH, Order Blocks, FVG, Liquidity Sweeps
         │
         ▼
-Decision Engine ──→ 7-category scoring → Signal
+SMC Confluence Engine ──→ SMCContextSnapshot (evidence, conflicts, bias)
         │
-        ├──→ AI Explanation (template → LLM)
+        ▼
+Decision Engine ──→ 100-point scoring → Signal
+        │
+        ├──→ AI Explanation (template → LLM; context from engines)
         ├──→ Database (scanner_results)
         ├──→ Notifications (Telegram, Discord, Email)
         └──→ Dashboard (WebSocket push)

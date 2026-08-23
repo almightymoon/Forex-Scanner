@@ -61,7 +61,7 @@ what remains legacy versus what the new v1 core will replace later.
 
 ## Live scan path (unified)
 
-1. `DataLoader.load` obtains confirmed swings once (`SCAN_SWING_VERSION=2.0.0`)
+1. `DataLoader.load` obtains confirmed swings once (`SCAN_SWING_VERSION=2.3.0`)
 2. Runs Market Structure Engine v1 once → `StructureSnapshot`
 3. `SMCEngine.detect_all` consumes those swings/snapshot (no legacy
    `analyze_market_structure`)

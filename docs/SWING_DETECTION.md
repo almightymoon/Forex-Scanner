@@ -161,6 +161,18 @@ lower-TF swing (parent trend, external range, alignment score).
 
 See **[Project Roadmap](ROADMAP.md)** for Sprint 6+ (BOS, CHoCH, liquidity, decision engine).
 
+## No-lookahead guarantees
+
+Confirmed swings are causal:
+
+1. Pivot candidates are scored using left/right windows available at detection time.
+2. Confirmation only inspects bars **at or after** the pivot (`confirmation_index`).
+3. Historical replay / prefix runs (`bars[:i+1]`) must reproduce the same confirmed
+   swing once `i >= confirmation_index` (see `tests/pipeline/test_canonical_pipeline.py`).
+4. `DetectionResult.version` records the algorithm version for every run.
+
+Canonical market-data path, year splits, and CLI: **[MARKET_DATA_SWING_PIPELINE.md](MARKET_DATA_SWING_PIPELINE.md)**.
+
 ## Sprint 5 Additions (v1.4.0)
 
 ### 1. Score-Gated Confirmation (`swing_engine/confirmation_score.py`)

@@ -9,7 +9,7 @@ from services.quant_engine.swing_analysis import MarketStructureState, TrendCont
 from shared.types.models import TrendDirection
 
 if TYPE_CHECKING:
-    from services.quant_engine.liquidity.models import LiquidityMap
+    from services.quant_engine.liquidity.models import LiquidityMap, LiquiditySnapshot
     from services.quant_engine.market_structure.models import StructureSnapshot
 
 
@@ -76,6 +76,7 @@ class MarketFeatures:
     equal_lows: bool = False
     liquidity_sweep: bool = False
     liquidity_map: LiquidityMap | None = None
+    liquidity_snapshot: LiquiditySnapshot | None = None
 
     best_ob: OrderBlockFeatures | None = None
     best_fvg: FVGFeatures | None = None
@@ -119,6 +120,11 @@ class MarketFeatures:
             "liquidity_pools": self.liquidity_pools,
             "liquidity_map": (
                 self.liquidity_map.to_dict() if self.liquidity_map is not None else None
+            ),
+            "liquidity_snapshot": (
+                self.liquidity_snapshot.to_dict()
+                if self.liquidity_snapshot is not None
+                else None
             ),
             "session": self.session,
             "ob_quality": round(self.best_ob.overall, 1) if self.best_ob else 0,

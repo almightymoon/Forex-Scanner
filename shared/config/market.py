@@ -11,6 +11,7 @@ import yaml
 _CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "market.yaml"
 
 ACTIVE_OHLC_PROVIDERS = ("twelvedata", "polygon")
+PRODUCTION_ENVIRONMENTS = frozenset({"production", "prod", "live"})
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,20 @@ class MarketConfig:
     def simulated_mode(self) -> bool:
         """Simulation is opt-in only — never inferred from ENVIRONMENT."""
         return self.provider.simulated_enabled
+
+
+class SimulatedDataForbiddenError(RuntimeError):
+    """Raised when simulated market data is requested in a production environment."""
+
+
+def get_runtime_environment() -> str:
+    """Return normalized runtime environment name (development by default)."""
+    raw = os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "development"
+    return raw.strip().lower()
+
+
+def is_production_environment(env: str | None = None) -> bool:
+    return (env or get_runtime_environment()) in PRODUCTION_ENVIRONMENTS
 
 
 def _load_yaml() -> dict[str, Any]:
@@ -90,6 +105,19 @@ def get_market_config() -> MarketConfig:
 
 def is_simulated_mode() -> bool:
     return get_market_config().simulated_mode
+
+
+def assert_simulated_data_allowed() -> None:
+    """Hard-block simulated market data when ENVIRONMENT is production/prod/live."""
+    if not is_simulated_mode():
+        return
+    env = get_runtime_environment()
+    if is_production_environment(env):
+        raise SimulatedDataForbiddenError(
+            f"Simulated market data is forbidden when ENVIRONMENT={env!r}. "
+            "Unset ENABLE_SIMULATED_DATA / market_data.simulated_enabled and "
+            "configure real provider API keys."
+        )
 
 
 def reload_market_config() -> MarketConfig:

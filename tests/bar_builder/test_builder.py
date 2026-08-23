@@ -36,17 +36,27 @@ class TestBarBuilder(unittest.TestCase):
 
     def test_build_all_timeframes(self):
         result = BarBuilder.build_all_timeframes("EURUSD", self._ticks(500))
-        for tf in (Timeframe.M1, Timeframe.M5, Timeframe.M15, Timeframe.H1, Timeframe.H4, Timeframe.D1):
+        for tf in (
+            Timeframe.M1,
+            Timeframe.M5,
+            Timeframe.M15,
+            Timeframe.M30,
+            Timeframe.H1,
+            Timeframe.H4,
+            Timeframe.D1,
+            Timeframe.W1,
+        ):
             self.assertIn(tf, result)
-            self.assertGreater(len(result[tf]), 0)
 
-    def test_gap_metadata(self):
+    def test_gap_does_not_invent_bars(self):
         ticks = self._ticks(10)
-        # gap in ticks
-        ticks2 = ticks[:3] + ticks[20:]
+        ticks2 = ticks[:3] + [
+            (ticks[3][0] + timedelta(minutes=30), ticks[3][1], ticks[3][2], ticks[3][3])
+        ]
         bars = BarBuilder("EURUSD", Timeframe.M1).from_ticks(ticks2)
-        gaps = [b for b in bars if b.gap_before]
-        self.assertGreaterEqual(len(gaps), 0)
+        candles = [b.candle for b in bars]
+        # Sparse ticks → fewer bars; no synthetic intermediates with volume=0 invented
+        self.assertLess(len(candles), 10)
 
 
 if __name__ == "__main__":

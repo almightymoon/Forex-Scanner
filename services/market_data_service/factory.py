@@ -4,7 +4,7 @@ import importlib
 import logging
 import os
 
-from shared.config.market import get_market_config, is_simulated_mode
+from shared.config.market import assert_simulated_data_allowed, get_market_config, is_simulated_mode
 
 from .exceptions import MarketDataProviderError, ProviderAuthError
 from .provider import MarketDataProvider
@@ -51,7 +51,9 @@ def _validate_provider_key(key: str) -> None:
 
 
 def validate_startup() -> None:
-    """Fail fast when no real provider keys are configured."""
+    """Fail fast on bad provider config; never allow simulated data in production."""
+    assert_simulated_data_allowed()
+
     if is_simulated_mode():
         return
 
@@ -59,7 +61,7 @@ def validate_startup() -> None:
         raise ProviderAuthError(
             "market_data",
             "Startup failed: configure TWELVE_DATA_API_KEY and/or POLYGON_API_KEY, "
-            "or set ENABLE_SIMULATED_DATA=true for development",
+            "or set ENABLE_SIMULATED_DATA=true for development (forbidden in production)",
         )
 
 

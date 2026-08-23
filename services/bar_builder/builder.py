@@ -7,7 +7,7 @@ No swing logic. Output is reproducible for identical tick input.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Iterable, Sequence
 
 from shared.types.models import Candle, Tick, Timeframe
@@ -27,9 +27,28 @@ class BarBuilder:
         self._interval = TF_SECONDS.get(timeframe, 3600)
 
     @staticmethod
-    def bucket_timestamp(ts: datetime, interval_seconds: int) -> datetime:
-        """Align timestamp to UTC bar open."""
-        ts = ts.astimezone(timezone.utc)
+    def bucket_timestamp(
+        ts: datetime,
+        interval_seconds: int,
+        *,
+        timeframe: Timeframe | None = None,
+    ) -> datetime:
+        """Align timestamp to UTC bar open.
+
+        W1 bars open Monday 00:00 UTC (not Unix-epoch Thursday weeks).
+        """
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        else:
+            ts = ts.astimezone(timezone.utc)
+
+        if timeframe is Timeframe.W1 or interval_seconds == TF_SECONDS.get(Timeframe.W1):
+            days_since_monday = ts.weekday()  # Monday = 0
+            monday = (ts - timedelta(days=days_since_monday)).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            return monday
+
         epoch = int(ts.timestamp())
         bucket_epoch = epoch - (epoch % interval_seconds)
         return datetime.fromtimestamp(bucket_epoch, tz=timezone.utc)
@@ -49,7 +68,9 @@ class BarBuilder:
         buckets: dict[datetime, dict] = {}
         for ts, bid, ask, vol in sorted(ticks, key=lambda x: x[0]):
             mid = (bid + ask) / 2
-            bucket_ts = self.bucket_timestamp(ts, self._interval)
+            bucket_ts = self.bucket_timestamp(
+                ts, self._interval, timeframe=self.timeframe
+            )
             b = buckets.get(bucket_ts)
             if b is None:
                 buckets[bucket_ts] = {

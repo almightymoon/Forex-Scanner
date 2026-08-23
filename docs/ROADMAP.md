@@ -15,7 +15,7 @@ execution remains Phase 2.
 | Structure regime + confluence | ✅ wired into DecisionEngine | `regime.py`, `confluence.py`, `structure_policy.py` |
 | MTF structure bias (H4/D1) | ✅ structure-preferred | `mtf_bias.py`, DataLoader |
 | Studio BOS/CHoCH overlays | ✅ | `studio.py` + `SwingVisualizer` |
-| Liquidity maps + sweep quality | ✅ | `liquidity/` |
+| Liquidity maps + sweep quality | ✅ v1.0.0 | `liquidity/` |
 | Studio liquidity toggle | ✅ | `SwingVisualizer` + `liquidity/studio.py` |
 | OB/FVG structure proximity | ✅ | `market_structure/proximity.py` |
 | Session-aware trend | ✅ | `trend/session_context.py` |

@@ -50,6 +50,8 @@ from services.quant_engine.order_blocks.engine import OrderBlockEngine
 from services.quant_engine.decision.engines.risk import RiskEngine
 from services.quant_engine.decision.session import current_session, session_weight
 from services.quant_engine.decision.structure_policy import apply_structure_decision_policy
+from services.quant_engine.smc_confluence import build_smc_context
+from services.quant_engine.smc_confluence.models import ConfluenceBias
 from services.quant_engine.trend.engine import TrendEngine
 from services.quant_engine.decision.engines.volatility import VolatilityEngine
 from swing_engine.models import DetectedSwing
@@ -135,12 +137,16 @@ class DecisionEngine:
                 smc_patterns, candles, features
             )
 
+        liquidity_output = self.liquidity_engine.run(smc_patterns, candles, features)
+        order_block_output = self.order_block_engine.run(smc_patterns, candles, features)
+        fvg_output = self.fvg_engine.run(smc_patterns, candles, features)
+
         outputs: list[EngineOutput] = [
             self.trend_engine.run(candles, indicators, features),
             structure_output,
-            self.liquidity_engine.run(smc_patterns, candles, features),
-            self.order_block_engine.run(smc_patterns, candles, features),
-            self.fvg_engine.run(smc_patterns, candles, features),
+            liquidity_output,
+            order_block_output,
+            fvg_output,
             self.momentum_engine.run(len(candles), indicators),
             self.volatility_engine.run(candles, indicators),
             self.news_engine.run(news_ctx),
@@ -165,6 +171,21 @@ class DecisionEngine:
         if structure_adj.force_neutral:
             direction = SignalDirection.NEUTRAL
 
+        # Assemble SMC context from already-computed artifacts (no re-detection).
+        smc_context = build_smc_context(
+            symbol=symbol,
+            timeframe=timeframe,
+            candles=candles,
+            features=features,
+            structure_snapshot=features.structure_snapshot,
+            liquidity_snapshot=features.liquidity_snapshot,
+            patterns=smc_patterns,
+            mtf_trends=mtf_map,
+            fvg_output=fvg_output,
+            order_block_output=order_block_output,
+            proposed_direction=direction,
+        )
+
         risk_out = self.risk_engine.run(
             candles, indicators, primary_trend, direction, features=features
         )
@@ -175,6 +196,10 @@ class DecisionEngine:
         score_v2["structure_policy"] = structure_adj.score_delta
         warnings = [w for o in outputs for w in o.warnings]
         warnings.extend(structure_adj.warnings)
+        if smc_context.dominant_bias is ConfluenceBias.MIXED:
+            warnings.append("SMC context MIXED — conflicting confluence evidence")
+        elif smc_context.dominant_bias is ConfluenceBias.UNDEFINED:
+            warnings.append("SMC context UNDEFINED — insufficient structure confluence")
         if news_ctx.has_high_impact_soon and news_ctx.minutes_until_event and news_ctx.minutes_until_event <= 30:
             warnings.append("High-impact news may block this setup")
 
@@ -233,14 +258,17 @@ class DecisionEngine:
             }
         )
         explainability["setup_confluence"] = structure_adj.confluence.to_dict()
+        explainability["smc_context"] = smc_context.to_dict()
 
         explanation = self._build_explanation(
             symbol, direction, total, confidence, session, outputs, warnings, historical,
+            smc_context=smc_context,
         )
 
         market_features = features.to_dict()
         market_features["setup_confluence"] = structure_adj.confluence.to_dict()
         market_features["structure_decision_policy"] = structure_adj.to_dict()
+        market_features["smc_context"] = smc_context.to_dict()
 
         return ScannerSignal(
             symbol=symbol,
@@ -369,12 +397,22 @@ class DecisionEngine:
         outputs: list[EngineOutput],
         warnings: list[str],
         historical=None,
+        smc_context=None,
     ) -> str:
         lines = [
             f"{symbol} — {direction.value.upper()} — {score}/100",
             f"Confidence: {confidence * 100:.0f}% · Session: {session}",
             "",
         ]
+        if smc_context is not None:
+            lines.append(
+                f"SMC Context: {smc_context.dominant_bias.value} "
+                f"({smc_context.confluence_strength.value}) · "
+                f"evidence={smc_context.evidence_strength:.2f}"
+            )
+            for line in smc_context.explanations[:5]:
+                lines.append(f"  {line}")
+            lines.append("")
         for o in outputs:
             if o.reasons:
                 lines.append(f"{o.name}: {o.reasons[0]}")

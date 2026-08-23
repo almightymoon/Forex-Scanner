@@ -40,8 +40,13 @@ class StructureRegimeAssessment:
     metadata: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
+        from services.quant_engine.market_structure.trend_labels import (
+            to_market_trend_label,
+        )
+
         return {
             "regime": self.regime.value,
+            "trend": to_market_trend_label(self).value,
             "confidence": round(self.confidence, 3),
             "external_bias": self.external_bias.value,
             "pending_external_bias": self.pending_external_bias.value,
@@ -190,5 +195,10 @@ def classify_structure_regime(
         pending_external_bias=pending,
         internal_bias=internal,
         reasons=tuple(reasons),
-        metadata={"event_count": len(snapshot.events)},
+        metadata={
+            "event_count": len(snapshot.events),
+            "external_relation_count": len(ext_relations),
+            "bullish_relations": bullish_seq,
+            "bearish_relations": bearish_seq,
+        },
     )

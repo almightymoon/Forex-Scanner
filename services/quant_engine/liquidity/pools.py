@@ -1,21 +1,22 @@
-"""Build typed liquidity maps from SMC patterns + structure + session tags."""
+"""Build typed liquidity maps from SMC patterns + structure + session tags.
+
+Liquidity Engine v1 prefers ``analyze_liquidity`` → ``LiquiditySnapshot``.
+``build_liquidity_map`` remains the legacy adapter used by FeatureExtractor /
+confluence and is backed by the v1 analyzer when candles are present.
+"""
 
 from __future__ import annotations
 
-from shared.types.models import SMCPattern, SignalDirection, TrendDirection
+from shared.types.models import SMCPattern, SignalDirection, TrendDirection, Candle
 
 from services.quant_engine.features.types import MarketFeatures
 from services.quant_engine.liquidity.models import (
-    LiquidityKind,
-    LiquidityLevel,
     LiquidityMap,
-    LiquiditySide,
     LiquiditySweepAssessment,
     SweepQuality,
 )
-from services.quant_engine.market_structure.models import StructureRelation, StructureSnapshot
+from services.quant_engine.market_structure.models import StructureSnapshot
 from services.quant_engine.swing_analysis import detect_session_liquidity
-from shared.types.models import Candle
 
 
 def assess_sweep_vs_bias(
@@ -73,13 +74,39 @@ def build_liquidity_map(
     """Assemble typed levels and sweep assessments for scoring / confluence."""
 
     snap = snapshot or (features.structure_snapshot if features else None)
+    bars = candles or []
+    if bars:
+        from services.quant_engine.liquidity.analyzer import analyze_liquidity
+
+        result = analyze_liquidity(
+            bars,
+            snapshot=snap,
+            patterns=patterns,
+            symbol=bars[-1].symbol if bars else None,
+            timeframe=bars[-1].timeframe if bars else None,
+            atr=features.atr if features else 0.0,
+            external_bias=(
+                features.external_bias
+                if features
+                else (snap.external_bias if snap else TrendDirection.RANGING)
+            ),
+        )
+        if result.legacy_map is not None:
+            return result.legacy_map
+
+    # Minimal fallback without candles (unit tests with patterns only).
+    from services.quant_engine.liquidity.models import (
+        LiquidityKind,
+        LiquidityLevel,
+        LiquiditySide,
+    )
+
     external = features.external_bias if features else TrendDirection.RANGING
     session_tags = tuple(
         features.session_tags
         if features and features.session_tags
-        else detect_session_liquidity(candles or [])
+        else detect_session_liquidity(bars)
     )
-
     levels: list[LiquidityLevel] = []
     sweeps: list[LiquiditySweepAssessment] = []
 
@@ -129,6 +156,8 @@ def build_liquidity_map(
                 )
 
     if snap is not None:
+        from services.quant_engine.market_structure.models import StructureRelation
+
         for relation in snap.swing_relations[-8:]:
             if relation.relation is StructureRelation.EQUAL_HIGH:
                 levels.append(
@@ -173,33 +202,4 @@ def build_liquidity_map(
                 )
             )
 
-    for tag in session_tags:
-        lower = tag.lower()
-        if "asian high" in lower:
-            levels.append(
-                LiquidityLevel(
-                    kind=LiquidityKind.SESSION_ASIA_HIGH,
-                    side=LiquiditySide.SELL_SIDE,
-                    price=0.0,
-                    strength=0.4,
-                    source="session",
-                    metadata={"tag": tag},
-                )
-            )
-        elif "asian low" in lower:
-            levels.append(
-                LiquidityLevel(
-                    kind=LiquidityKind.SESSION_ASIA_LOW,
-                    side=LiquiditySide.BUY_SIDE,
-                    price=0.0,
-                    strength=0.4,
-                    source="session",
-                    metadata={"tag": tag},
-                )
-            )
-
-    return LiquidityMap(
-        levels=tuple(levels),
-        sweeps=tuple(sweeps),
-        session_tags=session_tags,
-    )
+    return LiquidityMap(levels=tuple(levels), sweeps=tuple(sweeps), session_tags=session_tags)

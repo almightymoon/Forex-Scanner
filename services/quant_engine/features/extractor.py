@@ -148,14 +148,35 @@ class FeatureExtractor:
             elif p.pattern_type == "liquidity_sweep":
                 features.liquidity_sweep = True
 
+        from services.quant_engine.liquidity.analyzer import analyze_liquidity
         from services.quant_engine.liquidity.pools import build_liquidity_map
 
-        features.liquidity_map = build_liquidity_map(
-            patterns,
-            features=features,
-            candles=candles,
-            snapshot=features.structure_snapshot,
-        )
+        if candles:
+            features.liquidity_snapshot = analyze_liquidity(
+                candles,
+                snapshot=features.structure_snapshot,
+                patterns=patterns,
+                atr=features.atr,
+                external_bias=features.external_bias,
+                symbol=candles[-1].symbol,
+                timeframe=candles[-1].timeframe,
+            )
+            features.liquidity_map = (
+                features.liquidity_snapshot.legacy_map
+                or build_liquidity_map(
+                    patterns,
+                    features=features,
+                    candles=candles,
+                    snapshot=features.structure_snapshot,
+                )
+            )
+        else:
+            features.liquidity_map = build_liquidity_map(
+                patterns,
+                features=features,
+                candles=candles,
+                snapshot=features.structure_snapshot,
+            )
         if not features.liquidity_pools:
             features.liquidity_pools = features.liquidity_map.pool_labels
 

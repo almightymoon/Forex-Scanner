@@ -1,8 +1,8 @@
-"""Liquidity engine — sweeps, equal highs/lows, session liquidity.
+"""Liquidity engine — Liquidity Engine v1 scoring adapter.
 
-Scores SMC liquidity patterns with optional structure-bias quality:
-continuation sweeps are rewarded; stop-hunts are soft-penalized.
-Does not change production rule base weights in scoring.yaml.
+Detects / scores liquidity context for DecisionEngine. Directional BUY/SELL
+from pattern points is retained for score aggregation only; trade decisions
+remain outside this engine. Prefer ``analyze_liquidity`` for the full snapshot.
 """
 
 from shared.config.scoring_loader import V2ScoringConfig, get_v2_scoring_config
@@ -12,7 +12,8 @@ from services.quant_engine.features.types import MarketFeatures
 
 from services.quant_engine.confidence.output import EngineOutput, clamp_score, confidence_from_score
 from services.quant_engine.decision.pattern_scoring import filter_patterns
-from services.quant_engine.liquidity.models import SweepQuality
+from services.quant_engine.liquidity.analyzer import analyze_liquidity
+from services.quant_engine.liquidity.models import LIQUIDITY_ENGINE_VERSION, SweepKind, SweepQuality
 from services.quant_engine.liquidity.pools import build_liquidity_map
 from services.quant_engine.swing_analysis import detect_session_liquidity
 
@@ -20,8 +21,30 @@ _LIQUIDITY_TYPES = {"liquidity_sweep", "equal_highs", "equal_lows"}
 
 
 class LiquidityEngine:
+    version = LIQUIDITY_ENGINE_VERSION
+
     def __init__(self, config: V2ScoringConfig | None = None):
         self.config = config or get_v2_scoring_config()
+
+    def analyze(
+        self,
+        candles: list[Candle],
+        *,
+        patterns: list[SMCPattern] | None = None,
+        features: MarketFeatures | None = None,
+        as_of_index: int | None = None,
+    ):
+        """Return LiquiditySnapshot (canonical v1 output)."""
+        return analyze_liquidity(
+            candles,
+            snapshot=features.structure_snapshot if features else None,
+            patterns=patterns or [],
+            atr=features.atr if features else 0.0,
+            external_bias=features.external_bias if features else None,
+            as_of_index=as_of_index,
+            symbol=candles[-1].symbol if candles else None,
+            timeframe=candles[-1].timeframe if candles else None,
+        )
 
     def run(
         self,
@@ -35,9 +58,23 @@ class LiquidityEngine:
             "buy_side": 4, "sell_side": 4,
         })
         filtered = filter_patterns(patterns, _LIQUIDITY_TYPES)
-        liquidity_map = build_liquidity_map(
-            patterns, features=features, candles=candles
-        )
+        snapshot = None
+        if features is not None and features.liquidity_snapshot is not None:
+            # Prefer FeatureExtractor snapshot — avoid re-running analyze_liquidity.
+            snapshot = features.liquidity_snapshot
+            liquidity_map = snapshot.legacy_map or build_liquidity_map(
+                patterns, features=features, candles=candles
+            )
+        elif candles:
+            snapshot = self.analyze(candles, patterns=patterns, features=features)
+            liquidity_map = snapshot.legacy_map or build_liquidity_map(
+                patterns, features=features, candles=candles
+            )
+        else:
+            liquidity_map = build_liquidity_map(
+                patterns, features=features, candles=candles
+            )
+
         score = 0
         reasons: list[str] = []
         warnings: list[str] = []
@@ -58,7 +95,6 @@ class LiquidityEngine:
                     level = float(raw) if isinstance(raw, (int, float)) else None
                 assessment = sweep_by_dir.get((p.direction, level))
                 if assessment is None and liquidity_map.sweeps:
-                    # Fall back to first matching direction.
                     assessment = next(
                         (s for s in liquidity_map.sweeps if s.direction is p.direction),
                         None,
@@ -96,6 +132,18 @@ class LiquidityEngine:
             else:
                 sell_pts += pts
 
+        if snapshot is not None:
+            reasons.append(
+                f"Liquidity v{LIQUIDITY_ENGINE_VERSION}: "
+                f"{len(snapshot.active_pools)} active pools, "
+                f"{len(snapshot.recent_sweeps)} sweeps"
+            )
+            for event in snapshot.recent_sweeps[-2:]:
+                reasons.append(
+                    f"{event.kind.value} @ {event.level_price:.5f} "
+                    f"grade={event.grade.value}"
+                )
+
         session_tags = list(liquidity_map.session_tags) or (
             features.session_tags if features else detect_session_liquidity(candles or [])
         )
@@ -110,6 +158,7 @@ class LiquidityEngine:
             reasons.append(tag)
 
         score = clamp_score(score, weights.liquidity)
+        # Score aggregation only — not a trade recommendation.
         direction = "BUY" if buy_pts > sell_pts else "SELL" if sell_pts > buy_pts else "NEUTRAL"
         return EngineOutput(
             name="Liquidity",
@@ -123,6 +172,8 @@ class LiquidityEngine:
                 "liquidity_pools": pools,
                 "session_tags": session_tags,
                 "liquidity_map": liquidity_map.to_dict(),
+                "liquidity_snapshot": snapshot.to_dict() if snapshot else None,
+                "liquidity_engine_version": LIQUIDITY_ENGINE_VERSION,
                 "continuation_sweeps": sum(
                     1
                     for s in liquidity_map.sweeps
@@ -130,6 +181,11 @@ class LiquidityEngine:
                 ),
                 "stop_hunt_sweeps": sum(
                     1 for s in liquidity_map.sweeps if s.quality is SweepQuality.STOP_HUNT
+                ),
+                "breakouts": (
+                    sum(1 for s in snapshot.sweeps if s.kind is SweepKind.BREAKOUT)
+                    if snapshot
+                    else 0
                 ),
             },
         )

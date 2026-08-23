@@ -109,6 +109,116 @@ SELECT create_hypertable('candles', 'timestamp', if_not_exists => TRUE);
 
 CREATE INDEX idx_candles_symbol_tf ON candles (symbol, timeframe, timestamp DESC);
 
+-- Detected swings (replay / audit). algorithm_version pins swing_engine version.
+CREATE TABLE IF NOT EXISTS swings (
+    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    symbol                  VARCHAR(16) NOT NULL,
+    timeframe               timeframe NOT NULL,
+    swing_type              VARCHAR(32) NOT NULL,  -- e.g. MAJOR_EXTERNAL_HIGH
+    direction               VARCHAR(8) NOT NULL,   -- HIGH | LOW
+    price                   DECIMAL(18, 8) NOT NULL,
+    source_timestamp        TIMESTAMPTZ NOT NULL,  -- pivot bar time
+    confirmation_timestamp  TIMESTAMPTZ,
+    pivot_index             INTEGER,
+    confirmation_index      INTEGER,
+    confirmation_delay      INTEGER,
+    strength                INTEGER NOT NULL DEFAULT 1,
+    score                   DECIMAL(12, 4),
+    confidence              DECIMAL(8, 4),
+    quality_score           DECIMAL(8, 4),
+    confirmed               BOOLEAN NOT NULL DEFAULT FALSE,
+    algorithm_version       VARCHAR(32) NOT NULL,
+    metadata                JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (symbol, timeframe, algorithm_version, source_timestamp, direction)
+);
+
+CREATE INDEX IF NOT EXISTS idx_swings_lookup
+    ON swings (symbol, timeframe, algorithm_version, source_timestamp DESC);
+
+-- Causal BOS/CHoCH events from Market Structure Engine v1.
+CREATE TABLE IF NOT EXISTS market_structure_events (
+    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id                VARCHAR(128) NOT NULL,
+    symbol                  VARCHAR(16) NOT NULL,
+    timeframe               timeframe NOT NULL,
+    event_type              VARCHAR(16) NOT NULL,
+    direction               VARCHAR(16) NOT NULL,
+    scope                   VARCHAR(16) NOT NULL,
+    timestamp               TIMESTAMPTZ NOT NULL,
+    price                   DECIMAL(18, 8) NOT NULL,
+    break_close             DECIMAL(18, 8),
+    break_index             INTEGER,
+    related_swing_id        VARCHAR(128),
+    related_event_id        VARCHAR(128),
+    prior_bias              VARCHAR(16),
+    resulting_bias          VARCHAR(16),
+    pending_bias            VARCHAR(16),
+    is_continuation         BOOLEAN NOT NULL DEFAULT FALSE,
+    swing_engine_version    VARCHAR(32) NOT NULL,
+    structure_engine_version VARCHAR(32) NOT NULL DEFAULT '1.0.0',
+    metadata                JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (symbol, timeframe, event_id, swing_engine_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_market_structure_events_lookup
+    ON market_structure_events (symbol, timeframe, timestamp DESC);
+
+-- Liquidity Engine v1 pools / sweeps
+CREATE TABLE IF NOT EXISTS liquidity_pools (
+    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    pool_id                 VARCHAR(256) NOT NULL,
+    symbol                  VARCHAR(16) NOT NULL,
+    timeframe               timeframe NOT NULL,
+    source_timeframe        VARCHAR(8) NOT NULL,
+    pool_type               VARCHAR(32) NOT NULL,
+    side                    VARCHAR(16) NOT NULL,
+    price                   DECIMAL(18, 8) NOT NULL,
+    scope                   VARCHAR(32),
+    status                  VARCHAR(16) NOT NULL,
+    strength                VARCHAR(16) NOT NULL,
+    strength_score          DECIMAL(8, 4),
+    touches                 INTEGER NOT NULL DEFAULT 1,
+    source_timestamp        TIMESTAMPTZ,
+    available_timestamp     TIMESTAMPTZ,
+    created_index           INTEGER,
+    available_index         INTEGER,
+    source_reference        VARCHAR(256),
+    algorithm_version       VARCHAR(32) NOT NULL DEFAULT '1.0.0',
+    metadata                JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (symbol, timeframe, pool_id, algorithm_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_liquidity_pools_lookup
+    ON liquidity_pools (symbol, timeframe, status, price);
+
+CREATE TABLE IF NOT EXISTS liquidity_sweeps (
+    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    sweep_id                VARCHAR(256) NOT NULL,
+    symbol                  VARCHAR(16) NOT NULL,
+    timeframe               timeframe NOT NULL,
+    kind                    VARCHAR(16) NOT NULL,
+    pool_id                 VARCHAR(256) NOT NULL,
+    pool_type               VARCHAR(32),
+    level_price             DECIMAL(18, 8) NOT NULL,
+    bar_index               INTEGER,
+    timestamp               TIMESTAMPTZ,
+    penetration             DECIMAL(18, 8),
+    penetration_atr         DECIMAL(12, 6),
+    rejection_pct           DECIMAL(8, 2),
+    grade                   VARCHAR(16) NOT NULL,
+    bias_quality            VARCHAR(16),
+    algorithm_version       VARCHAR(32) NOT NULL DEFAULT '1.0.0',
+    metadata                JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (symbol, timeframe, sweep_id, algorithm_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_liquidity_sweeps_lookup
+    ON liquidity_sweeps (symbol, timeframe, timestamp DESC);
+
 CREATE TABLE ticks (
     symbol          VARCHAR(16) NOT NULL,
     timestamp       TIMESTAMPTZ NOT NULL,

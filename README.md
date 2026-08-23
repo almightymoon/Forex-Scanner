@@ -112,7 +112,10 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
 - [Architecture](docs/ARCHITECTURE.md) — System design
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
-- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (v2.0.0 frozen default; v2.2.0 hierarchy candidate)
+- [Swing Detection](docs/SWING_DETECTION.md) — engine spec (default **v2.3.0**)
+- [Market Structure Engine](docs/MARKET_STRUCTURE_ENGINE.md) — HH/HL/LH/LL, BOS/CHoCH, regime (v1)
+- [Liquidity Engine](docs/LIQUIDITY_ENGINE.md) — pools, sweeps, session liquidity (v1.0.0)
+- [Market Data → Swing Pipeline](docs/MARKET_DATA_SWING_PIPELINE.md) — canonical data path, integrity, splits, CLI
 - [XAUUSD H1 Benchmark](docs/XAUUSD_H1_BENCHMARK.md) — real-data prepare/annotate/validate workflow
 - [Project Roadmap](docs/ROADMAP.md) — master plan to production (BOS, CHoCH, liquidity, decision engine)
 

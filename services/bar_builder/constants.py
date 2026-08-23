@@ -2,6 +2,7 @@
 
 from shared.types.models import Timeframe
 
+# W1 uses Monday 00:00 UTC alignment (see BarBuilder.bucket_timestamp), not raw epoch modulo.
 TF_SECONDS: dict[Timeframe, int] = {
     Timeframe.M1: 60,
     Timeframe.M5: 300,
@@ -10,15 +11,27 @@ TF_SECONDS: dict[Timeframe, int] = {
     Timeframe.H1: 3600,
     Timeframe.H4: 14400,
     Timeframe.D1: 86400,
+    Timeframe.W1: 604800,
 }
 
 TF_MINUTES: dict[Timeframe, int] = {tf: sec // 60 for tf, sec in TF_SECONDS.items()}
 
+# Canonical rollup chain (includes M30 between M15 and H1).
 SUPPORTED_TIMEFRAMES: tuple[Timeframe, ...] = (
     Timeframe.M1,
     Timeframe.M5,
     Timeframe.M15,
     Timeframe.M30,
+    Timeframe.H1,
+    Timeframe.H4,
+    Timeframe.D1,
+    Timeframe.W1,
+)
+
+# Primary scanner / benchmark timeframes.
+PRIMARY_TIMEFRAMES: tuple[Timeframe, ...] = (
+    Timeframe.M5,
+    Timeframe.M15,
     Timeframe.H1,
     Timeframe.H4,
     Timeframe.D1,

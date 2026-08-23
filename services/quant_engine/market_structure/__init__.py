@@ -52,10 +52,30 @@ from services.quant_engine.market_structure.proximity import (
     StructureProximity,
     assess_structure_proximity,
 )
+from services.quant_engine.market_structure.trend_labels import (
+    MarketTrendLabel,
+    classify_market_trend,
+    to_market_trend_label,
+)
+from services.quant_engine.market_structure.classification import (
+    SwingClassificationRecord,
+    explain_swing_classifications,
+)
+from services.quant_engine.market_structure.state import (
+    MarketStructureStateView,
+    build_market_structure_state_view,
+)
+from services.quant_engine.market_structure.api import (
+    MarketStructureAnalysis,
+    analyze_market_structure,
+)
 
 __all__ = [
+    "MarketStructureAnalysis",
     "MarketStructureDetectorV1",
     "MarketStructureEngine",
+    "MarketStructureStateView",
+    "MarketTrendLabel",
     "MTFStructureBiasResult",
     "ProjectedSwingFact",
     "SetupConfluenceAssessment",
@@ -70,17 +90,22 @@ __all__ = [
     "StructureRelation",
     "StructureSnapshot",
     "StructureSwingRelation",
+    "SwingClassificationRecord",
     "TimeframeStructureBias",
     "aggregate_candles",
+    "analyze_market_structure",
     "analyze_structure",
     "assess_setup_confluence",
     "assess_structure_proximity",
     "build_market_structure_state",
+    "build_market_structure_state_view",
     "build_trend_context_from_structure",
+    "classify_market_trend",
     "classify_structure_regime",
     "compute_mtf_structure_bias",
     "compute_mtf_structure_bias_from_h1",
     "event_id_for",
+    "explain_swing_classifications",
     "project_swing_facts",
     "quality_label",
     "score_structure_event",
@@ -90,4 +115,5 @@ __all__ = [
     "structure_overlay_payload",
     "structure_snapshot_to_features",
     "swing_id_for",
+    "to_market_trend_label",
 ]

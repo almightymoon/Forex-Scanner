@@ -27,7 +27,9 @@ def rollup_bars(candles: list[Candle], target: Timeframe) -> list[Candle]:
     buckets: dict[datetime, list[Candle]] = {}
 
     for c in candles:
-        bucket_ts = BarBuilder.bucket_timestamp(c.timestamp, interval)
+        bucket_ts = BarBuilder.bucket_timestamp(
+            c.timestamp, interval, timeframe=target
+        )
         buckets.setdefault(bucket_ts, []).append(c)
 
     rolled: list[Candle] = []
