@@ -50,6 +50,7 @@ from services.quant_engine.order_blocks.engine import OrderBlockEngine
 from services.quant_engine.decision.engines.risk import RiskEngine
 from services.quant_engine.decision.session import current_session, session_weight
 from services.quant_engine.decision.structure_policy import apply_structure_decision_policy
+from services.quant_engine.pipeline import ANALYSIS_PIPELINE_VERSION
 from services.quant_engine.smc_confluence import build_smc_context
 from services.quant_engine.smc_confluence.models import ConfluenceBias
 from services.quant_engine.trend.engine import TrendEngine
@@ -215,11 +216,17 @@ class DecisionEngine:
         fingerprint = SetupFingerprint.from_signal(
             direction, primary_trend, smc_patterns, total,
         )
+        # Historical evidence is informational only on the live decision path.
+        # Confidence is NOT multiplied by in-window forward outcomes (those are
+        # valid research stats but create in-sample optimism if applied live).
         historical = self._historical.analyze(
-            symbol, timeframe, candles, fingerprint,
+            symbol,
+            timeframe,
+            candles,
+            fingerprint,
+            as_of_index=len(candles) - 1,
+            apply_confidence_adjustment=False,
         )
-        if historical.sample_size > 0 and historical.confidence_multiplier != 1.0:
-            confidence = round(min(max(confidence * historical.confidence_multiplier, 0.0), 1.0), 3)
 
         entry, sl, tp1, tp2, tp3, rr = self.risk_engine.calculate_levels(
             candles, indicators, direction
@@ -269,6 +276,13 @@ class DecisionEngine:
         market_features["setup_confluence"] = structure_adj.confluence.to_dict()
         market_features["structure_decision_policy"] = structure_adj.to_dict()
         market_features["smc_context"] = smc_context.to_dict()
+        market_features["pipeline_version"] = ANALYSIS_PIPELINE_VERSION
+        market_features["swing_version"] = SCAN_SWING_VERSION
+        market_features["algorithm_versions"] = {
+            "pipeline": ANALYSIS_PIPELINE_VERSION,
+            "swing": SCAN_SWING_VERSION,
+            **smc_context.algorithm_versions.to_dict(),
+        }
 
         return ScannerSignal(
             symbol=symbol,

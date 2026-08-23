@@ -3,9 +3,14 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from services.indicator_service.indicators import compute_all
-from services.quant_engine.market_structure.detector import analyze_structure
-from services.quant_engine.swings.boundary import SCAN_SWING_VERSION, obtain_confirmed_swings
+from services.backtesting_service.execution import (
+    ExecutionConfig,
+    SimulatedTrade,
+    compute_performance_metrics,
+    pip_size_for_symbol,
+    simulate_trade,
+)
+from services.quant_engine.pipeline import ANALYSIS_PIPELINE_VERSION, analyze_candle_window
 from services.scanner_service.engine import DecisionEngine
 from services.smc_service.smc import SMCEngine
 from shared.types.models import (
@@ -25,6 +30,8 @@ class TradeResult:
     outcome: str  # win, loss, breakeven
     pnl_pips: float
     score: int
+    r_multiple: float = 0.0
+    ambiguous: bool = False
 
 
 @dataclass
@@ -40,6 +47,10 @@ class BacktestReport:
     avg_rr: float = 0.0
     max_drawdown: float = 0.0
     avg_score: float = 0.0
+    profit_factor: float | None = None
+    expectancy: float = 0.0
+    pipeline_version: str = ANALYSIS_PIPELINE_VERSION
+    execution_config: dict = field(default_factory=dict)
     trades: list[TradeResult] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -53,21 +64,36 @@ class BacktestReport:
             "breakeven": self.breakeven,
             "win_rate": round(self.win_rate, 1),
             "avg_rr": round(self.avg_rr, 2),
+            "avg_r": round(self.avg_rr, 2),
             "max_drawdown": round(self.max_drawdown, 2),
             "avg_score": round(self.avg_score, 1),
+            "profit_factor": (
+                round(self.profit_factor, 3) if self.profit_factor is not None else None
+            ),
+            "expectancy": round(self.expectancy, 3),
+            "pipeline_version": self.pipeline_version,
+            "execution_config": dict(self.execution_config),
             "sample_trades": [
-                {"direction": t.direction, "outcome": t.outcome, "score": t.score, "pnl_pips": round(t.pnl_pips, 1)}
+                {
+                    "direction": t.direction,
+                    "outcome": t.outcome,
+                    "score": t.score,
+                    "pnl_pips": round(t.pnl_pips, 1),
+                    "r_multiple": round(t.r_multiple, 3),
+                    "ambiguous": t.ambiguous,
+                }
                 for t in self.trades[-5:]
             ],
         }
 
 
 class BacktestEngine:
-    """Walk-forward backtest on candle history using the Decision Engine."""
+    """Walk-forward backtest using the canonical analysis pipeline."""
 
-    def __init__(self):
+    def __init__(self, execution: ExecutionConfig | None = None):
         self.engine = DecisionEngine()
         self.smc = SMCEngine()
+        self.execution = execution or ExecutionConfig()
 
     def run(
         self,
@@ -76,15 +102,31 @@ class BacktestEngine:
         timeframe: Timeframe = Timeframe.H1,
         min_score: int = 70,
         forward_bars: int = 20,
+        mtf_trends: Optional[dict[str, TrendDirection]] = None,
     ) -> BacktestReport:
-        report = BacktestReport(symbol=symbol, timeframe=timeframe.value, min_score=min_score)
+        report = BacktestReport(
+            symbol=symbol,
+            timeframe=timeframe.value,
+            min_score=min_score,
+            pipeline_version=ANALYSIS_PIPELINE_VERSION,
+            execution_config={
+                "entry_mode": self.execution.entry_mode,
+                "ambiguous_policy": self.execution.ambiguous_policy,
+                "spread_pips": self.execution.spread_pips,
+                "slippage_pips": self.execution.slippage_pips,
+                "commission_pips": self.execution.commission_pips,
+            },
+        )
         if len(candles) < 80:
             return report
 
-        pip = 0.01 if "JPY" in symbol else (0.01 if symbol == "XAUUSD" else 0.0001)
-        trades: list[TradeResult] = []
-        equity_curve: list[float] = [0.0]
+        pip = pip_size_for_symbol(symbol)
+        simulated: list[SimulatedTrade] = []
         cooldown = 0
+
+        # News is intentionally neutral in historical backtests unless the
+        # caller injects a causal calendar (see docs — revised calendars leak).
+        news = NewsContext(score=10)
 
         for i in range(60, len(candles) - forward_bars):
             if cooldown > 0:
@@ -92,111 +134,71 @@ class BacktestEngine:
                 continue
 
             window = candles[: i + 1]
-            indicators = compute_all(window, symbol, timeframe)
-            confirmed_swings = obtain_confirmed_swings(
-                window, version=SCAN_SWING_VERSION
-            )
-            structure_snapshot = analyze_structure(window, confirmed_swings)
-            smc_patterns = self.smc.detect_all(
-                window,
+            mtf = dict(mtf_trends or {})
+            if not mtf:
+                from services.indicator_service.indicators import compute_all
+
+                ind = compute_all(window, symbol, timeframe)
+                if ind.ema_20 and ind.ema_50:
+                    mtf["H1"] = (
+                        TrendDirection.BULLISH
+                        if ind.ema_20 > ind.ema_50
+                        else TrendDirection.BEARISH
+                    )
+
+            bundle = analyze_candle_window(
                 symbol,
                 timeframe,
-                confirmed_swings=confirmed_swings,
-                structure_snapshot=structure_snapshot,
+                window,
+                mtf_trends=mtf,
+                news=news,
+                decision_engine=self.engine,
+                smc_engine=self.smc,
+                evaluate=True,
             )
-
-            mtf_trends: dict[str, TrendDirection] = {}
-            if indicators.ema_20 and indicators.ema_50:
-                if indicators.ema_20 > indicators.ema_50:
-                    mtf_trends["H1"] = TrendDirection.BULLISH
-                else:
-                    mtf_trends["H1"] = TrendDirection.BEARISH
-
-            signal = self.engine.evaluate(
-                symbol=symbol,
-                timeframe=timeframe,
-                candles=window,
-                indicators=indicators,
-                smc_patterns=smc_patterns,
-                mtf_trends=mtf_trends,
-                news=NewsContext(score=10),
-                confirmed_swings=confirmed_swings,
-                structure_snapshot=structure_snapshot,
-            )
-
+            signal = bundle.signal
+            if signal is None:
+                continue
             if signal.score < min_score or signal.direction == SignalDirection.NEUTRAL:
                 continue
             if not signal.stop_loss or not signal.take_profit_1:
                 continue
 
-            entry = window[-1].close
-            sl = signal.stop_loss
-            tp = signal.take_profit_1
-            direction = signal.direction.value
-
-            outcome = "breakeven"
-            exit_price = entry
-            for bar in candles[i + 1 : i + 1 + forward_bars]:
-                if direction == "buy":
-                    if bar.low <= sl:
-                        outcome, exit_price = "loss", sl
-                        break
-                    if bar.high >= tp:
-                        outcome, exit_price = "win", tp
-                        break
-                else:
-                    if bar.high >= sl:
-                        outcome, exit_price = "loss", sl
-                        break
-                    if bar.low <= tp:
-                        outcome, exit_price = "win", tp
-                        break
-
-            if outcome == "breakeven":
-                exit_price = candles[min(i + forward_bars, len(candles) - 1)].close
-                pnl = (exit_price - entry) if direction == "buy" else (entry - exit_price)
-                outcome = "win" if pnl > 0 else "loss" if pnl < 0 else "breakeven"
-
-            pnl_raw = (exit_price - entry) if direction == "buy" else (entry - exit_price)
-            pnl_pips = pnl_raw / pip
-
-            trades.append(TradeResult(
-                entry_price=entry, exit_price=exit_price,
-                direction=direction, outcome=outcome,
-                pnl_pips=pnl_pips, score=signal.score,
-            ))
-
-            equity_curve.append(equity_curve[-1] + pnl_pips)
+            trade = simulate_trade(
+                direction=signal.direction.value,
+                entry=window[-1].close,
+                stop_loss=signal.stop_loss,
+                take_profit=signal.take_profit_1,
+                forward_bars=candles[i + 1 : i + 1 + forward_bars],
+                pip=pip,
+                score=signal.score,
+                config=self.execution,
+            )
+            simulated.append(trade)
             cooldown = forward_bars // 2
 
-        report.trades = trades
-        report.total_trades = len(trades)
-        if not trades:
-            return report
-
-        report.wins = sum(1 for t in trades if t.outcome == "win")
-        report.losses = sum(1 for t in trades if t.outcome == "loss")
-        report.breakeven = sum(1 for t in trades if t.outcome == "breakeven")
-        report.win_rate = (report.wins / report.total_trades) * 100
-        report.avg_score = sum(t.score for t in trades) / len(trades)
-
-        rr_vals = []
-        for t in trades:
-            if t.outcome == "win" and t.pnl_pips > 0:
-                rr_vals.append(abs(t.pnl_pips))
-            elif t.outcome == "loss":
-                rr_vals.append(0)
-        if rr_vals:
-            report.avg_rr = sum(rr_vals) / max(report.losses, 1) if report.losses else 1.5
-
-        peak = equity_curve[0]
-        max_dd = 0.0
-        for eq in equity_curve:
-            if eq > peak:
-                peak = eq
-            dd = peak - eq
-            if dd > max_dd:
-                max_dd = dd
-        report.max_drawdown = max_dd
-
+        metrics = compute_performance_metrics(simulated)
+        report.trades = [
+            TradeResult(
+                entry_price=t.entry_price,
+                exit_price=t.exit_price,
+                direction=t.direction,
+                outcome=t.outcome,
+                pnl_pips=t.pnl_pips,
+                score=t.score,
+                r_multiple=t.r_multiple,
+                ambiguous=t.ambiguous,
+            )
+            for t in simulated
+        ]
+        report.total_trades = metrics.total_trades
+        report.wins = metrics.wins
+        report.losses = metrics.losses
+        report.breakeven = metrics.breakeven
+        report.win_rate = metrics.win_rate
+        report.avg_score = metrics.avg_score
+        report.avg_rr = metrics.avg_r
+        report.max_drawdown = metrics.max_drawdown_pips
+        report.profit_factor = metrics.profit_factor
+        report.expectancy = metrics.expectancy
         return report

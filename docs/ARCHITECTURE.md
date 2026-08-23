@@ -43,28 +43,25 @@ Project Atlas is built as a **modular monorepo** where the Decision Engine is th
 ## Scanner Pipeline
 
 ```
-Live Market Data
+Live Market Data / Collector OHLC
         │
         ▼
-Market Data Service ──→ Validate & store candles
+DataLoader ──→ indicators + build_scan_structure + SMC + MTF + news
         │
         ▼
-Indicator Engine ──→ EMA, RSI, MACD, ATR, ADX, VWAP, BB
+analyze_candle_window / DecisionEngine ──→ ScannerSignal
         │
-        ▼
-SMC Engine ──→ BOS, CHoCH, Order Blocks, FVG, Liquidity Sweeps
-        │
-        ▼
-SMC Confluence Engine ──→ SMCContextSnapshot (evidence, conflicts, bias)
-        │
-        ▼
-Decision Engine ──→ 100-point scoring → Signal
-        │
+        ├── Replay & Backtest reuse the same analytical pipeline
+        ├── Backtest adds simulate_trade (execution only)
         ├──→ AI Explanation (template → LLM; context from engines)
         ├──→ Database (scanner_results)
         ├──→ Notifications (Telegram, Discord, Email)
         └──→ Dashboard (WebSocket push)
 ```
+
+See **[CURRENT_ARCHITECTURE.md](CURRENT_ARCHITECTURE.md)** and
+**[CURRENT_ARCHITECTURE_AUDIT.md](CURRENT_ARCHITECTURE_AUDIT.md)** for the
+source-traced integrity picture.
 
 ## Technology Stack
 

@@ -3,10 +3,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta, timezone
 
-from services.indicator_service.indicators import compute_all
 from services.market_data_service.factory import create_market_data_provider
-from services.quant_engine.market_structure.detector import analyze_structure
-from services.quant_engine.swings.boundary import SCAN_SWING_VERSION, obtain_confirmed_swings
+from services.quant_engine.pipeline import ANALYSIS_PIPELINE_VERSION, analyze_candle_window
 from services.scanner_service.decision_engine import DecisionEngine
 from services.smc_service.smc import SMCEngine
 from shared.types.models import ScannerSignal, Timeframe, to_dict
@@ -26,6 +24,7 @@ class ReplayFrame:
     timestamp: str
     candle: dict
     signal: dict | None = None
+    analytical_fingerprint: dict | None = None
 
 
 @dataclass
@@ -36,10 +35,11 @@ class ReplaySession:
     session: str
     frames: list[ReplayFrame] = field(default_factory=list)
     total_candles: int = 0
+    pipeline_version: str = ANALYSIS_PIPELINE_VERSION
 
 
 class ReplayEngine:
-    """Replays history and runs the decision engine at each candle."""
+    """Replays history via the canonical analysis pipeline."""
 
     def __init__(self, market_data=None, decision_engine=None, smc_engine=None):
         self.market_data = market_data or create_market_data_provider()
@@ -65,27 +65,15 @@ class ReplayEngine:
         frames: list[ReplayFrame] = []
         for i in range(min_window, len(candles)):
             window = candles[: i + 1]
-            indicators = compute_all(window, symbol.upper(), timeframe)
-            confirmed_swings = obtain_confirmed_swings(
-                window, version=SCAN_SWING_VERSION
-            )
-            structure_snapshot = analyze_structure(window, confirmed_swings)
-            smc_patterns = self.smc_engine.detect_all(
-                window,
-                symbol.upper(),
-                timeframe,
-                confirmed_swings=confirmed_swings,
-                structure_snapshot=structure_snapshot,
-            )
-            signal: ScannerSignal = self.decision_engine.evaluate(
+            bundle = analyze_candle_window(
                 symbol.upper(),
                 timeframe,
                 window,
-                indicators,
-                smc_patterns,
-                confirmed_swings=confirmed_swings,
-                structure_snapshot=structure_snapshot,
+                decision_engine=self.decision_engine,
+                smc_engine=self.smc_engine,
+                evaluate=True,
             )
+            signal: ScannerSignal | None = bundle.signal
             c = candles[i]
             frames.append(
                 ReplayFrame(
@@ -98,7 +86,8 @@ class ReplayEngine:
                         "close": c.close,
                         "volume": c.volume,
                     },
-                    signal=to_dict(signal) if signal.score >= 60 else None,
+                    signal=to_dict(signal) if signal and signal.score >= 60 else None,
+                    analytical_fingerprint=bundle.analytical_fingerprint(),
                 )
             )
 
@@ -109,6 +98,7 @@ class ReplayEngine:
             session=session,
             frames=frames,
             total_candles=len(candles),
+            pipeline_version=ANALYSIS_PIPELINE_VERSION,
         )
 
     def session_to_dict(self, session: ReplaySession) -> dict:
@@ -119,12 +109,14 @@ class ReplayEngine:
             "date": session.date,
             "session": session.session,
             "total_candles": session.total_candles,
+            "pipeline_version": session.pipeline_version,
             "frames": [
                 {
                     "index": f.index,
                     "timestamp": f.timestamp,
                     "candle": f.candle,
                     "signal": f.signal,
+                    "analytical_fingerprint": f.analytical_fingerprint,
                 }
                 for f in session.frames
             ],

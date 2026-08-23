@@ -74,23 +74,34 @@ class SignalValidator:
         return ValidationReport(scope=scope, metrics=metrics, recent_outcomes=recent, recommendations=recommendations)
 
     def _check_outcome(self, sig: TrackedSignal, bars: list[Candle]) -> dict | None:
+        """Close on SL/TP. Ambiguous bars (both touched) → SL first (conservative)."""
         if not bars:
             return None
         pip = 0.01 if "JPY" in sig.symbol else (0.01 if sig.symbol == "XAUUSD" else 0.0001)
 
         for bar in bars:
             if sig.direction == "buy":
-                if bar.low <= sig.stop_loss:
+                hit_sl = bar.low <= sig.stop_loss
+                hit_tp = bar.high >= sig.take_profit
+                if hit_sl and hit_tp:
                     pnl = (sig.stop_loss - sig.entry_price) / pip
                     return {"outcome": "loss", "pnl_pips": pnl, "exit_price": sig.stop_loss}
-                if bar.high >= sig.take_profit:
+                if hit_sl:
+                    pnl = (sig.stop_loss - sig.entry_price) / pip
+                    return {"outcome": "loss", "pnl_pips": pnl, "exit_price": sig.stop_loss}
+                if hit_tp:
                     pnl = (sig.take_profit - sig.entry_price) / pip
                     return {"outcome": "win", "pnl_pips": pnl, "exit_price": sig.take_profit}
             else:
-                if bar.high >= sig.stop_loss:
+                hit_sl = bar.high >= sig.stop_loss
+                hit_tp = bar.low <= sig.take_profit
+                if hit_sl and hit_tp:
                     pnl = (sig.entry_price - sig.stop_loss) / pip
                     return {"outcome": "loss", "pnl_pips": pnl, "exit_price": sig.stop_loss}
-                if bar.low <= sig.take_profit:
+                if hit_sl:
+                    pnl = (sig.entry_price - sig.stop_loss) / pip
+                    return {"outcome": "loss", "pnl_pips": pnl, "exit_price": sig.stop_loss}
+                if hit_tp:
                     pnl = (sig.entry_price - sig.take_profit) / pip
                     return {"outcome": "win", "pnl_pips": pnl, "exit_price": sig.take_profit}
         return None

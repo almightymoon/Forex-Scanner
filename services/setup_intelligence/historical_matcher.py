@@ -101,9 +101,18 @@ class HistoricalSetupAnalyzer:
         min_similarity: float = 0.55,
         forward_bars: int = 12,
         step: int = 8,
+        *,
+        as_of_index: int | None = None,
+        apply_confidence_adjustment: bool = True,
     ) -> HistoricalEvidence:
         evidence = HistoricalEvidence()
         if len(candles) < 80:
+            return evidence
+
+        # Causal bound: never look past the evaluation bar.
+        end = as_of_index if as_of_index is not None else (len(candles) - 1)
+        end = min(end, len(candles) - 1)
+        if end < 60 + forward_bars:
             return evidence
 
         wins = losses = 0
@@ -111,7 +120,8 @@ class HistoricalSetupAnalyzer:
         durations: list[int] = []
         session_stats: dict[str, dict[str, int]] = {}
 
-        for i in range(60, len(candles) - forward_bars, step):
+        # Setup points must leave room for forward outcomes still ≤ end.
+        for i in range(60, end - forward_bars + 1, step):
             window = candles[: i + 1]
             sub = window[-50:]
             confirmed_swings = obtain_confirmed_swings(sub, version=SCAN_SWING_VERSION)
@@ -142,7 +152,9 @@ class HistoricalSetupAnalyzer:
             else:
                 sl, tp = entry + atr * 1.5, entry - atr * 2
 
-            outcome = self._simulate_forward(candles[i + 1 : i + 1 + forward_bars], entry, sl, tp, fingerprint.direction)
+            # Outcomes may only use bars through ``end`` (inclusive).
+            forward = candles[i + 1 : min(i + 1 + forward_bars, end + 1)]
+            outcome = self._simulate_forward(forward, entry, sl, tp, fingerprint.direction)
             sess = session_from_hour(window[-1].timestamp.hour)
             session_stats.setdefault(sess, {"wins": 0, "total": 0})
             session_stats[sess]["total"] += 1
@@ -153,10 +165,10 @@ class HistoricalSetupAnalyzer:
                 reward = abs(tp - entry)
                 if risk > 0:
                     rr_vals.append(reward / risk)
-                durations.append(forward_bars)
+                durations.append(len(forward) or forward_bars)
             elif outcome == "loss":
                 losses += 1
-                durations.append(forward_bars // 2)
+                durations.append(max(1, len(forward) // 2))
 
         total = wins + losses
         evidence.sample_size = total
@@ -178,9 +190,16 @@ class HistoricalSetupAnalyzer:
                 evidence.best_session = max(rates, key=rates.get)
                 evidence.worst_session = min(rates, key=rates.get)
 
-        mult, adj = historical_confidence_multiplier(evidence)
-        evidence.confidence_multiplier = mult
-        evidence.confidence_adjustment = adj
+        if apply_confidence_adjustment:
+            mult, adj = historical_confidence_multiplier(evidence)
+            evidence.confidence_multiplier = mult
+            evidence.confidence_adjustment = adj
+        else:
+            evidence.confidence_multiplier = 1.0
+            evidence.confidence_adjustment = (
+                f"Historical sample n={evidence.sample_size} reported without "
+                f"live confidence adjustment (win_rate={evidence.win_rate:.0f}%)"
+            )
 
         return evidence
 
