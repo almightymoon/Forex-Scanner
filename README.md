@@ -107,10 +107,24 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - **News filter** — Economic calendar integration
 - **Alerts** — Telegram, Discord, Email, Push
 
+## Analytical pipeline (frozen 1.4.0)
+
+Canonical analysis is `analyze_candle_window` at **`ANALYSIS_PIPELINE_VERSION = 1.4.0`**.
+The freeze → OOS → forensics track is **closed**:
+
+- [Project Closure 1.4.0](docs/PROJECT_CLOSURE_1.4.0.md) — status and non-claims
+- [Analytical Freeze](docs/ANALYTICAL_FREEZE.md) — change control
+- [OOS Validation Report](docs/OOS_VALIDATION_REPORT_1.4.0.md) — **FAILED OOS VALIDATION**
+- [OOS Failure Forensics](docs/OOS_FAILURE_FORENSICS_1.4.0.md) — diagnosis only
+- [Experiment Protocol 1.5.0](docs/EXPERIMENT_PROTOCOL_1.5.0.md) — charter only (not implemented)
+
+Do not silently retune 1.4.0 against OOS results.
+
 ## Documentation
 
 - [Milestones](docs/MILESTONES.md) — Full 30-milestone roadmap
 - [Architecture](docs/ARCHITECTURE.md) — System design
+- [Current Architecture](docs/CURRENT_ARCHITECTURE.md) — post-parity 1.4.0 flow
 - [API Specification](docs/API.md) — REST + WebSocket endpoints
 - [Swing Detection](docs/SWING_DETECTION.md) — engine spec (default **v2.3.0**)
 - [Market Structure Engine](docs/MARKET_STRUCTURE_ENGINE.md) — HH/HL/LH/LL, BOS/CHoCH, regime (v1)
@@ -118,6 +132,7 @@ Broker integrations (OANDA, MT5, etc.) are **Phase 2** and live under
 - [Market Data → Swing Pipeline](docs/MARKET_DATA_SWING_PIPELINE.md) — canonical data path, integrity, splits, CLI
 - [XAUUSD H1 Benchmark](docs/XAUUSD_H1_BENCHMARK.md) — real-data prepare/annotate/validate workflow
 - [Project Roadmap](docs/ROADMAP.md) — master plan to production (BOS, CHoCH, liquidity, decision engine)
+- [Implementation Status](docs/IMPLEMENTATION_STATUS.md) — module readiness after 1.4.0 closure
 
 ## License
 

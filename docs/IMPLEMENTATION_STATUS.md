@@ -1,46 +1,33 @@
 # Implementation Status
 
-Authoritative module status after Scanner Integrity Audit & Production Hardening v1 (2026-08-23).
+Updated after **project closure** of analytical pipeline **1.4.0** (OOS + forensics complete).
 
 | Module | Implementation | Integration | Tests | Production readiness | Known issues | Next action |
 |--------|----------------|-------------|-------|----------------------|--------------|-------------|
-| Market data service | Provider factory + validation | Live DataLoader | Partial | Staging-ready; prod depends on provider keys | Sim forbidden in prod env | Keep collector-first reads |
-| Data collector | Daemon + BI5 | Optional read path | Limited | Partial | Historical API gaps for replay | Harden historical range API |
-| Bar builder | Tick→bar + rollup | Ingest only | Yes | OK for ingest | Not on live scan path | Document; don’t dual-path scan |
-| Swing engine | v2.3.0 confirmed | Canonical via boundary | Strong | Ready | Legacy zigzag still importable | Quarantine deprecated APIs |
-| Market structure | Causal StructureSnapshot | Decision + SMC + confluence | Strong | Ready | — | Keep as SoT |
-| Liquidity v1 | LiquiditySnapshot | Features + engine | Yes | Ready | Dual detect vs SMC sweeps | Prefer analyzer; slim SMC sweeps |
-| FVG / OB detect | SMCEngine heuristics | Scored in DE | Moderate | Research-grade | Last-N only | Defer rewrite |
-| Trend / Mom / Vol | Engines | DE | Yes | Ready | — | — |
-| MTF | Live structure bias | DE | Moderate | Partial in BT | Backtest EMA stub | Optional HTF series inject |
-| SMC confluence | Context snapshot | Explain/warn | Yes | Ready as context | Not a scorer | Optional policy gating later |
-| Decision engine | 100-pt aggregator | Live/replay/BT | Strong | Ready | — | Keep single evaluate |
-| Canonical pipeline | `analyze_candle_window` | Replay + BT | Yes | Ready | Live still uses DataLoader prelude | Optionally route live through it |
-| Replay | Session frames | API | Light | OK for demo | Collector historical weak | Equivalence tests exist |
-| Backtest | Walk-forward + execution | API | Metrics unit + integrity | Research-ready | No broker; news stub | Keep metrics honest |
-| Validation | File OutcomeStore | Live register | Light | MVP | Not multi-host safe | Postgres store later |
-| Setup intelligence | Historical matcher | Evidence on signal | Yes | OK | Live confidence adjust disabled | Offline research flag |
-| News | Calendar service | Live | Light | Partial historically | Revised calendars may leak | Document conservative mode |
-| Strategy / billing / AI | Present | Peripheral | Mixed | Out of scope here | — | Do not expand now |
-| Dashboard / API | FastAPI + Next | Live scan | Mixed | Staging | — | Reliability pass later |
+| Canonical pipeline | `analyze_candle_window` 1.4.0 | Live + Replay + Backtest | Strong | **Frozen — OOS closed** | Failed OOS expectancy | See 1.5.0 charter |
+| HTF / MTF | Causal resolve + ranking select | Ranking + DE | Yes | Frozen | Provider≠rollup possible | Drift telemetry (ops) |
+| Zone ranking | Lexicographic; HTF trend injected | SMC patterns | Yes | Frozen | Fallback if HTF short | — |
+| FVG / OB lifecycle | Causal zone sets | Canonical | Yes | Frozen | No expire/invalidate | — |
+| Liquidity | Engine SoT | All paths | Yes | Frozen | — | — |
+| DecisionEngine | Frozen weights | Pipeline | Yes | Frozen | Poor OOS calibration (forensics) | Experiment only |
+| OOS validation | Locked artifacts | Research | Yes | **Complete** | Retrospective holdout | Immutable `validation/` |
+| Failure forensics | Diagnostic script | Research | N/A | Complete | Exploratory subgroups | Do not convert to filters |
 
-## Hardening completed in this pass
+## Behavioral note
 
-- Canonical `analyze_candle_window` shared by replay/backtest
-- Backtest metrics: profit factor, expectancy, avg R (fixed broken avg_rr)
-- Ambiguous SL/TP → SL-first (documented + tested)
-- Optional spread/slippage/commission on fills
-- Live historical confidence multiplier disabled
-- Historical matcher `as_of_index` causal bound
-- Pipeline / algorithm versions on `market_features`
-- Integrity + golden fixture tests
+**1.3.0 → 1.4.0:** `trend_alignment` uses `select_ranking_htf_trend(resolve_mtf_trends(...))` (nearest higher TF). Ranking key order unchanged. Formation/lifecycle/DE weights unchanged.
 
-## Explicit remaining debt
+## Analytical freeze + closure
 
-1. Dual liquidity detection (analyzer vs SMC)  
-2. Backtest MTF not full HTF structure bias  
-3. News not causally reconstructed for history  
-4. Validation persistence is local JSON  
-5. FVG/OB detection still heuristic last-N  
-6. Live path duplicates some prelude work vs `analyze_candle_window` (same DecisionEngine)  
-7. Bar builder unused by live scan (by design for now)
+- Freeze contract: [ANALYTICAL_FREEZE.md](ANALYTICAL_FREEZE.md)
+- Closure: [PROJECT_CLOSURE_1.4.0.md](PROJECT_CLOSURE_1.4.0.md)
+- OOS report: [OOS_VALIDATION_REPORT_1.4.0.md](OOS_VALIDATION_REPORT_1.4.0.md) — **FAILED OOS VALIDATION**
+- Forensics: [OOS_FAILURE_FORENSICS_1.4.0.md](OOS_FAILURE_FORENSICS_1.4.0.md)
+- Next analytics (optional): [EXPERIMENT_PROTOCOL_1.5.0.md](EXPERIMENT_PROTOCOL_1.5.0.md) — charter only
+
+## Remaining gaps (non-analytical / Phase 2)
+
+1. Validation JSON multi-host unsafe.
+2. Provider vs rollup HTF divergence (observable).
+3. Live broker execution (Phase 2).
+4. Any edge recovery requires a **new** pipeline version under the 1.5.0 experiment protocol — do not patch 1.4.0.

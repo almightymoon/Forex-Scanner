@@ -23,6 +23,7 @@ from shared.types.models import (
 )
 
 from services.quant_engine.features import FeatureExtractor, MarketFeatures
+from services.quant_engine.liquidity.models import LiquiditySnapshot
 from services.quant_engine.market_structure.detector import analyze_structure
 from services.quant_engine.market_structure.models import StructureSnapshot
 from services.quant_engine.swings.boundary import (
@@ -58,6 +59,26 @@ from services.quant_engine.decision.engines.volatility import VolatilityEngine
 from swing_engine.models import DetectedSwing
 
 
+
+def _format_structure_adjustment(payload: dict) -> str:
+    """Human-readable summary of structure_policy for explainability.adjustments."""
+    parts: list[str] = ["structure policy"]
+    mult = payload.get("confidence_multiplier")
+    if isinstance(mult, (int, float)) and mult != 1:
+        parts.append(f"confidence ×{mult}")
+    delta = payload.get("score_delta")
+    if isinstance(delta, int) and delta != 0:
+        parts.append(f"score {delta:+d}")
+    if payload.get("force_neutral"):
+        parts.append("forced neutral")
+    reasons = [r for r in (payload.get("reasons") or []) if isinstance(r, str)]
+    warnings = [w for w in (payload.get("warnings") or []) if isinstance(w, str)]
+    detail = reasons or warnings
+    if detail:
+        parts.append("; ".join(detail[:3]))
+    return " — ".join(parts)
+
+
 class DecisionEngine:
     """Production-grade deterministic decision aggregator."""
 
@@ -89,6 +110,7 @@ class DecisionEngine:
         confirmed_swings: Optional[list[DetectedSwing]] = None,
         structure_snapshot: Optional[StructureSnapshot] = None,
         structure_input: Optional[ScanStructureInput] = None,
+        liquidity_snapshot: Optional[LiquiditySnapshot] = None,
     ) -> ScannerSignal:
         news_ctx = news or NewsContext()
         mtf_map = mtf_trends or {}
@@ -124,6 +146,7 @@ class DecisionEngine:
             smc_patterns,
             confirmed_swings=swings,
             structure_snapshot=snapshot,
+            liquidity_snapshot=liquidity_snapshot,
         )
 
         if features.structure_snapshot is not None:
@@ -258,11 +281,11 @@ class DecisionEngine:
         )
         if historical.confidence_adjustment:
             explainability.setdefault("adjustments", []).append(historical.confidence_adjustment)
+        # Keep structured policy separately; adjustments list is string-only for UI safety.
+        structure_payload = {"source": "structure_policy", **structure_adj.to_dict()}
+        explainability["structure_policy"] = structure_payload
         explainability.setdefault("adjustments", []).append(
-            {
-                "source": "structure_policy",
-                **structure_adj.to_dict(),
-            }
+            _format_structure_adjustment(structure_payload)
         )
         explainability["setup_confluence"] = structure_adj.confluence.to_dict()
         explainability["smc_context"] = smc_context.to_dict()

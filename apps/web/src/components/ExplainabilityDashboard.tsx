@@ -46,8 +46,13 @@ export function ExplainabilityDashboard({
   const patterns = signal.explainability?.detected_patterns ?? signal.detected_patterns ?? [];
   const evidence = signal.explainability?.evidence ?? [];
   const deltas = signal.explainability?.score_deltas ?? signal.score_deltas ?? [];
-  const adjustments = signal.explainability?.adjustments ?? [];
-  const warnings = signal.warnings ?? [];
+  // Backend may push strings or structured objects (e.g. structure_policy).
+  const adjustmentLines = (signal.explainability?.adjustments ?? [])
+    .map(formatAdjustment)
+    .filter(Boolean);
+  const warnings = (signal.warnings ?? [])
+    .map((w) => (typeof w === "string" ? w : formatAdjustment(w)))
+    .filter(Boolean);
   const isBento = layout === "bento";
   const uniquePatterns = patterns.filter(
     (p, i, arr) => arr.findIndex((x) => x.label === p.label) === i,
@@ -128,12 +133,12 @@ export function ExplainabilityDashboard({
         </section>
       )}
 
-      {adjustments.length > 0 && (
+      {adjustmentLines.length > 0 && (
         <section className={sectionClass()}>
           <h3>Confidence adjustments</h3>
           <ul className="explain-adjustments">
-            {adjustments.map((a, i) => (
-              <li key={i}>{a}</li>
+            {adjustmentLines.map((line, i) => (
+              <li key={i}>{line}</li>
             ))}
           </ul>
         </section>
@@ -166,10 +171,16 @@ export function ExplainabilityDashboard({
           <h3>Why this score changed</h3>
           <ul className="explain-deltas">
             {deltas.map((d, i) => (
-              <li key={i} className={d.delta > 0 ? "delta-pos" : "delta-neg"}>
-                <span className="delta-sign">{d.sign ?? (d.delta > 0 ? "+" : "−")}</span>
-                <span className="delta-text">{d.text}</span>
-                <span className="delta-pts">({d.delta > 0 ? "+" : ""}{d.delta})</span>
+              <li key={i} className={(d.delta ?? 0) > 0 ? "delta-pos" : "delta-neg"}>
+                <span className="delta-sign">
+                  {d.sign ?? ((d.delta ?? 0) > 0 ? "+" : "−")}
+                </span>
+                <span className="delta-text">
+                  {typeof d.text === "string" ? d.text : formatAdjustment(d.text ?? d)}
+                </span>
+                <span className="delta-pts">
+                  ({(d.delta ?? 0) > 0 ? "+" : ""}{d.delta ?? 0})
+                </span>
               </li>
             ))}
           </ul>
@@ -287,6 +298,47 @@ function HistoricalStats({
 
 function formatSession(session: string): string {
   return session.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Normalize explainability.adjustments entries (string | structured object) to display text. */
+function formatAdjustment(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value !== "object") return String(value);
+
+  const obj = value as Record<string, unknown>;
+  const source = typeof obj.source === "string" ? obj.source.replace(/_/g, " ") : null;
+  const parts: string[] = [];
+
+  if (source) parts.push(source);
+
+  if (typeof obj.confidence_multiplier === "number" && obj.confidence_multiplier !== 1) {
+    parts.push(`confidence ×${obj.confidence_multiplier}`);
+  }
+  if (typeof obj.score_delta === "number" && obj.score_delta !== 0) {
+    const d = obj.score_delta;
+    parts.push(`score ${d > 0 ? "+" : ""}${d}`);
+  }
+  if (obj.force_neutral === true) parts.push("forced neutral");
+
+  const reasons = Array.isArray(obj.reasons)
+    ? obj.reasons.filter((r): r is string => typeof r === "string")
+    : [];
+  if (reasons.length > 0) parts.push(reasons.join("; "));
+
+  const warnings = Array.isArray(obj.warnings)
+    ? obj.warnings.filter((w): w is string => typeof w === "string")
+    : [];
+  if (warnings.length > 0 && reasons.length === 0) parts.push(warnings.join("; "));
+
+  if (parts.length > 0) return parts.join(" — ");
+
+  try {
+    return JSON.stringify(obj);
+  } catch {
+    return "Adjustment applied";
+  }
 }
 
 function buildFallbackCategories(signal: ScannerSignal): CategoryRow[] {

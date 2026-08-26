@@ -1,0 +1,45 @@
+{
+  "fixture_id": "xauusd_h1_gold240_t04_w6",
+  "symbol": "XAUUSD",
+  "timeframe": "H1",
+  "candle_count": 240,
+  "candle_generator": {
+    "name": "gold_candles",
+    "n": 240,
+    "trend": 0.4,
+    "wave": 6.0
+  },
+  "pipeline_version": "1.4.0",
+  "ranking_htf_trend": "bullish",
+  "ranking_htf_tf": "H4",
+  "mtf_trends": {
+    "H4": "bullish"
+  },
+  "structure_external_bias": "bullish",
+  "structure_event_count": 3,
+  "liquidity_active_count": 21,
+  "liquidity_sweep_count": 10,
+  "fvg_zone_count": 119,
+  "ob_zone_count": 0,
+  "ranked_fvg_ids": [
+    "fvg-buy-232-2444.94253-2445.79410",
+    "fvg-buy-229-2441.92279-2441.93948",
+    "fvg-buy-218-2436.70326-2438.94776",
+    "fvg-buy-206-2432.90022-2432.98563",
+    "fvg-buy-194-2427.21473-2428.89851",
+    "fvg-buy-182-2422.14470-2423.51468",
+    "fvg-buy-170-2417.82746-2419.59842",
+    "fvg-buy-134-2403.06234-2403.94080"
+  ],
+  "ranked_ob_ids": [],
+  "direction": "buy",
+  "score": 86,
+  "confidence": 1.0,
+  "trend": "bullish",
+  "stop_loss": 2443.59203108,
+  "take_profit_1": 2450.93332399,
+  "entry_zone_low": 2446.31879702,
+  "entry_zone_high": 2446.9480507,
+  "top_fvg_trend_alignment": "ALIGNED",
+  "top_fvg_trend_source": "resolved_htf:H4"
+}

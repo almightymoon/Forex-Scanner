@@ -44,13 +44,20 @@ def get_pipeline() -> ScannerPipeline:
 def get_scanner_service(
     pipeline: Annotated[ScannerPipeline, Depends(get_pipeline)],
 ) -> ScannerService:
-    return ScannerService(pipeline)
+    global _scanner
+    if _scanner is None:
+        _scanner = ScannerService(pipeline)
+    return _scanner
 
 
 def get_dashboard_service(
     scanner: Annotated[ScannerService, Depends(get_scanner_service)],
 ) -> DashboardService:
-    return DashboardService(scanner)
+    # Must be a process singleton — cache/lock live on the instance.
+    global _dashboard
+    if _dashboard is None:
+        _dashboard = DashboardService(scanner)
+    return _dashboard
 
 
 def get_billing_service() -> BillingService:

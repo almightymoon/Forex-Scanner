@@ -2,8 +2,11 @@
 
 This document is the master plan toward a production-ready institutional
 market-structure scanner. **Scanner product v1 is complete** (structure →
-liquidity → session/OB–FVG quality → paper-scan audits). Live broker
-execution remains Phase 2.
+liquidity → session/OB–FVG quality → paper-scan audits). **Analytical
+pipeline 1.4.0 is frozen and closed** after OOS validation (**FAILED**) and
+failure forensics — see `docs/PROJECT_CLOSURE_1.4.0.md`. Live broker
+execution remains Phase 2. Optional analytics reopen only via a versioned
+experiment (`docs/EXPERIMENT_PROTOCOL_1.5.0.md`).
 
 ## Current State
 

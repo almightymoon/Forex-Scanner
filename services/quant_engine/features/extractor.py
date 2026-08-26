@@ -40,6 +40,7 @@ class FeatureExtractor:
         confirmed_swings: list[DetectedSwing] | None = None,
         structure_snapshot: StructureSnapshot | None = None,
         as_of_index: int | None = None,
+        liquidity_snapshot=None,
     ) -> MarketFeatures:
         features = MarketFeatures()
         if not candles:
@@ -151,7 +152,18 @@ class FeatureExtractor:
         from services.quant_engine.liquidity.analyzer import analyze_liquidity
         from services.quant_engine.liquidity.pools import build_liquidity_map
 
-        if candles:
+        if liquidity_snapshot is not None:
+            features.liquidity_snapshot = liquidity_snapshot
+            features.liquidity_map = (
+                liquidity_snapshot.legacy_map
+                or build_liquidity_map(
+                    patterns,
+                    features=features,
+                    candles=candles,
+                    snapshot=features.structure_snapshot,
+                )
+            )
+        elif candles:
             features.liquidity_snapshot = analyze_liquidity(
                 candles,
                 snapshot=features.structure_snapshot,
@@ -183,20 +195,29 @@ class FeatureExtractor:
         obs = [p for p in patterns if p.pattern_type == "order_block"]
         features.ob_count = len(obs)
         if obs:
-            features.best_ob = self._best_ob(obs[-1], candles)
+            # Patterns are ranked best-first from the zone lifecycle adapters.
+            features.best_ob = self._best_ob(obs[0], candles)
 
         fvgs = [p for p in patterns if p.pattern_type == "fvg"]
         features.fvg_count = len(fvgs)
         if fvgs:
-            features.best_fvg = self._best_fvg(fvgs[-1], candles, features.atr)
+            features.best_fvg = self._best_fvg(fvgs[0], candles, features.atr)
 
         return features
 
     def _best_ob(self, p: SMCPattern, candles: list[Candle]) -> OrderBlockFeatures:
-        idx = p.metadata.get("index", len(candles) - 1)
+        idx = p.metadata.get("index", p.metadata.get("source_candle_index", len(candles) - 1))
         bars_since = max(0, len(candles) - 1 - idx) if candles else 99
+        if "age_bars" in p.metadata:
+            bars_since = int(p.metadata["age_bars"])
         fresh = 1.0 if bars_since <= 8 else max(0.0, 1.0 - bars_since / 30)
-        mitigated = self._ob_mitigated(p, candles, idx)
+        status = str(p.metadata.get("status", "")).upper()
+        if status == "MITIGATED":
+            mitigated = True
+        elif status in ("ACTIVE", "TOUCHED"):
+            mitigated = False
+        else:
+            mitigated = self._ob_mitigated(p, candles, idx)
         mitigation = 0.0 if mitigated else 1.0
         impulse = min(1.0, p.metadata.get("impulse_ratio", 1.0) / 2.0)
         volume = self._volume_score(candles, idx)
@@ -216,7 +237,10 @@ class FeatureExtractor:
         gap_low = p.price_low or 0
         gap_high = p.price_high or 0
         gap_size = p.metadata.get("gap_size") or max(gap_high - gap_low, 0)
-        fill_pct = self._fvg_fill(p, candles)
+        if "fill_ratio" in p.metadata:
+            fill_pct = float(p.metadata["fill_ratio"]) * 100.0
+        else:
+            fill_pct = self._fvg_fill(p, candles)
         unfilled = fill_pct < 50
         size_score = min(1.0, gap_size / (atr * 0.5)) if atr and gap_size else 0.5
         quality = "high" if unfilled and size_score >= 0.6 else "moderate" if fill_pct < 80 else "low"

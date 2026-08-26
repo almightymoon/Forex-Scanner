@@ -40,7 +40,8 @@ export interface Explainability {
   score_deltas: ScoreDelta[];
   historical?: HistoricalEvidence;
   evidence?: EvidenceItem[];
-  adjustments?: string[];
+  /** Strings or structured policy objects from the decision engine. */
+  adjustments?: Array<string | Record<string, unknown>>;
 }
 
 export interface EvidenceItem {
@@ -128,11 +129,8 @@ export interface SymbolSearchResult {
   live?: boolean;
 }
 
-// Browser: use same-origin proxy (/api → backend). Server: can use explicit URL.
-const API_BASE =
-  typeof window !== "undefined"
-    ? ""
-    : process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
+// Hit the API directly. Same-origin Next rewrites time out on long dashboard scans.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
 
 const DEV_EMAIL = process.env.NEXT_PUBLIC_DEV_EMAIL || "dev@fxnav.local";
 const DEV_PASSWORD = process.env.NEXT_PUBLIC_DEV_PASSWORD || "dev123456";
@@ -334,6 +332,31 @@ export async function fetchCandles(symbol: string, timeframe = "H1"): Promise<Ar
   if (!res.ok) return [];
   const data = await res.json();
   return data.candles || [];
+}
+
+/** Re-scan a single symbol on a chosen timeframe (detail TF switcher). */
+export async function fetchSignal(
+  symbol: string,
+  timeframe = "H1",
+): Promise<ScannerSignal & { backtest?: BacktestResult }> {
+  const params = new URLSearchParams({
+    timeframe,
+    include_backtest: "true",
+  });
+  const res = await apiFetch(`/api/v1/scanner/${encodeURIComponent(symbol)}?${params}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    let detail = `Failed to scan ${symbol} on ${timeframe}`;
+    try {
+      const body = await res.json();
+      detail = body.message || body.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(detail);
+  }
+  return res.json();
 }
 
 export interface Plan {

@@ -103,6 +103,7 @@ class BacktestEngine:
         min_score: int = 70,
         forward_bars: int = 20,
         mtf_trends: Optional[dict[str, TrendDirection]] = None,
+        htf_bars: Optional[dict[str, list[Candle]]] = None,
     ) -> BacktestReport:
         report = BacktestReport(
             symbol=symbol,
@@ -134,23 +135,22 @@ class BacktestEngine:
                 continue
 
             window = candles[: i + 1]
-            mtf = dict(mtf_trends or {})
-            if not mtf:
-                from services.indicator_service.indicators import compute_all
+            # Causal HTF: rollup from window (or filter provided series) inside pipeline.
+            window_htf = None
+            if htf_bars:
+                from services.quant_engine.pipeline.mtf_context import filter_completed_htf
 
-                ind = compute_all(window, symbol, timeframe)
-                if ind.ema_20 and ind.ema_50:
-                    mtf["H1"] = (
-                        TrendDirection.BULLISH
-                        if ind.ema_20 > ind.ema_50
-                        else TrendDirection.BEARISH
-                    )
+                as_of = window[-1].timestamp
+                window_htf = {
+                    k: filter_completed_htf(v, as_of) for k, v in htf_bars.items()
+                }
 
             bundle = analyze_candle_window(
                 symbol,
                 timeframe,
                 window,
-                mtf_trends=mtf,
+                mtf_trends=mtf_trends,
+                htf_bars=window_htf,
                 news=news,
                 decision_engine=self.engine,
                 smc_engine=self.smc,

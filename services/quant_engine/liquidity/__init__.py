@@ -17,6 +17,7 @@ from services.quant_engine.liquidity.models import (
     SweepKind,
     SweepQuality,
 )
+from services.quant_engine.liquidity.patterns import patterns_from_liquidity_snapshot
 from services.quant_engine.liquidity.pools import (
     assess_sweep_vs_bias,
     build_liquidity_map,
@@ -50,4 +51,5 @@ __all__ = [
     "build_session_windows",
     "equality_tolerance",
     "liquidity_overlay_payload",
+    "patterns_from_liquidity_snapshot",
 ]

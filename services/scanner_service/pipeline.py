@@ -113,7 +113,10 @@ class ScannerPipeline:
         self._results = signals
 
         if save and signals:
-            self.db.save_scan_results(signals)
+            try:
+                self.db.save_scan_results(signals)
+            except Exception as exc:
+                logger.exception("Failed to persist scan results: %s", exc)
 
         for signal in signals:
             if signal.score >= alert_threshold:

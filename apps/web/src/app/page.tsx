@@ -41,6 +41,8 @@ export default function Dashboard() {
     : signals;
 
   const loadSignals = async () => {
+    // Avoid stacking refreshes while a long scan is in flight.
+    if (loading && signals.length > 0) return;
     setLoading(true);
     setFetchError(null);
     try {
@@ -55,7 +57,6 @@ export default function Dashboard() {
       );
     } catch (err) {
       console.error("Scanner fetch failed:", err);
-      setSignals([]);
       setFetchError(err instanceof Error ? err.message : "Failed to load scanner data");
     } finally {
       setLoading(false);
@@ -63,9 +64,26 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadSignals();
-    const interval = setInterval(loadSignals, 30000);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let inFlight = false;
+
+    const run = async () => {
+      if (cancelled || inFlight) return;
+      inFlight = true;
+      try {
+        await loadSignals();
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    run();
+    // Full-universe scans are slow; don't hammer the API every 30s.
+    const interval = setInterval(run, 120000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [minScore, customPairs]);
 
   useEffect(() => {
@@ -245,6 +263,7 @@ export default function Dashboard() {
             candles={candles}
             backtest={backtest}
             onClose={() => setSelected(null)}
+            onSignalChange={setSelected}
           />
         </div>
       )}

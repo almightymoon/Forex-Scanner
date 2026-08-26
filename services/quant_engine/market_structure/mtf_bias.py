@@ -11,7 +11,6 @@ from typing import Any
 
 from shared.types.models import Candle, Timeframe, TrendDirection
 
-from services.quant_engine.market_structure.aggregate import aggregate_candles
 from services.quant_engine.market_structure.detector import analyze_structure
 from services.quant_engine.market_structure.models import StructureSnapshot
 from services.quant_engine.market_structure.regime import (
@@ -136,13 +135,15 @@ def compute_mtf_structure_bias_from_h1(
     min_bars: int = 50,
     include_h1: bool = True,
 ) -> MTFStructureBiasResult:
-    """Offline helper: aggregate H1 → H4/D1 and compute structure biases."""
+    """Offline helper: roll H1 → H4/D1 via Bar Builder and compute structure biases."""
+
+    from services.bar_builder.rollup import rollup_bars
 
     bars: dict[str, list[Candle]] = {}
     if include_h1 and h1_candles:
         bars["H1"] = list(h1_candles)
     for tf in higher_tfs:
-        agg = aggregate_candles(h1_candles, tf)
+        agg = rollup_bars(h1_candles, tf)
         if agg:
             bars[tf.value] = agg
     return compute_mtf_structure_bias(bars, version=version, min_bars=min_bars)

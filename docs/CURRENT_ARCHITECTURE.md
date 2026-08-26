@@ -1,74 +1,62 @@
 # Current Architecture
 
-Authoritative post-audit architecture. Prefer this over older roadmap diagrams when they conflict.
+Authoritative post-parity architecture (pipeline **1.4.0**).
 
 ## Canonical analytical flow
 
 ```text
-Candle[] (causal prefix)
+DATA PREPARATION (live only networking)
+  candles + optional htf_bars + news
         │
         ▼
-analyze_candle_window()          ← ANALYSIS_PIPELINE_VERSION
-  • compute_all (indicators)
+analyze_candle_window()          ← ANALYSIS_PIPELINE_VERSION 1.4.0
+  • compute_all
   • build_scan_structure         ← SCAN_SWING_VERSION 2.3.0
+  • analyze_liquidity (once)
+  • detect_fvg_zones / detect_order_block_zones (causal lifecycle)
+  • resolve_mtf_trends → select_ranking_htf_trend
   • SMCEngine.detect_all
-  • DecisionEngine.evaluate
+      – BOS/CHOCH
+      – context-aware FVG/OB ranking (HTF trend injected) → soft-capped patterns
+      – liquidity patterns
+  • DecisionEngine.evaluate (reuses liquidity_snapshot + mtf_trends)
         │
         ▼
 AnalysisBundle / ScannerSignal
+  (includes fvg_zones, ob_zones, liquidity_snapshot)
         │
    ┌────┼────┐
    ▼    ▼    ▼
  LIVE REPLAY BACKTEST
               │
               ▼
-         simulate_trade()   ← execution only (costs / SL-first)
-              │
-              ▼
-         PerformanceMetrics
+         simulate_trade()
 ```
 
-Live still loads candles via `DataLoader` (market data + MTF + news) then enters
-the same DecisionEngine. Replay and Backtest call `analyze_candle_window`
-directly so analytical fingerprints match for the same window.
+## Live vs research
 
-## What is intentionally not on the live path
-
-- Tick → `BarBuilder` aggregation (ingest/collector concern)
-- Broker order routing
-- SMC confluence as a second scorer (context/explain only)
-- Live confidence multiplication from historical forward outcomes
-
-## Signal contract
-
-One analytical signal: **`ScannerSignal`**.
-
-Adapters:
-
-- `TrackedSignal` — validation outcomes  
-- `TradeResult` / `SimulatedTrade` — backtest fills  
-- `AnalysisBundle.analytical_fingerprint` — equivalence comparisons  
-
-Version metadata lives under `market_features.pipeline_version`,
-`market_features.swing_version`, and `market_features.algorithm_versions`.
-
-## Backtest execution (summary)
-
-See also `docs/BACKTEST_EXECUTION.md`.
-
-| Topic | Rule |
-|-------|------|
-| Entry | Signal bar **close** |
-| SL/TP | Next bars only |
-| Ambiguous bar | **SL first** (conservative) |
-| Costs | Optional spread / slippage / commission (default 0) |
-| News | Neutral stub unless causal calendar injected |
-| MTF | Caller map or H1 EMA stub — not full HTF fetch |
+| Concern | Live | Replay/Backtest |
+|---------|------|-----------------|
+| Candle source | DataLoader / providers | Historical series / fixture |
+| HTF | Provider fetch + rollup fill | Rollup from LTF prefix (or injected) |
+| News | Calendar service | Neutral stub unless injected |
+| Analysis | Same pipeline | Same pipeline |
 
 ## Related docs
 
+- [ANALYTICAL_PARITY.md](ANALYTICAL_PARITY.md)
+- [HTF_DRIFT.md](HTF_DRIFT.md)
+- [FVG_OB_LIFECYCLE.md](FVG_OB_LIFECYCLE.md)
+- [ZONE_RANKING.md](ZONE_RANKING.md)
+- [ANALYTICAL_FREEZE.md](ANALYTICAL_FREEZE.md)
+- [OOS_VALIDATION_PROTOCOL.md](OOS_VALIDATION_PROTOCOL.md)
+- [OOS_DATASET_CONTRACT.md](OOS_DATASET_CONTRACT.md)
+- [FVG_OB_LIMITATIONS.md](FVG_OB_LIMITATIONS.md)
+- [VALIDATION_PERSISTENCE.md](VALIDATION_PERSISTENCE.md)
 - [CURRENT_ARCHITECTURE_AUDIT.md](CURRENT_ARCHITECTURE_AUDIT.md)
 - [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
 - [BACKTEST_EXECUTION.md](BACKTEST_EXECUTION.md)
-- [SMC_CONFLUENCE_ENGINE.md](SMC_CONFLUENCE_ENGINE.md)
-- [MARKET_DATA_SWING_PIPELINE.md](MARKET_DATA_SWING_PIPELINE.md)
+- [PROJECT_CLOSURE_1.4.0.md](PROJECT_CLOSURE_1.4.0.md)
+- [OOS_VALIDATION_REPORT_1.4.0.md](OOS_VALIDATION_REPORT_1.4.0.md)
+- [OOS_FAILURE_FORENSICS_1.4.0.md](OOS_FAILURE_FORENSICS_1.4.0.md)
+- [EXPERIMENT_PROTOCOL_1.5.0.md](EXPERIMENT_PROTOCOL_1.5.0.md)

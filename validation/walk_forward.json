@@ -1,0 +1,104 @@
+[
+  {
+    "window": "WF1_2024Q1",
+    "train": "N/A \u2014 no parameter fitting",
+    "validation": "N/A \u2014 no parameter fitting",
+    "test_start": "2024-01-01T00:00:00+00:00",
+    "test_end": "2024-03-31T23:00:00+00:00",
+    "trades": 112,
+    "metrics": {
+      "total_trades": 112,
+      "wins": 47,
+      "losses": 65,
+      "breakeven": 0,
+      "win_rate": 42.0,
+      "profit_factor": 0.929,
+      "expectancy": -0.005,
+      "avg_r": -0.005,
+      "max_drawdown_r": 13.371,
+      "max_drawdown_pips": 10606.25,
+      "avg_winner_pips": 800.27,
+      "avg_loser_pips": -622.69,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 9,
+      "avg_score": 91.3,
+      "total_r": -0.5685,
+      "gross_profit": 376.127143,
+      "gross_loss": -404.751429,
+      "ambiguous_trades": 2,
+      "win_rate_se_approx": 4.66,
+      "win_rate_ci95_approx": [
+        32.8,
+        51.1
+      ]
+    }
+  },
+  {
+    "window": "WF2_2024Q2",
+    "train": "N/A \u2014 no parameter fitting",
+    "validation": "N/A \u2014 no parameter fitting",
+    "test_start": "2024-04-01T00:00:00+00:00",
+    "test_end": "2024-06-30T23:00:00+00:00",
+    "trades": 121,
+    "metrics": {
+      "total_trades": 121,
+      "wins": 43,
+      "losses": 78,
+      "breakeven": 0,
+      "win_rate": 35.5,
+      "profit_factor": 0.68,
+      "expectancy": -0.17,
+      "avg_r": -0.17,
+      "max_drawdown_r": 27.958,
+      "max_drawdown_pips": 32651.0,
+      "avg_winner_pips": 1247.39,
+      "avg_loser_pips": -1011.68,
+      "consecutive_wins_max": 4,
+      "consecutive_losses_max": 17,
+      "avg_score": 95.3,
+      "total_r": -20.5322,
+      "gross_profit": 536.377143,
+      "gross_loss": -789.110357,
+      "ambiguous_trades": 1,
+      "win_rate_se_approx": 4.35,
+      "win_rate_ci95_approx": [
+        27.0,
+        44.1
+      ]
+    }
+  },
+  {
+    "window": "WF3_2024Q3partial",
+    "train": "N/A \u2014 no parameter fitting",
+    "validation": "N/A \u2014 no parameter fitting",
+    "test_start": "2024-07-01T00:00:00+00:00",
+    "test_end": "2024-07-11T04:00:00+00:00",
+    "trades": 13,
+    "metrics": {
+      "total_trades": 13,
+      "wins": 5,
+      "losses": 8,
+      "breakeven": 0,
+      "win_rate": 38.5,
+      "profit_factor": 0.704,
+      "expectancy": -0.103,
+      "avg_r": -0.103,
+      "max_drawdown_r": 4.667,
+      "max_drawdown_pips": 3959.14,
+      "avg_winner_pips": 878.2,
+      "avg_loser_pips": -780.15,
+      "consecutive_wins_max": 2,
+      "consecutive_losses_max": 4,
+      "avg_score": 86.8,
+      "total_r": -1.3333,
+      "gross_profit": 43.91,
+      "gross_loss": -62.411786,
+      "ambiguous_trades": 1,
+      "win_rate_se_approx": 13.49,
+      "win_rate_ci95_approx": [
+        12.0,
+        64.9
+      ]
+    }
+  }
+]

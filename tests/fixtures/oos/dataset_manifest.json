@@ -1,0 +1,66 @@
+{
+  "dataset_id": "xauusd_h1_oos_v1_retrospective_2022_2024",
+  "symbol": "XAUUSD",
+  "timeframe": "H1",
+  "provider": "WEALTHTEX_MT5_XAUUSD_VX",
+  "price_basis": "BID",
+  "source_path": "benchmarks/data/retrospective/XAUUSD/H1_2022_2024_v1/XAUUSD_H1_2022_2024.real.csv.gz",
+  "source_package": "XAUUSD_H1_2022_2024_RETROSPECTIVE_HOLDOUT_V1",
+  "timezone": "UTC (converted; broker schedule EET/EEST-equivalent)",
+  "date_range": {
+    "start": "2022-01-02T22:00:00+00:00",
+    "end": "2024-07-11T04:00:00+00:00"
+  },
+  "candle_count": 15368,
+  "sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "locked_date": "2026-08-23T21:07:54.485267+00:00",
+  "pipeline_version_for_run": "1.4.0",
+  "repairs": [],
+  "integrity": {
+    "ok": true,
+    "candle_count": 15368,
+    "first_ts": "2022-01-02T22:00:00+00:00",
+    "last_ts": "2024-07-11T04:00:00+00:00",
+    "duplicate_timestamps": 0,
+    "out_of_order": 0,
+    "invalid_ohlc": 0,
+    "non_positive_price": 0,
+    "gap_hours_gt_3": 8,
+    "gaps_sample": [
+      "2022-09-27T22:00:00+00:00 \u2192 2022-09-28T05:00:00+00:00 (7.0h)",
+      "2022-11-24T18:00:00+00:00 \u2192 2022-11-24T22:00:00+00:00 (4.0h)",
+      "2023-11-23T19:00:00+00:00 \u2192 2023-11-23T23:00:00+00:00 (4.0h)",
+      "2024-01-15T19:00:00+00:00 \u2192 2024-01-15T23:00:00+00:00 (4.0h)",
+      "2024-02-19T19:00:00+00:00 \u2192 2024-02-19T23:00:00+00:00 (4.0h)",
+      "2024-05-27T18:00:00+00:00 \u2192 2024-05-27T22:00:00+00:00 (4.0h)",
+      "2024-06-19T18:00:00+00:00 \u2192 2024-06-19T22:00:00+00:00 (4.0h)",
+      "2024-07-04T18:00:00+00:00 \u2192 2024-07-04T22:00:00+00:00 (4.0h)"
+    ],
+    "timezone_aware_utc": true,
+    "symbol_ok": true,
+    "timeframe_ok": true,
+    "notes": [
+      "8 weekday gaps > 3h (documented, not repaired)",
+      "No silent repair applied"
+    ]
+  },
+  "split_declared_before_evaluation": {
+    "train": [
+      "2022-01-02T22:00:00+00:00",
+      "2022-12-31T23:00:00+00:00"
+    ],
+    "validation": [
+      "2023-01-01T00:00:00+00:00",
+      "2023-12-31T23:00:00+00:00"
+    ],
+    "test": [
+      "2024-01-01T00:00:00+00:00",
+      "2024-07-11T04:00:00+00:00"
+    ]
+  },
+  "notes": [
+    "Retrospective holdout OHLC reused for scanner OOS.",
+    "No parameter fitting.",
+    "Prospective post-2026H1 not used (accrual incomplete)."
+  ]
+}

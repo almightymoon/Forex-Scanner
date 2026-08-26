@@ -28,8 +28,8 @@ class OrderBlockEngine:
         buy_pts = sell_pts = 0
         qualities: list[dict] = []
 
-        for p in obs[-3:]:
-            if features and features.best_ob and p == obs[-1]:
+        for p in obs[:3]:
+            if features and features.best_ob and p == obs[0]:
                 q = self._quality_from_features(p, features.best_ob)
             else:
                 q = self._quality_score(p, candles or [], rules)
@@ -121,6 +121,11 @@ class OrderBlockEngine:
 
     @staticmethod
     def _is_mitigated(p: SMCPattern, candles: list[Candle], idx: int) -> bool:
+        status = str(p.metadata.get("status", "")).upper()
+        if status == "MITIGATED":
+            return True
+        if status in ("ACTIVE", "TOUCHED"):
+            return False
         if not candles or idx >= len(candles):
             return False
         ob_low = p.price_low or candles[idx].low

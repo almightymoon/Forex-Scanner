@@ -1,17 +1,25 @@
 """Smart Money Concepts detection engine.
 
-BOS / CHoCH / swing-based liquidity and equal levels consume Market Structure
-Engine v1 over confirmed swings. Order blocks and FVGs remain candle-local.
+BOS / CHoCH consume Market Structure Engine v1. FVG and Order Block patterns
+are ranked views over canonical lifecycle zone sets (no last-N truncation of
+history in the detectors). Liquidity sweeps / equal highs-lows are emitted
+only from Liquidity Engine v1 snapshots (no parallel SMC liquidity detector).
 """
 
 from __future__ import annotations
 
+from services.quant_engine.fvg.lifecycle import detect_fvg_zones
+from services.quant_engine.fvg.models import FVGZoneSet
+from services.quant_engine.fvg.patterns import patterns_from_fvg_zones
 from services.quant_engine.market_structure.detector import analyze_structure
 from services.quant_engine.market_structure.integration import build_market_structure_state
 from services.quant_engine.market_structure.models import (
     StructureEventType,
     StructureSnapshot,
 )
+from services.quant_engine.order_blocks.lifecycle import detect_order_block_zones
+from services.quant_engine.order_blocks.models import OrderBlockZoneSet
+from services.quant_engine.order_blocks.patterns import patterns_from_ob_zones
 from services.quant_engine.swing_analysis import MarketStructureState
 from services.quant_engine.swings.boundary import (
     SCAN_SWING_VERSION,
@@ -32,6 +40,11 @@ class SMCEngine:
         *,
         confirmed_swings: list[DetectedSwing] | None = None,
         structure_snapshot: StructureSnapshot | None = None,
+        liquidity_snapshot=None,
+        fvg_zones: FVGZoneSet | None = None,
+        ob_zones: OrderBlockZoneSet | None = None,
+        ranking_htf_trend: TrendDirection | None = None,
+        ranking_htf_tf: str | None = None,
     ) -> list[SMCPattern]:
         if len(candles) < 20:
             return []
@@ -63,10 +76,61 @@ class SMCEngine:
         structure = build_market_structure_state(snapshot, swings)
         patterns: list[SMCPattern] = []
         patterns.extend(self._detect_bos_choch(snapshot, structure))
-        patterns.extend(self._detect_order_blocks(candles))
-        patterns.extend(self._detect_fvg(candles))
-        patterns.extend(self._detect_liquidity_sweeps(candles, structure))
-        patterns.extend(self._detect_equal_levels(candles, structure))
+
+        price = float(candles[-1].close)
+        atr = 0.0
+        if len(candles) >= 2:
+            atr = sum(c.high - c.low for c in candles[-14:]) / min(14, len(candles))
+
+        # Liquidity Engine v1 is the sole detector for sweeps / equal levels.
+        from services.quant_engine.liquidity.analyzer import analyze_liquidity
+        from services.quant_engine.liquidity.patterns import patterns_from_liquidity_snapshot
+
+        liq = liquidity_snapshot
+        if liq is None:
+            liq = analyze_liquidity(
+                candles,
+                snapshot=snapshot,
+                patterns=[],
+                atr=atr,
+                external_bias=snapshot.external_bias,
+                symbol=symbol,
+                timeframe=timeframe,
+            )
+        if liq.atr and liq.atr > 0:
+            atr = float(liq.atr)
+
+        fvg_set = fvg_zones
+        if fvg_set is None:
+            fvg_set = detect_fvg_zones(candles, symbol=symbol, timeframe=timeframe)
+        ob_set = ob_zones
+        if ob_set is None:
+            ob_set = detect_order_block_zones(candles, symbol=symbol, timeframe=timeframe)
+
+        trend = ranking_htf_trend
+        patterns.extend(
+            patterns_from_ob_zones(
+                ob_set,
+                price=price,
+                atr=atr,
+                structure=snapshot,
+                liquidity=liq,
+                trend=trend,
+                htf_trend_tf=ranking_htf_tf,
+            )
+        )
+        patterns.extend(
+            patterns_from_fvg_zones(
+                fvg_set,
+                price=price,
+                atr=atr,
+                structure=snapshot,
+                liquidity=liq,
+                trend=trend,
+                htf_trend_tf=ranking_htf_tf,
+            )
+        )
+        patterns.extend(patterns_from_liquidity_snapshot(liq))
         return patterns
 
     def _detect_bos_choch(
@@ -149,196 +213,3 @@ class SMCEngine:
 
         return patterns
 
-    def _detect_order_blocks(self, candles: list[Candle]) -> list[SMCPattern]:
-        patterns: list[SMCPattern] = []
-        for i in range(3, len(candles) - 1):
-            c = candles[i]
-            next_c = candles[i + 1]
-            body = abs(c.close - c.open)
-            next_body = abs(next_c.close - next_c.open)
-
-            if c.close < c.open and next_c.close > next_c.open and next_body > body * 1.5:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="order_block",
-                        direction=SignalDirection.BUY,
-                        price_low=c.low,
-                        price_high=c.high,
-                        strength=75,
-                        metadata={"index": i, "impulse_ratio": next_body / max(body, 1e-8)},
-                    )
-                )
-            elif c.close > c.open and next_c.close < next_c.open and next_body > body * 1.5:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="order_block",
-                        direction=SignalDirection.SELL,
-                        price_low=c.low,
-                        price_high=c.high,
-                        strength=75,
-                        metadata={"index": i, "impulse_ratio": next_body / max(body, 1e-8)},
-                    )
-                )
-
-        return patterns[-3:]
-
-    def _detect_fvg(self, candles: list[Candle]) -> list[SMCPattern]:
-        patterns: list[SMCPattern] = []
-        for i in range(2, len(candles)):
-            c1, c2, c3 = candles[i - 2], candles[i - 1], candles[i]
-            if c1.high < c3.low:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="fvg",
-                        direction=SignalDirection.BUY,
-                        price_low=c1.high,
-                        price_high=c3.low,
-                        strength=65,
-                        metadata={"gap_size": c3.low - c1.high},
-                    )
-                )
-            elif c1.low > c3.high:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="fvg",
-                        direction=SignalDirection.SELL,
-                        price_low=c3.high,
-                        price_high=c1.low,
-                        strength=65,
-                        metadata={"gap_size": c1.low - c3.high},
-                    )
-                )
-        return patterns[-3:]
-
-    def _detect_liquidity_sweeps(
-        self, candles: list[Candle], structure: MarketStructureState
-    ) -> list[SMCPattern]:
-        patterns: list[SMCPattern] = []
-        if len(candles) < 10:
-            return patterns
-
-        last = candles[-1]
-        if structure.swing_lows:
-            recent_low = structure.swing_lows[-1].price
-            if last.low < recent_low and last.close > recent_low:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="liquidity_sweep",
-                        direction=SignalDirection.BUY,
-                        price_low=last.low,
-                        strength=80,
-                        metadata={"swept_level": recent_low, "swing_based": True},
-                    )
-                )
-
-        if structure.swing_highs:
-            recent_high = structure.swing_highs[-1].price
-            if last.high > recent_high and last.close < recent_high:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="liquidity_sweep",
-                        direction=SignalDirection.SELL,
-                        price_high=last.high,
-                        strength=80,
-                        metadata={"swept_level": recent_high, "swing_based": True},
-                    )
-                )
-
-        if not patterns:
-            recent_low = min(c.low for c in candles[-10:-1])
-            recent_high = max(c.high for c in candles[-10:-1])
-            if last.low < recent_low and last.close > recent_low:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="liquidity_sweep",
-                        direction=SignalDirection.BUY,
-                        price_low=last.low,
-                        strength=70,
-                        metadata={"swept_level": recent_low},
-                    )
-                )
-            elif last.high > recent_high and last.close < recent_high:
-                patterns.append(
-                    SMCPattern(
-                        pattern_type="liquidity_sweep",
-                        direction=SignalDirection.SELL,
-                        price_high=last.high,
-                        strength=70,
-                        metadata={"swept_level": recent_high},
-                    )
-                )
-
-        return patterns
-
-    def _detect_equal_levels(
-        self, candles: list[Candle], structure: MarketStructureState
-    ) -> list[SMCPattern]:
-        patterns: list[SMCPattern] = []
-        tolerance = 0.0003
-
-        highs = structure.swing_highs[-5:] if structure.swing_highs else []
-        for i in range(len(highs)):
-            for j in range(i + 1, len(highs)):
-                if abs(highs[i].price - highs[j].price) / highs[i].price < tolerance:
-                    patterns.append(
-                        SMCPattern(
-                            pattern_type="equal_highs",
-                            direction=SignalDirection.SELL,
-                            price_high=highs[i].price,
-                            strength=int((highs[i].strength + highs[j].strength) / 2),
-                            metadata={"swing_based": True},
-                        )
-                    )
-                    break
-
-        lows = structure.swing_lows[-5:] if structure.swing_lows else []
-        for i in range(len(lows)):
-            for j in range(i + 1, len(lows)):
-                if abs(lows[i].price - lows[j].price) / lows[i].price < tolerance:
-                    patterns.append(
-                        SMCPattern(
-                            pattern_type="equal_lows",
-                            direction=SignalDirection.BUY,
-                            price_low=lows[i].price,
-                            strength=int((lows[i].strength + lows[j].strength) / 2),
-                            metadata={"swing_based": True},
-                        )
-                    )
-                    break
-
-        if not patterns:
-            patterns.extend(self._legacy_equal_levels(candles))
-        return patterns
-
-    def _legacy_equal_levels(self, candles: list[Candle]) -> list[SMCPattern]:
-        patterns: list[SMCPattern] = []
-        tolerance = 0.0003
-        highs = [(i, c.high) for i, c in enumerate(candles[-20:])]
-        lows = [(i, c.low) for i, c in enumerate(candles[-20:])]
-
-        for i in range(len(highs)):
-            for j in range(i + 1, len(highs)):
-                if abs(highs[i][1] - highs[j][1]) / highs[i][1] < tolerance:
-                    patterns.append(
-                        SMCPattern(
-                            pattern_type="equal_highs",
-                            direction=SignalDirection.SELL,
-                            price_high=highs[i][1],
-                            strength=55,
-                        )
-                    )
-                    break
-
-        for i in range(len(lows)):
-            for j in range(i + 1, len(lows)):
-                if abs(lows[i][1] - lows[j][1]) / lows[i][1] < tolerance:
-                    patterns.append(
-                        SMCPattern(
-                            pattern_type="equal_lows",
-                            direction=SignalDirection.BUY,
-                            price_low=lows[i][1],
-                            strength=55,
-                        )
-                    )
-                    break
-        return patterns

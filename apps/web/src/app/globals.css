@@ -992,6 +992,101 @@ button {
   border-bottom: 1px solid var(--border-subtle);
 }
 
+/* Timeframe switcher — reloads signal, chart, patterns, levels */
+.detail-tf-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.detail-tf-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.detail-tf-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.detail-tf-pill {
+  position: relative;
+  appearance: none;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.detail-tf-pill:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.detail-tf-pill.active {
+  color: #e2e8f0;
+  border-color: rgba(96, 165, 250, 0.55);
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.detail-tf-pill.alert-tf:not(.active) {
+  border-color: rgba(167, 139, 250, 0.35);
+}
+
+.detail-tf-pill:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.detail-tf-alert-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 0.35rem;
+  border-radius: 50%;
+  background: #a78bfa;
+  vertical-align: middle;
+}
+
+.detail-tf-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.detail-tf-error {
+  color: #f87171;
+}
+
+.detail-panel.is-tf-loading .detail-chart-section,
+.detail-panel.is-tf-loading .detail-levels-strip,
+.detail-panel.is-tf-loading .explain-bento,
+.detail-panel.is-tf-loading .explain-dashboard {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
 .detail-top-info {
   flex: 1;
   min-width: 200px;

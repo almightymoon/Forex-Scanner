@@ -69,6 +69,7 @@ class ReplayEngine:
                 symbol.upper(),
                 timeframe,
                 window,
+                htf_bars=None,  # rollup from window via HTF contract
                 decision_engine=self.decision_engine,
                 smc_engine=self.smc_engine,
                 evaluate=True,

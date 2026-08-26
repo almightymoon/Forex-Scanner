@@ -1,0 +1,1010 @@
+{
+  "generated_at": "2026-08-23T21:30:52.550447+00:00",
+  "pipeline_version_confirmed": "1.4.0",
+  "verification": {
+    "trades": 246,
+    "wins": 95,
+    "losses": 151,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "total_r": -22.434,
+    "max_drawdown_r": 30.329,
+    "consecutive_losses_max": 17,
+    "metrics_json_baseline": {
+      "total_trades": 246,
+      "wins": 95,
+      "losses": 151,
+      "breakeven": 0,
+      "win_rate": 38.6,
+      "profit_factor": 0.761,
+      "expectancy": -0.091,
+      "avg_r": -0.091,
+      "max_drawdown_r": 30.329,
+      "max_drawdown_pips": 35069.46,
+      "avg_winner_pips": 1006.75,
+      "avg_loser_pips": -831.97,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 17,
+      "avg_score": 93.0,
+      "total_r": -22.434,
+      "gross_profit": 956.414286,
+      "gross_loss": -1256.273571,
+      "ambiguous_trades": 4,
+      "win_rate_se_approx": 3.1,
+      "win_rate_ci95_approx": [
+        32.5,
+        44.7
+      ]
+    },
+    "match_report": true,
+    "check_detail": {
+      "trades": true,
+      "win_rate": true,
+      "profit_factor": true,
+      "expectancy": true,
+      "total_r": true,
+      "max_drawdown_r": true,
+      "losing_streak": true
+    }
+  },
+  "enrichment_skipped": false,
+  "distributions": {
+    "n_wins": 95,
+    "n_losses": 151,
+    "direction": {
+      "buy": 145,
+      "sell": 101
+    },
+    "session": {
+      "asia_utc": 83,
+      "london_utc": 45,
+      "ny_overlap_utc": 59,
+      "ny_utc": 40,
+      "off_hours_utc": 19
+    },
+    "month": {
+      "2024-01": 38,
+      "2024-02": 38,
+      "2024-03": 36,
+      "2024-04": 41,
+      "2024-05": 43,
+      "2024-06": 37,
+      "2024-07": 13
+    },
+    "r_mean": -0.0912,
+    "r_std": 1.1031,
+    "bars_held_mean": 7.9797
+  },
+  "winner_loser": [
+    {
+      "feature": "mean score",
+      "winners": 92.5263,
+      "losers": 93.3642,
+      "diff": -0.838
+    },
+    {
+      "feature": "mean confidence",
+      "winners": 0.8683,
+      "losers": 0.8661,
+      "diff": 0.0022
+    },
+    {
+      "feature": "mean planned R:R",
+      "winners": 1.3333,
+      "losers": 1.3333,
+      "diff": 0.0
+    },
+    {
+      "feature": "mean stop distance",
+      "winners": 8.0578,
+      "losers": 8.8013,
+      "diff": -0.7435
+    },
+    {
+      "feature": "mean bars held",
+      "winners": 8.1053,
+      "losers": 7.9007,
+      "diff": 0.205
+    },
+    {
+      "feature": "mean MAE R",
+      "winners": 0.3273,
+      "losers": 1.4382,
+      "diff": -1.1109
+    },
+    {
+      "feature": "mean MFE R",
+      "winners": 1.6287,
+      "losers": 0.5549,
+      "diff": 1.0738
+    },
+    {
+      "feature": "% HTF ALIGNED",
+      "winners": 88.4,
+      "losers": 86.1,
+      "diff": 2.3
+    },
+    {
+      "feature": "% structure ALIGNED",
+      "winners": 76.8,
+      "losers": 76.2,
+      "diff": 0.6
+    },
+    {
+      "feature": "% buy",
+      "winners": 63.2,
+      "losers": 56.3,
+      "diff": 6.9
+    },
+    {
+      "feature": "mean primary zone rank",
+      "winners": 1.2947,
+      "losers": 1.2848,
+      "diff": 0.01
+    },
+    {
+      "feature": "mean distance_atr",
+      "winners": 4.3568,
+      "losers": 3.4902,
+      "diff": 0.8666
+    },
+    {
+      "feature": "mean freshness_bars",
+      "winners": 68.2947,
+      "losers": 55.1854,
+      "diff": 13.109
+    }
+  ],
+  "score_bins": {
+    "high_95_100": {
+      "n": 139,
+      "wins": 54,
+      "losses": 85,
+      "win_rate": 38.8,
+      "profit_factor": 0.742,
+      "expectancy": -0.093,
+      "total_r": -12.9248,
+      "avg_r": -0.093,
+      "max_dd_r": 21.018,
+      "insufficient": false,
+      "warning": null
+    },
+    "low_71_84": {
+      "n": 42,
+      "wins": 19,
+      "losses": 23,
+      "win_rate": 45.2,
+      "profit_factor": 0.929,
+      "expectancy": 0.074,
+      "total_r": 3.1189,
+      "avg_r": 0.074,
+      "max_dd_r": 5.16,
+      "insufficient": false,
+      "warning": null
+    },
+    "medium_85_94": {
+      "n": 65,
+      "wins": 22,
+      "losses": 43,
+      "win_rate": 33.8,
+      "profit_factor": 0.726,
+      "expectancy": -0.194,
+      "total_r": -12.6281,
+      "avg_r": -0.194,
+      "max_dd_r": 15.629,
+      "insufficient": false,
+      "warning": null
+    }
+  },
+  "conf_bins": {
+    "high_0.85_1.00": {
+      "n": 152,
+      "wins": 58,
+      "losses": 94,
+      "win_rate": 38.2,
+      "profit_factor": 0.787,
+      "expectancy": -0.1,
+      "total_r": -15.1487,
+      "avg_r": -0.1,
+      "max_dd_r": 19.801,
+      "insufficient": false,
+      "warning": null
+    },
+    "low_lt_0.60": {
+      "n": 35,
+      "wins": 15,
+      "losses": 20,
+      "win_rate": 42.9,
+      "profit_factor": 0.82,
+      "expectancy": 0.025,
+      "total_r": 0.8844,
+      "avg_r": 0.025,
+      "max_dd_r": 6.194,
+      "insufficient": false,
+      "warning": null
+    },
+    "medium_0.60_0.84": {
+      "n": 59,
+      "wins": 22,
+      "losses": 37,
+      "win_rate": 37.3,
+      "profit_factor": 0.655,
+      "expectancy": -0.138,
+      "total_r": -8.1697,
+      "avg_r": -0.138,
+      "max_dd_r": 11.811,
+      "insufficient": false,
+      "warning": null
+    }
+  },
+  "direction": {
+    "buy": {
+      "n": 145,
+      "wins": 60,
+      "losses": 85,
+      "win_rate": 41.4,
+      "profit_factor": 0.818,
+      "expectancy": -0.028,
+      "total_r": -4.079,
+      "avg_r": -0.028,
+      "max_dd_r": 18.757,
+      "insufficient": false,
+      "warning": null
+    },
+    "sell": {
+      "n": 101,
+      "wins": 35,
+      "losses": 66,
+      "win_rate": 34.7,
+      "profit_factor": 0.674,
+      "expectancy": -0.182,
+      "total_r": -18.355,
+      "avg_r": -0.182,
+      "max_dd_r": 21.889,
+      "insufficient": false,
+      "warning": null
+    }
+  },
+  "structure_alignment": {
+    "ALIGNED": {
+      "n": 188,
+      "wins": 73,
+      "losses": 115,
+      "win_rate": 38.8,
+      "profit_factor": 0.79,
+      "expectancy": -0.073,
+      "total_r": -13.8098,
+      "avg_r": -0.073,
+      "max_dd_r": 22.168,
+      "insufficient": false,
+      "warning": null
+    },
+    "NEUTRAL": {
+      "n": 30,
+      "wins": 13,
+      "losses": 17,
+      "win_rate": 43.3,
+      "profit_factor": 1.104,
+      "expectancy": -0.032,
+      "total_r": -0.9733,
+      "avg_r": -0.032,
+      "max_dd_r": 6.052,
+      "insufficient": false,
+      "warning": null
+    },
+    "OPPOSED": {
+      "n": 28,
+      "wins": 9,
+      "losses": 19,
+      "win_rate": 32.1,
+      "profit_factor": 0.374,
+      "expectancy": -0.273,
+      "total_r": -7.651,
+      "avg_r": -0.273,
+      "max_dd_r": 11.906,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "htf_alignment": {
+    "ALIGNED": {
+      "n": 214,
+      "wins": 84,
+      "losses": 130,
+      "win_rate": 39.3,
+      "profit_factor": 0.78,
+      "expectancy": -0.084,
+      "total_r": -17.9332,
+      "avg_r": -0.084,
+      "max_dd_r": 24.295,
+      "insufficient": false,
+      "warning": null
+    },
+    "OPPOSED": {
+      "n": 32,
+      "wins": 11,
+      "losses": 21,
+      "win_rate": 34.4,
+      "profit_factor": 0.626,
+      "expectancy": -0.141,
+      "total_r": -4.5008,
+      "avg_r": -0.141,
+      "max_dd_r": 8.034,
+      "insufficient": false,
+      "warning": null
+    }
+  },
+  "struct_htf_combo": {
+    "S:ALIGNED|H:ALIGNED": {
+      "n": 164,
+      "wins": 65,
+      "losses": 99,
+      "win_rate": 39.6,
+      "profit_factor": 0.815,
+      "expectancy": -0.063,
+      "total_r": -10.309,
+      "avg_r": -0.063,
+      "max_dd_r": 15.467,
+      "insufficient": false,
+      "warning": null
+    },
+    "S:ALIGNED|H:OPPOSED": {
+      "n": 24,
+      "wins": 8,
+      "losses": 16,
+      "win_rate": 33.3,
+      "profit_factor": 0.597,
+      "expectancy": -0.146,
+      "total_r": -3.5008,
+      "avg_r": -0.146,
+      "max_dd_r": 7.701,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "S:NEUTRAL|H:ALIGNED": {
+      "n": 25,
+      "wins": 12,
+      "losses": 13,
+      "win_rate": 48.0,
+      "profit_factor": 1.356,
+      "expectancy": 0.068,
+      "total_r": 1.6934,
+      "avg_r": 0.068,
+      "max_dd_r": 4.052,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "S:NEUTRAL|H:OPPOSED": {
+      "n": 5,
+      "wins": 1,
+      "losses": 4,
+      "win_rate": 20.0,
+      "profit_factor": 0.404,
+      "expectancy": -0.533,
+      "total_r": -2.6667,
+      "avg_r": -0.533,
+      "max_dd_r": 3.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "S:OPPOSED|H:ALIGNED": {
+      "n": 25,
+      "wins": 7,
+      "losses": 18,
+      "win_rate": 28.0,
+      "profit_factor": 0.298,
+      "expectancy": -0.373,
+      "total_r": -9.3176,
+      "avg_r": -0.373,
+      "max_dd_r": 11.906,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "S:OPPOSED|H:OPPOSED": {
+      "n": 3,
+      "wins": 2,
+      "losses": 1,
+      "win_rate": 66.7,
+      "profit_factor": 1.534,
+      "expectancy": 0.556,
+      "total_r": 1.6667,
+      "avg_r": 0.556,
+      "max_dd_r": 1.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "liquidity_relation": {
+    "ASSOCIATED_SWEEP": {
+      "n": 188,
+      "wins": 70,
+      "losses": 118,
+      "win_rate": 37.2,
+      "profit_factor": 0.724,
+      "expectancy": -0.122,
+      "total_r": -22.9767,
+      "avg_r": -0.122,
+      "max_dd_r": 31.59,
+      "insufficient": false,
+      "warning": null
+    },
+    "NEAR_RELEVANT": {
+      "n": 33,
+      "wins": 13,
+      "losses": 20,
+      "win_rate": 39.4,
+      "profit_factor": 0.645,
+      "expectancy": -0.1,
+      "total_r": -3.2976,
+      "avg_r": -0.1,
+      "max_dd_r": 7.034,
+      "insufficient": false,
+      "warning": null
+    },
+    "NONE": {
+      "n": 25,
+      "wins": 12,
+      "losses": 13,
+      "win_rate": 48.0,
+      "profit_factor": 1.469,
+      "expectancy": 0.154,
+      "total_r": 3.8403,
+      "avg_r": 0.154,
+      "max_dd_r": 4.826,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "fvg_ob": {
+    "fvg_and_ob": {
+      "n": 245,
+      "wins": 94,
+      "losses": 151,
+      "win_rate": 38.4,
+      "profit_factor": 0.753,
+      "expectancy": -0.097,
+      "total_r": -23.7674,
+      "avg_r": -0.097,
+      "max_dd_r": 31.662,
+      "insufficient": false,
+      "warning": null
+    },
+    "fvg_only": {
+      "n": 1,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 100.0,
+      "profit_factor": null,
+      "expectancy": 1.333,
+      "total_r": 1.3333,
+      "avg_r": 1.333,
+      "max_dd_r": 0.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "zone_rank": {
+    "1": {
+      "n": 202,
+      "wins": 79,
+      "losses": 123,
+      "win_rate": 39.1,
+      "profit_factor": 0.788,
+      "expectancy": -0.078,
+      "total_r": -15.7373,
+      "avg_r": -0.078,
+      "max_dd_r": 25.351,
+      "insufficient": false,
+      "warning": null
+    },
+    "2": {
+      "n": 27,
+      "wins": 8,
+      "losses": 19,
+      "win_rate": 29.6,
+      "profit_factor": 0.489,
+      "expectancy": -0.268,
+      "total_r": -7.2315,
+      "avg_r": -0.268,
+      "max_dd_r": 8.898,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "3": {
+      "n": 9,
+      "wins": 4,
+      "losses": 5,
+      "win_rate": 44.4,
+      "profit_factor": 0.879,
+      "expectancy": 0.014,
+      "total_r": 0.1231,
+      "avg_r": 0.014,
+      "max_dd_r": 3.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "4": {
+      "n": 7,
+      "wins": 4,
+      "losses": 3,
+      "win_rate": 57.1,
+      "profit_factor": 1.144,
+      "expectancy": 0.202,
+      "total_r": 1.4117,
+      "avg_r": 0.202,
+      "max_dd_r": 2.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "6": {
+      "n": 1,
+      "wins": 0,
+      "losses": 1,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "expectancy": -1.0,
+      "total_r": -1.0,
+      "avg_r": -1.0,
+      "max_dd_r": 1.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "zone_rank_proxy": {
+    "1": {
+      "n": 202,
+      "wins": 79,
+      "losses": 123,
+      "win_rate": 39.1,
+      "profit_factor": 0.788,
+      "expectancy": -0.078,
+      "total_r": -15.7373,
+      "avg_r": -0.078,
+      "max_dd_r": 25.351,
+      "insufficient": false,
+      "warning": null
+    },
+    "2": {
+      "n": 27,
+      "wins": 8,
+      "losses": 19,
+      "win_rate": 29.6,
+      "profit_factor": 0.489,
+      "expectancy": -0.268,
+      "total_r": -7.2315,
+      "avg_r": -0.268,
+      "max_dd_r": 8.898,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "3": {
+      "n": 9,
+      "wins": 4,
+      "losses": 5,
+      "win_rate": 44.4,
+      "profit_factor": 0.879,
+      "expectancy": 0.014,
+      "total_r": 0.1231,
+      "avg_r": 0.014,
+      "max_dd_r": 3.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "4": {
+      "n": 7,
+      "wins": 4,
+      "losses": 3,
+      "win_rate": 57.1,
+      "profit_factor": 1.144,
+      "expectancy": 0.202,
+      "total_r": 1.4117,
+      "avg_r": 0.202,
+      "max_dd_r": 2.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    },
+    "6": {
+      "n": 1,
+      "wins": 0,
+      "losses": 1,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "expectancy": -1.0,
+      "total_r": -1.0,
+      "avg_r": -1.0,
+      "max_dd_r": 1.0,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "by_month": {
+    "2024-01": {
+      "n": 38,
+      "wins": 12,
+      "losses": 26,
+      "win_rate": 31.6,
+      "profit_factor": 0.579,
+      "expectancy": -0.244,
+      "total_r": -9.2632,
+      "avg_r": -0.244,
+      "max_dd_r": 13.371,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024-02": {
+      "n": 38,
+      "wins": 16,
+      "losses": 22,
+      "win_rate": 42.1,
+      "profit_factor": 0.893,
+      "expectancy": 0.017,
+      "total_r": 0.6535,
+      "avg_r": 0.017,
+      "max_dd_r": 5.333,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024-03": {
+      "n": 36,
+      "wins": 19,
+      "losses": 17,
+      "win_rate": 52.8,
+      "profit_factor": 1.451,
+      "expectancy": 0.223,
+      "total_r": 8.0411,
+      "avg_r": 0.223,
+      "max_dd_r": 7.385,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024-04": {
+      "n": 41,
+      "wins": 20,
+      "losses": 21,
+      "win_rate": 48.8,
+      "profit_factor": 0.989,
+      "expectancy": 0.098,
+      "total_r": 4.0363,
+      "avg_r": 0.098,
+      "max_dd_r": 6.0,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024-05": {
+      "n": 43,
+      "wins": 15,
+      "losses": 28,
+      "win_rate": 34.9,
+      "profit_factor": 0.681,
+      "expectancy": -0.159,
+      "total_r": -6.8294,
+      "avg_r": -0.159,
+      "max_dd_r": 9.163,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024-06": {
+      "n": 37,
+      "wins": 8,
+      "losses": 29,
+      "win_rate": 21.6,
+      "profit_factor": 0.322,
+      "expectancy": -0.479,
+      "total_r": -17.739,
+      "avg_r": -0.479,
+      "max_dd_r": 19.368,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024-07": {
+      "n": 13,
+      "wins": 5,
+      "losses": 8,
+      "win_rate": 38.5,
+      "profit_factor": 0.704,
+      "expectancy": -0.103,
+      "total_r": -1.3333,
+      "avg_r": -0.103,
+      "max_dd_r": 4.667,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "by_quarter": {
+    "2024Q1": {
+      "n": 112,
+      "wins": 47,
+      "losses": 65,
+      "win_rate": 42.0,
+      "profit_factor": 0.929,
+      "expectancy": -0.005,
+      "total_r": -0.5685,
+      "avg_r": -0.005,
+      "max_dd_r": 13.371,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024Q2": {
+      "n": 121,
+      "wins": 43,
+      "losses": 78,
+      "win_rate": 35.5,
+      "profit_factor": 0.68,
+      "expectancy": -0.17,
+      "total_r": -20.5322,
+      "avg_r": -0.17,
+      "max_dd_r": 27.958,
+      "insufficient": false,
+      "warning": null
+    },
+    "2024Q3": {
+      "n": 13,
+      "wins": 5,
+      "losses": 8,
+      "win_rate": 38.5,
+      "profit_factor": 0.704,
+      "expectancy": -0.103,
+      "total_r": -1.3333,
+      "avg_r": -0.103,
+      "max_dd_r": 4.667,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  },
+  "regime_structure": {
+    "bearish": {
+      "n": 69,
+      "wins": 24,
+      "losses": 45,
+      "win_rate": 34.8,
+      "profit_factor": 0.71,
+      "expectancy": -0.165,
+      "total_r": -11.3707,
+      "avg_r": -0.165,
+      "max_dd_r": 14.704,
+      "insufficient": false,
+      "warning": null
+    },
+    "bullish": {
+      "n": 147,
+      "wins": 58,
+      "losses": 89,
+      "win_rate": 39.5,
+      "profit_factor": 0.741,
+      "expectancy": -0.069,
+      "total_r": -10.09,
+      "avg_r": -0.069,
+      "max_dd_r": 27.407,
+      "insufficient": false,
+      "warning": null
+    },
+    "ranging": {
+      "n": 30,
+      "wins": 13,
+      "losses": 17,
+      "win_rate": 43.3,
+      "profit_factor": 1.104,
+      "expectancy": -0.032,
+      "total_r": -0.9733,
+      "avg_r": -0.032,
+      "max_dd_r": 6.052,
+      "insufficient": false,
+      "warning": null
+    }
+  },
+  "regime_htf": {
+    "bearish": {
+      "n": 107,
+      "wins": 34,
+      "losses": 73,
+      "win_rate": 31.8,
+      "profit_factor": 0.606,
+      "expectancy": -0.249,
+      "total_r": -26.5895,
+      "avg_r": -0.249,
+      "max_dd_r": 29.923,
+      "insufficient": false,
+      "warning": null
+    },
+    "bullish": {
+      "n": 139,
+      "wins": 61,
+      "losses": 78,
+      "win_rate": 43.9,
+      "profit_factor": 0.881,
+      "expectancy": 0.03,
+      "total_r": 4.1555,
+      "avg_r": 0.03,
+      "max_dd_r": 12.056,
+      "insufficient": false,
+      "warning": null
+    }
+  },
+  "mae_mfe": {
+    "mean_mae_r_all": 1.0092,
+    "mean_mfe_r_all": 0.9696,
+    "mean_mae_r_losers": 1.4382,
+    "mean_mfe_r_losers": 0.5549,
+    "mean_mae_r_winners": 0.3273,
+    "mean_mfe_r_winners": 1.6287,
+    "loser_tag_counts": {
+      "stop_out_before_favorable_excursion": 63,
+      "standard_stop_loss": 54,
+      "immediate_adverse_move": 35,
+      "wrong_directional_bias_htf": 21,
+      "target_nearly_reached_then_reversal": 13,
+      "prolonged_stagnation": 10
+    }
+  },
+  "cost_sensitivity": {
+    "baseline": {
+      "total_r": -22.434,
+      "expectancy": -0.091,
+      "profit_factor": 0.761
+    },
+    "low": {
+      "total_r": -26.9922,
+      "expectancy": -0.11,
+      "profit_factor": 0.737
+    },
+    "high": {
+      "total_r": -34.5715,
+      "expectancy": -0.141,
+      "profit_factor": 0.698
+    }
+  },
+  "geometry": {
+    "mean_planned_rr": 1.3333,
+    "median_planned_rr": 1.3333,
+    "share_rr_lt_1": 0.0,
+    "mean_r_winners": 1.2751,
+    "mean_r_losers": -0.9508
+  },
+  "data_quirks": [
+    "Retrospective OHLC package \u2014 not prospective post-2026 certification dataset.",
+    "Weekday/session gaps noted in OOS integrity; not repaired.",
+    "Evaluation lookback=250 and stride=4 fixed a priori \u2014 reduces density vs every-bar expanding window; does not reverse the negative BASE result by itself.",
+    "XAU pip_size=0.01 inflates max_drawdown_pips presentation; PnL R multiples use price risk and remain the primary metric.",
+    "BASE spread/slippage/commission = 0 \u2014 research baseline; HIGH cost worsens results further.",
+    "Broker timezone uniqueness UNKNOWN; timestamps treated as UTC-aware from source.",
+    "NewsContext was neutral in OOS \u2014 news contribution UNKNOWN.",
+    "These quirks do not invalidate the FAILED OOS conclusion under the documented protocol; they limit external generalization."
+  ],
+  "findings": [
+    "Baseline negative expectancy at zero costs (total R=-22.434) \u2014 analytical/signal failure, not cost failure.",
+    "Long/short: buy n=145 exp=-0.028; sell n=101 exp=-0.182.",
+    "Score bins (exploratory): high_95_100 exp=-0.093 n=139; low_71_84 exp=0.074 n=42; medium_85_94 exp=-0.194 n=65",
+    "Confidence bins (exploratory): high_0.85_1.00 exp=-0.1 n=152; low_lt_0.60 exp=0.025 n=35; medium_0.60_0.84 exp=-0.138 n=59",
+    "Loser path tags dominated by: [('stop_out_before_favorable_excursion', 63), ('standard_stop_loss', 54), ('prolonged_stagnation', 10), ('wrong_directional_bias_htf', 21), ('immediate_adverse_move', 35)]",
+    "Temporal: worst month by total R is 2024-06 ({'n': 37, 'wins': 8, 'losses': 29, 'win_rate': 21.6, 'profit_factor': 0.322, 'expectancy': -0.479, 'total_r': -17.739, 'avg_r': -0.479, 'max_dd_r': 19.368, 'insufficient': False, 'warning': None})",
+    "Liquidity / FVG-OB / zone-rank tables use read-only enrichment; see sections 8\u201310."
+  ],
+  "hypotheses": [
+    {
+      "title": "H1 \u2014 Score/confidence thresholding experiment",
+      "hypothesis": "Higher score/confidence bins may not improve realized R; a recalibrated mapping or hard filter might change trade mix.",
+      "evidence": "See score/confidence bin tables (exploratory).",
+      "mechanism": "Remove low-information high-score saturation or require calibrated confidence.",
+      "experiment": "Versioned DecisionEngine / confidence mapping A/B on TRAIN only; lock before TEST.",
+      "version_impact": "Would require new ANALYSIS_PIPELINE_VERSION if analytical scoring changes."
+    },
+    {
+      "title": "H2 \u2014 SL/TP geometry experiment",
+      "hypothesis": "Planned R:R and stop distance may not compensate for ~39% win rate.",
+      "evidence": "Mean planned RR=1.3333; WR\u224838.6%; mean loser R=-0.9508.",
+      "mechanism": "Wider targets or structure-aware stops change payoff distribution.",
+      "experiment": "Separately versioned exit model; do not retune on OOS.",
+      "version_impact": "New pipeline version if signal SL/TP construction changes."
+    },
+    {
+      "title": "H3 \u2014 Regime / HTF gating experiment",
+      "hypothesis": "Certain structure\u00d7HTF combinations may be systematically worse.",
+      "evidence": "See structure\u00d7HTF combo table; regime tables.",
+      "mechanism": "Gate or down-weight opposed setups.",
+      "experiment": "Predeclare gates on TRAIN; evaluate once on locked TEST.",
+      "version_impact": "New version if DecisionEngine gating changes."
+    },
+    {
+      "title": "H4 \u2014 Zone ranking predictive validity experiment",
+      "hypothesis": "Soft-capped zone rank may not correlate with realized R.",
+      "evidence": "Zone rank section (enrichment or proxy).",
+      "mechanism": "Alternative ranking lexicographic keys or disable soft-cap effects.",
+      "experiment": "Versioned ranking module comparison.",
+      "version_impact": "New version if ranking rules change."
+    },
+    {
+      "title": "H5 \u2014 Prospective dataset validation",
+      "hypothesis": "Retrospective OHLC + stride/lookback evaluation design may differ from live accrual.",
+      "evidence": "Known evaluation quirks; FAILED OOS still holds under documented design.",
+      "mechanism": "Prospective post-lock data reduces some dataset biases (not a strategy fix).",
+      "experiment": "Shadow/paper on prospective candles with identical 1.4.0.",
+      "version_impact": "None if 1.4.0 remains frozen."
+    }
+  ],
+  "must_not_conclude": [
+    "That any subgroup filter would improve live performance (not tested).",
+    "That June 2024 alone 'explains' failure (other months also weak/mixed).",
+    "That costs caused the failure (BASE already negative).",
+    "That the strategy is profitable under different undocumented assumptions.",
+    "That n=246 proves statistical significance of any subgroup contrast.",
+    "That changing stride/lookback would salvage 1.4.0 without a new experiment."
+  ],
+  "diagnosis_categories": [
+    "A. Directional signal weakness",
+    "E. Confidence/score is poorly calibrated",
+    "D. Ranking/context has little predictive value",
+    "C. Regime dependence",
+    "F. Long/short asymmetry",
+    "I. Insufficient evidence"
+  ],
+  "diagnosis_narrative": "OBSERVED: 246 OOS trades, WR 38.6%, PF 0.761, expectancy \u22120.091 R, total R \u221222.43, max DD 30.33 R. Zero-cost BASE already negative; HIGH cost total R -34.5715 (worse). Long exp=-0.028, short exp=-0.182. Score bins low/med/high exp=0.074/-0.194/-0.093. Worst month 2024-06 total R=-17.739 (n=37). Loser paths frequently show stop-out with limited MFE (mean loser MFE=0.5549 R vs MAE=1.4382 R). INFERRED: primary failure is directional/setup expectancy under frozen SL/TP geometry, not execution friction. UNKNOWN: live fills, causal news, prospective generalization. Subgroup relationships remain exploratory (multiple comparisons).",
+  "news": "UNKNOWN \u2014 OOS used neutral NewsContext; no causal news metadata on trades.",
+  "session_metrics": {
+    "asia_utc": {
+      "n": 83,
+      "wins": 33,
+      "losses": 50,
+      "win_rate": 39.8,
+      "profit_factor": 0.753,
+      "expectancy": -0.083,
+      "total_r": -6.8541,
+      "avg_r": -0.083,
+      "max_dd_r": 13.12,
+      "insufficient": false,
+      "warning": null
+    },
+    "london_utc": {
+      "n": 45,
+      "wins": 17,
+      "losses": 28,
+      "win_rate": 37.8,
+      "profit_factor": 0.827,
+      "expectancy": -0.119,
+      "total_r": -5.3333,
+      "avg_r": -0.119,
+      "max_dd_r": 12.667,
+      "insufficient": false,
+      "warning": null
+    },
+    "ny_overlap_utc": {
+      "n": 59,
+      "wins": 20,
+      "losses": 39,
+      "win_rate": 33.9,
+      "profit_factor": 0.601,
+      "expectancy": -0.175,
+      "total_r": -10.3174,
+      "avg_r": -0.175,
+      "max_dd_r": 14.317,
+      "insufficient": false,
+      "warning": null
+    },
+    "ny_utc": {
+      "n": 40,
+      "wins": 16,
+      "losses": 24,
+      "win_rate": 40.0,
+      "profit_factor": 0.939,
+      "expectancy": -0.05,
+      "total_r": -2.0025,
+      "avg_r": -0.05,
+      "max_dd_r": 6.52,
+      "insufficient": false,
+      "warning": null
+    },
+    "off_hours_utc": {
+      "n": 19,
+      "wins": 9,
+      "losses": 10,
+      "win_rate": 47.4,
+      "profit_factor": 0.811,
+      "expectancy": 0.109,
+      "total_r": 2.0733,
+      "avg_r": 0.109,
+      "max_dd_r": 2.892,
+      "insufficient": true,
+      "warning": "n<30 insufficient subgroup evidence"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "pipeline_version": "1.4.0",
+  "symbol": "XAUUSD",
+  "timeframe": "H1",
+  "min_score": 70,
+  "forward_bars": 20,
+  "cooldown_bars": 10,
+  "lookback_bars": 250,
+  "signal_stride": 4,
+  "lookback_note": "Causal rolling LOOKBACK=250; stride=4 fixed a priori.",
+  "entry_model": "signal_close",
+  "ambiguous_candle": "sl_first",
+  "sl_tp_model": "ScannerSignal.stop_loss / take_profit_1",
+  "news": "NewsContext(score=10) neutral",
+  "mtf": "resolve_mtf_trends inside analyze_candle_window",
+  "ranking": "frozen lexicographic + HTF select_ranking_htf_trend",
+  "decision_engine": "DecisionEngine() default",
+  "parameter_fitting": false,
+  "execution_baseline": {
+    "entry_mode": "signal_close",
+    "ambiguous_policy": "sl_first",
+    "spread_pips": 0.0,
+    "slippage_pips": 0.0,
+    "commission_pips": 0.0
+  },
+  "execution_low_cost": {
+    "entry_mode": "signal_close",
+    "ambiguous_policy": "sl_first",
+    "spread_pips": 15.0,
+    "slippage_pips": 5.0,
+    "commission_pips": 2.0
+  },
+  "execution_high_cost": {
+    "entry_mode": "signal_close",
+    "ambiguous_policy": "sl_first",
+    "spread_pips": 40.0,
+    "slippage_pips": 15.0,
+    "commission_pips": 5.0
+  },
+  "split": {
+    "train": [
+      "2022-01-02T22:00:00+00:00",
+      "2022-12-31T23:00:00+00:00"
+    ],
+    "validation": [
+      "2023-01-01T00:00:00+00:00",
+      "2023-12-31T23:00:00+00:00"
+    ],
+    "test": [
+      "2024-01-01T00:00:00+00:00",
+      "2024-07-11T04:00:00+00:00"
+    ]
+  },
+  "test_months": [
+    "2024-01",
+    "2024-02",
+    "2024-03",
+    "2024-04",
+    "2024-05",
+    "2024-06",
+    "2024-07"
+  ],
+  "config_sha256": "afc1f1a9beeca73fd201ca1693eb72a3ed518aac9f4113ec372cde4b555d8222"
+}

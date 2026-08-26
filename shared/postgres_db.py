@@ -39,6 +39,11 @@ class PostgresDatabase:
                         data JSONB NOT NULL,
                         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     );
+                    -- Full schema (database/schema.sql) omits payload JSON; adapters need it for round-trip.
+                    ALTER TABLE scanner_results ADD COLUMN IF NOT EXISTS data JSONB;
+                    ALTER TABLE scanner_results ADD COLUMN IF NOT EXISTS score_breakdown JSONB;
+                    ALTER TABLE scanner_results ADD COLUMN IF NOT EXISTS technical_reasons JSONB DEFAULT '[]'::jsonb;
+                    ALTER TABLE scanner_results ADD COLUMN IF NOT EXISTS smc_reasons JSONB DEFAULT '[]'::jsonb;
                     CREATE INDEX IF NOT EXISTS idx_pg_scanner_created ON scanner_results(created_at DESC);
                     CREATE INDEX IF NOT EXISTS idx_pg_scanner_symbol ON scanner_results(symbol, created_at DESC);
 
@@ -72,16 +77,43 @@ class PostgresDatabase:
             conn.commit()
 
     def save_scanner_result(self, signal: ScannerSignal) -> int:
+        payload = to_dict(signal)
+        score_breakdown = payload.get("score_breakdown") or {}
         with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """INSERT INTO scanner_results
-                       (symbol, timeframe, direction, score, rating, trend, risk_level, data, created_at)
-                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",
+                       (symbol, timeframe, direction, score, rating, trend, risk_level,
+                        score_breakdown, technical_reasons, smc_reasons, news_impact, mtf_alignment,
+                        entry_zone_low, entry_zone_high, stop_loss, take_profit_1, take_profit_2,
+                        take_profit_3, risk_reward, ai_explanation, data, created_at)
+                       VALUES (
+                         %s,%s,%s,%s,%s,%s,%s,
+                         %s::jsonb,%s::jsonb,%s::jsonb,%s::jsonb,%s::jsonb,
+                         %s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s
+                       ) RETURNING id""",
                     (
-                        signal.symbol, signal.timeframe.value, signal.direction.value,
-                        signal.score, signal.rating.value, signal.trend.value,
-                        signal.risk_level.value, json.dumps(to_dict(signal)),
+                        signal.symbol,
+                        signal.timeframe.value,
+                        signal.direction.value,
+                        signal.score,
+                        signal.rating.value,
+                        signal.trend.value,
+                        signal.risk_level.value,
+                        json.dumps(score_breakdown),
+                        json.dumps(payload.get("technical_reasons") or []),
+                        json.dumps(payload.get("smc_reasons") or []),
+                        json.dumps(payload["news_impact"]) if payload.get("news_impact") is not None else None,
+                        json.dumps(payload["mtf_alignment"]) if payload.get("mtf_alignment") is not None else None,
+                        signal.entry_zone_low,
+                        signal.entry_zone_high,
+                        signal.stop_loss,
+                        signal.take_profit_1,
+                        signal.take_profit_2,
+                        signal.take_profit_3,
+                        signal.risk_reward,
+                        signal.ai_explanation,
+                        json.dumps(payload),
                         datetime.now(timezone.utc),
                     ),
                 )
@@ -90,10 +122,26 @@ class PostgresDatabase:
             return row["id"]
 
     def save_scan_results(self, signals: list[ScannerSignal]) -> int:
-        return sum(self.save_scanner_result(s) for s in signals)
+        saved = 0
+        for signal in signals:
+            self.save_scanner_result(signal)
+            saved += 1
+        return saved
 
     def get_recent_results(self, limit: int = 50, min_score: int = 0, symbol: Optional[str] = None) -> list[dict]:
-        query = "SELECT data FROM scanner_results WHERE score >= %s"
+        query = """SELECT COALESCE(data, jsonb_build_object(
+                        'symbol', symbol,
+                        'timeframe', timeframe,
+                        'direction', direction,
+                        'score', score,
+                        'rating', rating,
+                        'trend', trend,
+                        'risk_level', risk_level,
+                        'score_breakdown', COALESCE(score_breakdown, '{}'::jsonb),
+                        'technical_reasons', COALESCE(technical_reasons, '[]'::jsonb),
+                        'smc_reasons', COALESCE(smc_reasons, '[]'::jsonb)
+                    )) AS data
+                   FROM scanner_results WHERE score >= %s"""
         params: list = [min_score]
         if symbol:
             query += " AND symbol = %s"

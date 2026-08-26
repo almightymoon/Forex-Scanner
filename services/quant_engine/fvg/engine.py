@@ -31,7 +31,7 @@ class FairValueGapEngine:
         gap_details: list[dict] = []
 
         for p in fvgs:
-            if features and features.best_fvg and p == fvgs[-1]:
+            if features and features.best_fvg and p == fvgs[0]:
                 detail = self._analyze_from_features(p, features.best_fvg, rules)
             else:
                 detail = self._analyze_gap(p, candles or [], rules)
@@ -85,7 +85,10 @@ class FairValueGapEngine:
         gap_low = p.price_low or 0
         gap_high = p.price_high or 0
         gap_size = p.metadata.get("gap_size") or max(gap_high - gap_low, 0)
-        fill_pct = self._fill_percentage(p, candles)
+        if "fill_ratio" in p.metadata:
+            fill_pct = float(p.metadata["fill_ratio"]) * 100.0
+        else:
+            fill_pct = self._fill_percentage(p, candles)
         unfilled = fill_pct < 50
 
         base = rules.get("bullish_fvg" if p.direction == SignalDirection.BUY else "bearish_fvg", 5)

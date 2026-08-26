@@ -1,0 +1,62 @@
+{
+  "fingerprint_sample_size": 25,
+  "fingerprint_mismatches": 0,
+  "run1_trade_hash": "0dbcad671908ee0b9c477607a9311ca6683d363776bad2bf17f1833756df7835",
+  "run2_trade_hash": "0dbcad671908ee0b9c477607a9311ca6683d363776bad2bf17f1833756df7835",
+  "trades_identical": true,
+  "fingerprints_identical": true,
+  "identical": true,
+  "metrics_run1": {
+    "total_trades": 246,
+    "wins": 95,
+    "losses": 151,
+    "breakeven": 0,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "avg_r": -0.091,
+    "max_drawdown_r": 30.329,
+    "max_drawdown_pips": 35069.46,
+    "avg_winner_pips": 1006.75,
+    "avg_loser_pips": -831.97,
+    "consecutive_wins_max": 6,
+    "consecutive_losses_max": 17,
+    "avg_score": 93.0,
+    "total_r": -22.434,
+    "gross_profit": 956.414286,
+    "gross_loss": -1256.273571,
+    "ambiguous_trades": 4,
+    "win_rate_se_approx": 3.1,
+    "win_rate_ci95_approx": [
+      32.5,
+      44.7
+    ]
+  },
+  "metrics_run2": {
+    "total_trades": 246,
+    "wins": 95,
+    "losses": 151,
+    "breakeven": 0,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "avg_r": -0.091,
+    "max_drawdown_r": 30.329,
+    "max_drawdown_pips": 35069.46,
+    "avg_winner_pips": 1006.75,
+    "avg_loser_pips": -831.97,
+    "consecutive_wins_max": 6,
+    "consecutive_losses_max": 17,
+    "avg_score": 93.0,
+    "total_r": -22.434,
+    "gross_profit": 956.414286,
+    "gross_loss": -1256.273571,
+    "ambiguous_trades": 4,
+    "win_rate_se_approx": 3.1,
+    "win_rate_ci95_approx": [
+      32.5,
+      44.7
+    ]
+  },
+  "note": "Trade hash uses outcome-critical fields only"
+}
