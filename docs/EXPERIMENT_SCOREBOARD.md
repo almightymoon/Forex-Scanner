@@ -27,5 +27,6 @@ Living summary of versioned experiments after analytical freeze of **1.4.0**.
 3. Health exposes `validation_store` + `pipeline_version` (done).
 4. Opt-in paper shadow: `SCANNER_EMIT_POLICY=h4_rank1_liquidity_none` (default off).
    Runner: `scripts/paper_shadow_h4.py` — see [H4_PAPER_SHADOW.md](H4_PAPER_SHADOW.md).
-5. Live broker execution remains Phase 2.
-6. H5 when post-2026H1 accrual completes (≥1400 bars through 2026-09-30).
+5. Paper broker (opt-in fills, not venue) — [PAPER_BROKER.md](PAPER_BROKER.md).
+6. Live broker venue APIs remain Phase 2 remainder.
+7. H5 runner ready (`scripts/run_h5_prospective_1_4_0.py`) — blocked until accrual (≥1400 bars through 2026-09-30).

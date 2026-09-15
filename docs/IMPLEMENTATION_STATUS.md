@@ -34,6 +34,7 @@ Updated after **project closure** of analytical pipeline **1.4.0** (OOS + forens
 
 1. ~~Validation JSON multi-host unsafe.~~ → DB-backed `validation_outcomes`.
 2. Provider vs rollup HTF divergence (observable).
-3. Live broker execution (Phase 2).
-4. Optional: paper-shadow `h4_rank1_liquidity_none` — see [H4_PAPER_SHADOW.md](H4_PAPER_SHADOW.md) (`scripts/paper_shadow_h4.py`).
-5. H5 when post-2026H1 accrual completes.
+3. ~~Paper broker path (opt-in).~~ → [PAPER_BROKER.md](PAPER_BROKER.md) / `PAPER_BROKER_ENABLED`.
+4. Live broker venue APIs (Phase 2 remainder).
+5. Optional: paper-shadow `h4_rank1_liquidity_none` — see [H4_PAPER_SHADOW.md](H4_PAPER_SHADOW.md) (`scripts/paper_shadow_h4.py`).
+6. H5 when post-2026H1 accrual completes — runner ready: `scripts/run_h5_prospective_1_4_0.py`.

@@ -95,7 +95,8 @@ zigzag helpers.
 
 ## Later — Execution (Phase 2)
 
-- [ ] Live broker execution
+- [x] Paper broker path (opt-in fills, no venue API) — [PAPER_BROKER.md](PAPER_BROKER.md)
+- [ ] Live broker execution (OANDA / MT5 / …)
 - [ ] Broader retirement of legacy zigzag compatibility shims
 
 ---

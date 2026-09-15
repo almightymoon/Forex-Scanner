@@ -56,7 +56,26 @@ class SignalBuilder:
         if signal.score >= get_scanner_config().scoring.min_alert_score:
             self.validator.register(signal)
             self.validator.evaluate_open_signals(ctx.symbol, ctx.candles)
+            self._maybe_paper_trade(signal, ctx)
         return signal
+
+    def _maybe_paper_trade(self, signal: ScannerSignal, ctx: ScanContext) -> None:
+        """Opt-in Phase-2-prep paper fills (PAPER_BROKER_ENABLED). Never touches emit policy."""
+        try:
+            from services.broker_service import get_paper_broker, paper_broker_enabled
+
+            if not paper_broker_enabled():
+                return
+            broker = get_paper_broker()
+            signal_bar_ts = None
+            if ctx.candles:
+                ts = ctx.candles[-1].timestamp
+                signal_bar_ts = ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
+            broker.open_from_signal(signal, signal_bar_ts=signal_bar_ts)
+            broker.evaluate_open(ctx.symbol, ctx.candles)
+        except Exception:
+            # Paper path must never break live alerts / scans.
+            return
 
     async def build_with_ai(self, ctx: ScanContext) -> ScannerSignal:
         # CPU-heavy SMC/quant work must not block the asyncio event loop

@@ -2,7 +2,8 @@
 
 **Status:** BLOCKED — accrual gate not met  
 **Pipeline:** frozen `1.4.0` (no analytical change)  
-**Checked:** 2026-09-15
+**Checked:** 2026-09-15  
+**Runner:** `scripts/run_h5_prospective_1_4_0.py`
 
 ## Gate (from post-2026H1 protocol)
 
@@ -13,12 +14,31 @@
 
 Source: `scripts/status_xauusd_h1_post_2026h1_accrual.py`
 
+## Commands
+
+```bash
+# Accrual / gate only
+PYTHONPATH=. python scripts/run_h5_prospective_1_4_0.py --status
+
+# When gate passes — locks dataset hash + writes validation_h5_prospective/
+PYTHONPATH=. python scripts/run_h5_prospective_1_4_0.py --run
+```
+
+While accruing, ingest only:
+
+```bash
+PYTHONPATH=. python scripts/ingest_xauusd_h1_post_2026h1_quarantine.py \
+  --raw <XAUUSD_H1_raw.csv> \
+  --metadata <XAUUSD_H1_raw.meta.csv>
+```
+
 ## When unblocked
 
-1. Lock prospective dataset ID + hash (do not overwrite retrospective OOS).
-2. Run frozen 1.4.0 with identical cadence/execution as `validation/`.
+1. Lock prospective dataset ID + SHA-256 (do not overwrite retrospective OOS).
+2. Run frozen 1.4.0 with identical cadence/execution as `validation/` (via paper-broker twin).
 3. Write `validation_h5_prospective/` + report — **does not** reverse the 1.4.0 FAILED verdict.
 
 ## Non-claims
 
 H5 is a generalization check only. It is not a strategy fix and must not be used to retune 1.4.0.
+Leave `SCANNER_EMIT_POLICY` unset.
