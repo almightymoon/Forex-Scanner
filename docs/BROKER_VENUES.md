@@ -36,8 +36,10 @@ configured and you intentionally want fills.
 
 Market-data OHLC adapters remain under `services/market_data_service/providers/disabled/` and stay **out** of the active failover chain.
 
-## Non-goals (this step)
+## Arming practice (manual)
 
-- No live money routing
-- No mixing brokers into market-data failover
-- No `SCANNER_EMIT_POLICY` changes
+1. Put practice `OANDA_API_KEY` + `OANDA_ACCOUNT_ID` in `.env`
+2. `BROKER_VENUE=oanda` and `OANDA_ENV=practice`
+3. Check: `PYTHONPATH=. python scripts/oanda_practice_smoke.py`
+4. Only then set `BROKER_VENUE_ORDERS_ENABLED=true`
+5. Optional probe: `PYTHONPATH=. python scripts/oanda_practice_smoke.py --arm-check`

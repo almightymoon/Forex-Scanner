@@ -8,7 +8,13 @@ is explicitly set — and even then current stubs return not-implemented.
 """
 
 from .factory import get_broker_venue, venue_status
-from .paper import PaperBroker, PaperOrder, get_paper_broker, paper_broker_enabled
+from .paper import (
+    PaperBroker,
+    PaperOrder,
+    get_paper_broker,
+    paper_broker_enabled,
+    reset_paper_broker_singleton,
+)
 from .venue import VenueOrderRequest, VenueOrderResult, venue_orders_armed
 
 __all__ = [
@@ -16,6 +22,7 @@ __all__ = [
     "PaperOrder",
     "paper_broker_enabled",
     "get_paper_broker",
+    "reset_paper_broker_singleton",
     "get_broker_venue",
     "venue_status",
     "VenueOrderRequest",

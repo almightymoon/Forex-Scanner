@@ -35,9 +35,16 @@ PYTHONPATH=. python scripts/paper_broker_status.py
 PYTHONPATH=. python scripts/run_live_paper_pass.py
 ```
 
-With `ENABLE_SCANNER_DAEMON=true` and the API running, continuous scans also journal into the same book.
+## Live ops hygiene
 
-Artifacts land under `benchmarks/live/paper_broker/` (gitignored).
+Daemon scans must not reopen the same pair every cycle:
+
+- At most **one open** order per `(symbol, timeframe)`
+- Settlement uses candles **strictly after** `signal_bar_ts`
+- Prune a bloated book: `PYTHONPATH=. python scripts/paper_broker_prune.py`
+
+Entry for live journals uses signal-bar close (OOS parity).
+
 
 ## Offline smoke
 

@@ -82,9 +82,63 @@ def test_open_and_settle_tp(tmp_path: Path):
 
 def test_keep_open_until_window_or_touch(tmp_path: Path):
     broker = PaperBroker(out_dir=tmp_path, forward_bars=5)
-    order = broker.open_from_signal(_signal(), entry_price=2000.0)
+    order = broker.open_from_signal(
+        _signal(),
+        entry_price=2000.0,
+        signal_bar_ts="2024-01-01T00:00:00+00:00",
+    )
     assert order is not None
     # Quiet bar — no SL/TP, incomplete window → stay open
     quiet = [_candle("2024-01-01T01:00:00+00:00", 2000, 2001, 1999, 2000)]
     assert broker.settle_with_forward(order, quiet) is None
     assert order.status == "open"
+
+
+def test_dedupe_one_open_per_symbol_tf(tmp_path: Path):
+    broker = PaperBroker(out_dir=tmp_path)
+    first = broker.open_from_signal(
+        _signal(),
+        entry_price=2000.0,
+        signal_bar_ts="2024-01-01T00:00:00+00:00",
+    )
+    second = broker.open_from_signal(
+        _signal(score=90),
+        entry_price=2001.0,
+        signal_bar_ts="2024-01-01T01:00:00+00:00",
+    )
+    assert first is not None
+    assert second is None
+    assert len(broker._open) == 1
+
+
+def test_evaluate_waits_for_bars_after_signal(tmp_path: Path):
+    broker = PaperBroker(out_dir=tmp_path, forward_bars=3)
+    order = broker.open_from_signal(
+        _signal(),
+        entry_price=2000.0,
+        signal_bar_ts="2024-01-01T00:00:00+00:00",
+    )
+    assert order is not None
+    # Only signal bar present — no forward yet
+    candles = [_candle("2024-01-01T00:00:00+00:00", 2000, 2001, 1999, 2000)]
+    assert broker.evaluate_open("XAUUSD", candles) == []
+    assert order.status == "open"
+
+    # Later bars hit TP
+    candles = [
+        _candle("2024-01-01T00:00:00+00:00", 2000, 2001, 1999, 2000),
+        _candle("2024-01-01T01:00:00+00:00", 2001, 2025, 2000, 2020),
+    ]
+    closed = broker.evaluate_open("XAUUSD", candles)
+    assert len(closed) == 1
+    assert closed[0].outcome == "win"
+
+
+def test_prune_duplicates(tmp_path: Path):
+    broker = PaperBroker(out_dir=tmp_path, one_open_per_symbol_tf=False)
+    broker.open_from_signal(_signal(), entry_price=2000.0, signal_bar_ts="2024-01-01T00:00:00+00:00")
+    broker.open_from_signal(_signal(), entry_price=2001.0, signal_bar_ts="2024-01-01T01:00:00+00:00")
+    assert len(broker._open) == 2
+    result = broker.prune_duplicate_opens()
+    assert result["cancelled"] == 1
+    assert result["open"] == 1

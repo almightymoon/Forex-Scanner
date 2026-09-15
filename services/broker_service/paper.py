@@ -7,6 +7,8 @@ Hard rules:
   - Never set or require SCANNER_EMIT_POLICY.
   - Never mutate frozen 1.4.0 analysis.
   - Fills use ``simulate_trade`` with the same ExecutionConfig as OOS.
+  - Live book: at most one open order per (symbol, timeframe); settle on
+    candles strictly after ``signal_bar_ts``.
 """
 
 from __future__ import annotations
@@ -38,6 +40,25 @@ def paper_broker_enabled() -> bool:
     return os.getenv("PAPER_BROKER_ENABLED", "").lower() in {"1", "true", "yes", "on"}
 
 
+def _parse_ts(value: str | datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        ts = value
+    else:
+        try:
+            ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts
+
+
+def _candle_ts(candle: Candle) -> datetime | None:
+    return _parse_ts(getattr(candle, "timestamp", None))
+
+
 @dataclass
 class PaperOrder:
     id: str
@@ -51,7 +72,7 @@ class PaperOrder:
     opened_at: str
     signal_bar_ts: str | None = None
     pipeline_version: str | None = None
-    status: str = "open"  # open | closed
+    status: str = "open"  # open | closed | cancelled
     outcome: str | None = None
     exit_price: float | None = None
     pnl_pips: float | None = None
@@ -69,6 +90,10 @@ class PaperOrder:
         fields = set(cls.__dataclass_fields__)  # type: ignore[attr-defined]
         return cls(**{k: v for k, v in raw.items() if k in fields})
 
+    @property
+    def book_key(self) -> str:
+        return f"{self.symbol}|{self.timeframe}"
+
 
 class PaperBroker:
     """JSONL-backed paper book with OOS-parity settlement."""
@@ -80,6 +105,7 @@ class PaperBroker:
         config: ExecutionConfig | None = None,
         forward_bars: int = FORWARD_BARS,
         min_score: int | None = None,
+        one_open_per_symbol_tf: bool = True,
     ):
         self.out_dir = Path(out_dir or DEFAULT_OUT_DIR)
         self.out_dir.mkdir(parents=True, exist_ok=True)
@@ -89,6 +115,7 @@ class PaperBroker:
         self.config = config or BASE_EXEC
         self.forward_bars = forward_bars
         self.min_score = min_score
+        self.one_open_per_symbol_tf = one_open_per_symbol_tf
         self._open: dict[str, PaperOrder] = {}
         self._load_open()
 
@@ -107,15 +134,35 @@ class PaperBroker:
                 self._open[order.id] = order
 
     def _rewrite_open(self) -> None:
-        tmp = self.open_path.with_suffix(".tmp")
+        tmp = self.open_path.with_name(f"{self.open_path.stem}.{uuid.uuid4().hex}.tmp")
         with tmp.open("w") as fh:
             for order in self._open.values():
                 fh.write(json.dumps(order.to_dict(), default=str) + "\n")
+        for _ in range(5):
+            try:
+                tmp.replace(self.open_path)
+                return
+            except FileNotFoundError:
+                # Concurrent writer may race; rewrite once more.
+                with tmp.open("w") as fh:
+                    for order in self._open.values():
+                        fh.write(json.dumps(order.to_dict(), default=str) + "\n")
         tmp.replace(self.open_path)
 
     def _append(self, path: Path, row: dict[str, Any]) -> None:
         with path.open("a") as fh:
             fh.write(json.dumps(row, default=str) + "\n")
+
+    def open_orders_for(self, symbol: str, timeframe: str | None = None) -> list[PaperOrder]:
+        symbol = symbol.upper()
+        out = []
+        for order in self._open.values():
+            if order.symbol != symbol:
+                continue
+            if timeframe is not None and order.timeframe != timeframe:
+                continue
+            out.append(order)
+        return out
 
     def open_from_signal(
         self,
@@ -151,10 +198,22 @@ class PaperBroker:
             if hasattr(signal.timeframe, "value")
             else str(signal.timeframe)
         )
+        symbol = signal.symbol.upper()
+
+        if self.one_open_per_symbol_tf and self.open_orders_for(symbol, tf):
+            return None
+
+        # Same bar fingerprint — avoid reopen storms if dedupe flag is off.
+        sig_ts = signal_bar_ts
+        if sig_ts:
+            for existing in self.open_orders_for(symbol, tf):
+                if existing.signal_bar_ts == sig_ts and existing.direction == direction:
+                    return None
+
         now = datetime.now(timezone.utc).isoformat()
         order = PaperOrder(
             id=str(uuid.uuid4()),
-            symbol=signal.symbol.upper(),
+            symbol=symbol,
             timeframe=tf,
             direction=direction,
             score=int(signal.score),
@@ -162,7 +221,7 @@ class PaperBroker:
             stop_loss=float(signal.stop_loss),
             take_profit=float(signal.take_profit_1),
             opened_at=now,
-            signal_bar_ts=signal_bar_ts or (
+            signal_bar_ts=sig_ts or (
                 signal.created_at.isoformat()
                 if getattr(signal, "created_at", None) is not None
                 else None
@@ -173,6 +232,34 @@ class PaperBroker:
         self._rewrite_open()
         self._append(self.intents_path, {"event": "open", **order.to_dict()})
         return order
+
+    def cancel_order(self, order_id: str, *, reason: str = "cancelled") -> PaperOrder | None:
+        order = self._open.get(order_id)
+        if order is None:
+            return None
+        order.status = "cancelled"
+        order.outcome = reason
+        order.closed_at = datetime.now(timezone.utc).isoformat()
+        del self._open[order_id]
+        self._rewrite_open()
+        self._append(self.closed_path, order.to_dict())
+        self._append(self.intents_path, {"event": "cancel", **order.to_dict()})
+        return order
+
+    def prune_duplicate_opens(self) -> dict[str, int]:
+        """Keep newest open per (symbol, timeframe); cancel the rest."""
+        by_key: dict[str, list[PaperOrder]] = {}
+        for order in list(self._open.values()):
+            by_key.setdefault(order.book_key, []).append(order)
+        cancelled = 0
+        kept = 0
+        for group in by_key.values():
+            group.sort(key=lambda o: o.opened_at or "", reverse=True)
+            kept += 1
+            for dup in group[1:]:
+                self.cancel_order(dup.id, reason="dedupe_prune")
+                cancelled += 1
+        return {"kept": kept, "cancelled": cancelled, "open": len(self._open)}
 
     def settle_with_forward(
         self,
@@ -244,7 +331,7 @@ class PaperBroker:
             if order.symbol != symbol:
                 continue
             forward = self._forward_after_signal(order, candles)
-            if forward is None:
+            if not forward:
                 continue
             result = self.settle_with_forward(order, forward)
             if result is not None:
@@ -253,24 +340,25 @@ class PaperBroker:
 
     def _forward_after_signal(
         self, order: PaperOrder, candles: list[Candle]
-    ) -> list[Candle] | None:
+    ) -> list[Candle]:
+        """Return candles strictly after the signal bar. Empty ⇒ not ready."""
         if not candles:
-            return None
-        if order.signal_bar_ts:
-            idx = None
-            for i, c in enumerate(candles):
-                ts = c.timestamp.isoformat() if hasattr(c.timestamp, "isoformat") else str(c.timestamp)
-                if ts == order.signal_bar_ts or ts.startswith(order.signal_bar_ts[:19]):
-                    idx = i
-                    break
-            if idx is None:
-                # Signal bar not in window — use all candles as forward (conservative live).
-                return list(candles[-self.forward_bars :])
-            return list(candles[idx + 1 :])
-        return list(candles[-self.forward_bars :])
+            return []
+        signal_ts = _parse_ts(order.signal_bar_ts)
+        if signal_ts is None:
+            # No anchor — require a full trailing window and treat it as forward.
+            return list(candles[-self.forward_bars :]) if len(candles) > 1 else []
+
+        forward: list[Candle] = []
+        for c in candles:
+            ts = _candle_ts(c)
+            if ts is not None and ts > signal_ts:
+                forward.append(c)
+        return forward
 
     def summary(self) -> dict[str, Any]:
         closed: list[SimulatedTrade] = []
+        cancelled = 0
         if self.closed_path.exists():
             for line in self.closed_path.read_text().splitlines():
                 if not line.strip():
@@ -278,6 +366,9 @@ class PaperBroker:
                 try:
                     row = json.loads(line)
                 except json.JSONDecodeError:
+                    continue
+                if row.get("status") == "cancelled" or row.get("outcome") == "dedupe_prune":
+                    cancelled += 1
                     continue
                 closed.append(
                     SimulatedTrade(
@@ -302,6 +393,7 @@ class PaperBroker:
         return {
             "open": len(self._open),
             "closed": len(closed),
+            "cancelled": cancelled,
             "metrics": metrics,
             "out_dir": str(self.out_dir),
         }
@@ -315,3 +407,9 @@ def get_paper_broker() -> PaperBroker:
     if _BROKER is None:
         _BROKER = PaperBroker()
     return _BROKER
+
+
+def reset_paper_broker_singleton() -> None:
+    """Test/ops helper after pruning the on-disk book."""
+    global _BROKER
+    _BROKER = None

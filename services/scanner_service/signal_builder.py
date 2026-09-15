@@ -71,8 +71,13 @@ class SignalBuilder:
             if ctx.candles:
                 ts = ctx.candles[-1].timestamp
                 signal_bar_ts = ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
-            broker.open_from_signal(signal, signal_bar_ts=signal_bar_ts)
+            # Settle existing opens first (candles after their signal bar), then maybe open.
             broker.evaluate_open(ctx.symbol, ctx.candles)
+            broker.open_from_signal(
+                signal,
+                entry_price=float(ctx.candles[-1].close) if ctx.candles else None,
+                signal_bar_ts=signal_bar_ts,
+            )
         except Exception:
             # Paper path must never break live alerts / scans.
             return
