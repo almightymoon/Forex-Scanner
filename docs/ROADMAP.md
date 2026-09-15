@@ -97,7 +97,7 @@ zigzag helpers.
 
 - [x] Paper broker path (opt-in fills, no venue API) — [PAPER_BROKER.md](PAPER_BROKER.md)
 - [x] Live venue stubs (OANDA / MT5, orders disarmed) — [BROKER_VENUES.md](BROKER_VENUES.md)
-- [ ] Live broker order create (wire REST / MT5 after arming)
+- [ ] Live broker order create (MT5 bridge; OANDA REST wired but disarmed)
 - [ ] Broader retirement of legacy zigzag compatibility shims
 
 ---

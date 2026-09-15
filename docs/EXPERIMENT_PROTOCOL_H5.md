@@ -14,7 +14,9 @@
 
 Source: `scripts/status_xauusd_h1_post_2026h1_accrual.py`
 
-**Ops note (2026-09-15):** No newer MT5 post-2026H1 export is available locally beyond quarantine tranche `20260721T111152Z`. `chart_csv/FXNavigators_XAUUSD_H1_first_half_2026.csv` ends 2026-04-23 (pre-gate window) and must not be force-ingested as post-2026H1. Next step: export a fresh MT5 H1 raw+meta after Jul 21 and run `ingest_xauusd_h1_post_2026h1_quarantine.py`.
+**Ops note (2026-09-15):** No newer MT5 post-2026H1 export is available locally beyond quarantine tranche `20260721T111152Z`. Existing `MT5-scripts/..._20260720...` re-ingest is correctly refused (immutable snapshot). `chart_csv/FXNavigators_XAUUSD_H1_first_half_2026.csv` ends 2026-04-23 (pre-gate window) and must not be force-ingested as post-2026H1.
+
+Helper: `PYTHONPATH=. python scripts/ingest_and_check_h5.py` — discovers MT5-scripts exports, attempts ingest, prints H5 gate.
 
 ## Commands
 

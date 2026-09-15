@@ -22,17 +22,19 @@ def test_oanda_refuses_when_disarmed(monkeypatch):
     assert "BROKER_VENUE_ORDERS_ENABLED" in result.message
 
 
-def test_oanda_stub_even_when_armed(monkeypatch):
+def test_oanda_attempts_when_armed(monkeypatch):
     monkeypatch.setenv("BROKER_VENUE_ORDERS_ENABLED", "true")
     monkeypatch.setenv("BROKER_VENUE", "oanda")
     monkeypatch.setenv("OANDA_API_KEY", "x")
     monkeypatch.setenv("OANDA_ACCOUNT_ID", "y")
+    monkeypatch.setenv("OANDA_ENV", "practice")
     venue = get_broker_venue()
     result = venue.place_market_order(
         VenueOrderRequest(symbol="EURUSD", side="sell", units=1000)
     )
+    # Fake credentials → HTTP reject from practice API (or network error), never silent success.
     assert result.status == "rejected"
-    assert "not implemented" in result.message.lower()
+    assert "OANDA" in result.message
 
 
 def test_venue_status_shape(monkeypatch):

@@ -21,7 +21,9 @@ Scanner signals
 | `OANDA_ENV` | `practice` | `practice` or `live` host |
 | `MT5_ENABLED` | false | Local MT5 bridge flag (Windows) |
 
-Even when both switches are on, current stubs **reject** with “not implemented” — no REST/MT5 order create yet.
+Even when both switches are on, OANDA will POST a MARKET order to the practice
+(or live) host. Keep `BROKER_VENUE_ORDERS_ENABLED=false` until practice keys are
+configured and you intentionally want fills.
 
 ## Code
 

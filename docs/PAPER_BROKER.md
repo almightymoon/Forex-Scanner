@@ -31,7 +31,11 @@ Status:
 
 ```bash
 PYTHONPATH=. python scripts/paper_broker_status.py
+# One live scanner→paper pass (loads .env):
+PYTHONPATH=. python scripts/run_live_paper_pass.py
 ```
+
+With `ENABLE_SCANNER_DAEMON=true` and the API running, continuous scans also journal into the same book.
 
 Artifacts land under `benchmarks/live/paper_broker/` (gitignored).
 
