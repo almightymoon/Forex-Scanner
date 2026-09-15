@@ -213,6 +213,9 @@ export default function Dashboard() {
     health?.broker_venue
       ? `Venue: ${health.broker_venue.selected || health.broker_venue.venue}${health.broker_venue.orders_armed ? " (armed)" : ""}`
       : null,
+    health?.h5_accrual
+      ? `H5: ${health.h5_accrual.unique_bars ?? "?"}/${health.h5_accrual.required_bars ?? 1400}${health.h5_accrual.passed ? " ready" : ""}`
+      : null,
     health?.warning || null,
   ]
     .filter(Boolean)
@@ -220,6 +223,8 @@ export default function Dashboard() {
 
   const paper = health?.paper_broker;
   const paperClosed = paper?.closed ?? 0;
+  const paperOpen = paper?.open ?? 0;
+  const h5 = health?.h5_accrual;
 
   return (
     <div className="app-shell">
@@ -395,7 +400,7 @@ export default function Dashboard() {
           </ScrollReveal>
         )}
 
-        {paper?.enabled && paperClosed > 0 && (
+        {paper?.enabled && (paperClosed > 0 || paperOpen > 0) && (
           <ScrollReveal as="section" className="validation-strip paper-strip" delayMs={110} aria-label="Paper broker summary">
             <div className="validation-strip-main">
               <span className="validation-strip-label">Paper book</span>
@@ -414,7 +419,7 @@ export default function Dashboard() {
                 {paper.metrics?.wins ?? 0}W / {paper.metrics?.losses ?? 0}L
                 <span className="validation-strip-muted">
                   {" "}
-                  ({paperClosed} closed · {paper.open ?? 0} open)
+                  ({paperClosed} closed · {paperOpen} open)
                 </span>
               </span>
               {paper.metrics?.win_rate != null ? (
@@ -426,6 +431,40 @@ export default function Dashboard() {
                 </>
               ) : null}
             </div>
+          </ScrollReveal>
+        )}
+
+        {h5 && !h5.passed && (
+          <ScrollReveal as="section" className="validation-strip h5-strip" delayMs={115} aria-label="H5 accrual status">
+            <div className="validation-strip-main">
+              <span className="validation-strip-label">H5 accrual</span>
+              <span className="validation-strip-metric">
+                <strong>{h5.unique_bars ?? "—"}</strong>
+                <span className="validation-strip-muted">
+                  {" "}
+                  / {h5.required_bars ?? 1400} bars
+                </span>
+              </span>
+              <span className="validation-strip-sep" aria-hidden>
+                ·
+              </span>
+              <span className="validation-strip-metric">
+                {h5.bars_remaining ?? "—"} remaining
+              </span>
+              {h5.latest_utc ? (
+                <>
+                  <span className="validation-strip-sep" aria-hidden>
+                    ·
+                  </span>
+                  <span className="validation-strip-metric validation-strip-muted">
+                    tip {String(h5.latest_utc).slice(0, 10)}
+                  </span>
+                </>
+              ) : null}
+            </div>
+            <p className="validation-strip-note">
+              Drop a fresh MT5 post-2026H1 export in MT5-scripts/ to unblock prospective shadow.
+            </p>
           </ScrollReveal>
         )}
 

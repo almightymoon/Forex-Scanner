@@ -356,6 +356,17 @@ export interface HealthPayload {
     orders_armed?: boolean;
     selected?: string;
   };
+  h5_accrual?: {
+    status?: string;
+    passed?: boolean;
+    unique_bars?: number;
+    bars_remaining?: number;
+    latest_utc?: string;
+    required_bars?: number;
+    required_coverage_date?: string;
+    checked_at?: string;
+    error?: string;
+  };
 }
 
 export async function fetchHealth(): Promise<HealthPayload | null> {

@@ -1394,6 +1394,15 @@ button {
   color: #93c5fd;
 }
 
+.h5-strip {
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.h5-strip .validation-strip-label {
+  color: #fbbf24;
+}
+
 .detail-score-chip {
   font-size: 1.25rem;
   font-weight: 800;

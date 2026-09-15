@@ -250,9 +250,49 @@ async def health(market_data: MarketDataDep, pipeline: PipelineDep):
         payload["broker_venue"] = venue_status()
     except Exception as exc:
         payload["paper_broker"] = {"enabled": False, "error": str(exc)[:120]}
+    try:
+        from pathlib import Path
+        import json as _json
+
+        status_path = (
+            Path(__file__).resolve().parents[2]
+            / "benchmarks"
+            / "reports"
+            / "XAUUSD_H1_post_2026H1_accrual_status.json"
+        )
+        if status_path.exists():
+            raw = _json.loads(status_path.read_text())
+            gates = raw.get("gates") or {}
+            coverage = raw.get("coverage") or {}
+            payload["h5_accrual"] = {
+                "status": raw.get("status"),
+                "passed": bool(gates.get("all_requirements_passed")),
+                "unique_bars": coverage.get("unique_normalized_h1_bars"),
+                "bars_remaining": gates.get("bars_remaining"),
+                "latest_utc": coverage.get("last_utc"),
+                "required_bars": gates.get("required_unique_h1_bars"),
+                "required_coverage_date": gates.get("required_not_before_utc"),
+                "checked_at": raw.get("generated_at_utc"),
+            }
+        else:
+            payload["h5_accrual"] = {"status": "missing_status_file", "passed": False}
+    except Exception as exc:
+        payload["h5_accrual"] = {"status": "unavailable", "passed": False, "error": str(exc)[:120]}
     if simulated:
         payload["warning"] = "Running with simulated market data"
     return payload
+
+
+@app.get("/api/v1/paper-broker")
+async def paper_broker_status():
+    """Live paper-book summary (open/closed metrics)."""
+    try:
+        from services.broker_service import get_paper_broker, paper_broker_enabled
+
+        summary = get_paper_broker().summary()
+        return {"enabled": paper_broker_enabled(), **summary}
+    except Exception as exc:
+        raise HTTPException(500, f"paper broker unavailable: {exc}") from exc
 
 
 @app.get("/api/v1/market/live")

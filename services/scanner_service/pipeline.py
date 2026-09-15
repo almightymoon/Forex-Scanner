@@ -122,7 +122,32 @@ class ScannerPipeline:
             if signal.score >= alert_threshold:
                 await self.notifier.notify_signal(signal, methods=["console"])
 
+        await self._settle_open_paper(timeframe)
         return signals
+
+    async def _settle_open_paper(self, timeframe: Timeframe) -> None:
+        """Evaluate all open paper orders, even if that symbol did not alert this pass."""
+        try:
+            from services.broker_service import get_paper_broker, paper_broker_enabled
+
+            if not paper_broker_enabled():
+                return
+            broker = get_paper_broker()
+            symbols = sorted({o.symbol for o in broker._open.values()})
+            if not symbols:
+                return
+
+            async def _one(symbol: str) -> None:
+                try:
+                    candles = await self.market_data.get_candles(symbol, timeframe, 120)
+                    if candles:
+                        broker.evaluate_open(symbol, candles)
+                except Exception as exc:
+                    logger.warning("Paper settle failed for %s: %s", symbol, exc)
+
+            await asyncio.gather(*[_one(s) for s in symbols])
+        except Exception as exc:
+            logger.warning("Paper settle sweep skipped: %s", exc)
 
     async def run_continuous(self, interval: int = 60, min_score: int = 80) -> None:
         self._running = True
