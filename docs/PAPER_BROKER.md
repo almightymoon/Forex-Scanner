@@ -20,12 +20,20 @@ Fills use `simulate_trade` with OOS-parity `ExecutionConfig("signal_close", "sl_
 ## Enable live journaling
 
 ```bash
-# .env — default OFF
+# .env — local ops (do not commit secrets)
 PAPER_BROKER_ENABLED=true
 # Leave SCANNER_EMIT_POLICY unset / empty
 ```
 
 On each alert-score signal the scanner journals an open paper order and settles against subsequent candles.
+
+Status:
+
+```bash
+PYTHONPATH=. python scripts/paper_broker_status.py
+```
+
+Artifacts land under `benchmarks/live/paper_broker/` (gitignored).
 
 ## Offline smoke
 

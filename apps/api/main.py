@@ -232,6 +232,13 @@ async def health(market_data: MarketDataDep, pipeline: PipelineDep):
             payload["validation_store"] = {"backend": "unknown"}
     except Exception as exc:
         payload["validation_store"] = {"backend": "unavailable", "error": str(exc)[:120]}
+    try:
+        from services.broker_service import paper_broker_enabled, venue_status
+
+        payload["paper_broker"] = {"enabled": paper_broker_enabled()}
+        payload["broker_venue"] = venue_status()
+    except Exception as exc:
+        payload["paper_broker"] = {"enabled": False, "error": str(exc)[:120]}
     if simulated:
         payload["warning"] = "Running with simulated market data"
     return payload

@@ -25,7 +25,7 @@ experiment (`docs/EXPERIMENT_PROTOCOL_1.5.0.md`).
 | Paper-scan / live-path smoke | ✅ | `scripts/smoke_structure_live_path.py` |
 | Decision engine (live) | ✅ structure + liquidity aware | `services/quant_engine/decision/` |
 | Validation outcome store | ✅ DB-backed (Postgres/SQLite) | `validation_engine/storage.py` |
-| Live broker execution | ⏳ Phase 2 | — |
+| Live broker execution | ⏳ Phase 2 | paper + venue stubs |
 
 ---
 
@@ -96,7 +96,8 @@ zigzag helpers.
 ## Later — Execution (Phase 2)
 
 - [x] Paper broker path (opt-in fills, no venue API) — [PAPER_BROKER.md](PAPER_BROKER.md)
-- [ ] Live broker execution (OANDA / MT5 / …)
+- [x] Live venue stubs (OANDA / MT5, orders disarmed) — [BROKER_VENUES.md](BROKER_VENUES.md)
+- [ ] Live broker order create (wire REST / MT5 after arming)
 - [ ] Broader retirement of legacy zigzag compatibility shims
 
 ---

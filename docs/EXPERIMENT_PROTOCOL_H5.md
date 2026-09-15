@@ -2,7 +2,7 @@
 
 **Status:** BLOCKED — accrual gate not met  
 **Pipeline:** frozen `1.4.0` (no analytical change)  
-**Checked:** 2026-09-15  
+**Checked:** 2026-09-15 (re-checked same day after paper/venue work)  
 **Runner:** `scripts/run_h5_prospective_1_4_0.py`
 
 ## Gate (from post-2026H1 protocol)
@@ -13,6 +13,8 @@
 | Coverage through 2026-09-30T20:00Z | **Fail** (latest 2026-07-21) |
 
 Source: `scripts/status_xauusd_h1_post_2026h1_accrual.py`
+
+**Ops note (2026-09-15):** No newer MT5 post-2026H1 export is available locally beyond quarantine tranche `20260721T111152Z`. `chart_csv/FXNavigators_XAUUSD_H1_first_half_2026.csv` ends 2026-04-23 (pre-gate window) and must not be force-ingested as post-2026H1. Next step: export a fresh MT5 H1 raw+meta after Jul 21 and run `ingest_xauusd_h1_post_2026h1_quarantine.py`.
 
 ## Commands
 
