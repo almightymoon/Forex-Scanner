@@ -1,0 +1,114 @@
+{
+  "experiment_version": "1.8.0",
+  "arm": "H4",
+  "candidates": [
+    {
+      "name": "h4_baseline_all",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_rank1_only",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_rank_le_2",
+      "max_primary_rank": 2,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_exclude_associated_sweep",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": [
+        "ASSOCIATED_SWEEP"
+      ]
+    },
+    {
+      "name": "h4_liquidity_none_only",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_liquidity_near_or_none",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "NEAR_RELEVANT",
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_rank1_exclude_sweep",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": [
+        "ASSOCIATED_SWEEP"
+      ]
+    },
+    {
+      "name": "h4_rank1_liquidity_none",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    }
+  ],
+  "selection_criteria": {
+    "min_expectancy": 0.0,
+    "min_profit_factor": 1.0,
+    "min_trades": 20
+  },
+  "selected_policy": {
+    "name": "h4_rank1_liquidity_none",
+    "max_primary_rank": 1,
+    "require_primary_rank": true,
+    "liquidity_allowed": [
+      "NONE"
+    ],
+    "exclude_liquidity": []
+  },
+  "mechanism": "emit gate on primary_rank + liquidity_relation",
+  "config_sha256": "5b89848e27626375acdcac37ad78782c097890a0a82a50d30d78b2dcd4523a13"
+}

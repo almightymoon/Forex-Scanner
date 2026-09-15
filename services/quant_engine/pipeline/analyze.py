@@ -41,6 +41,51 @@ from swing_engine.models import DetectedSwing
 ANALYSIS_PIPELINE_VERSION = "1.4.0"
 
 
+def _primary_zone_labels(patterns: list, direction: str) -> dict[str, Any]:
+    """Forensics-compatible primary_rank + liquidity_relation (read-only labels)."""
+    d = (direction or "").lower()
+    fvg_meta = []
+    ob_meta = []
+    for p in patterns:
+        ctx = (p.metadata or {}).get("zone_context") or {}
+        meta = {
+            "zone_id": (p.metadata or {}).get("zone_id"),
+            "direction": p.direction.value if getattr(p, "direction", None) else None,
+            "zone_context": ctx,
+            "pattern_type": p.pattern_type,
+        }
+        if p.pattern_type == "fvg":
+            fvg_meta.append(meta)
+        elif p.pattern_type == "order_block":
+            ob_meta.append(meta)
+
+    primary = None
+    primary_class = "neither"
+    for meta in fvg_meta:
+        if (meta.get("direction") or "").lower() == d:
+            primary, primary_class = meta, "fvg"
+            break
+    if primary is None:
+        for meta in ob_meta:
+            if (meta.get("direction") or "").lower() == d:
+                primary, primary_class = meta, "ob"
+                break
+
+    rank = None
+    bucket = fvg_meta if primary_class == "fvg" else ob_meta if primary_class == "ob" else []
+    if primary:
+        for idx, meta in enumerate(bucket, start=1):
+            if meta.get("zone_id") == primary.get("zone_id"):
+                rank = idx
+                break
+    ctx = (primary or {}).get("zone_context") or {}
+    return {
+        "primary_class": primary_class,
+        "primary_rank": rank,
+        "liquidity_relation": ctx.get("liquidity_relation") or "UNKNOWN",
+    }
+
+
 @dataclass(frozen=True)
 class AnalysisBundle:
     """Pre-decision (and optional decision) artifacts for one candle window."""
@@ -225,6 +270,20 @@ def analyze_candle_window(
             "ranking_htf_trend", ranking_htf.value if ranking_htf else None
         )
         signal.market_features.setdefault("ranking_htf_tf", ranking_htf_tf)
+
+        # Opt-in paper/shadow emit gate (default off — frozen 1.4.0 path unchanged).
+        from services.quant_engine.pipeline.emit_policy import (
+            active_emit_policy_name,
+            apply_emit_policy,
+            resolve_emit_policy,
+        )
+
+        if active_emit_policy_name():
+            pol = resolve_emit_policy()
+            if pol is not None:
+                labels = _primary_zone_labels(patterns, signal.direction.value)
+                signal.market_features.update(labels)
+                signal = apply_emit_policy(signal, policy=pol, labels=labels)
 
     return AnalysisBundle(
         symbol=symbol,

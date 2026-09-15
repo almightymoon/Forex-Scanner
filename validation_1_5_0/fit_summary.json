@@ -1,0 +1,9 @@
+{
+  "train_trades": 485,
+  "validation_trades": 473,
+  "dataset_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "baseline_analysis_version": "1.4.0",
+  "experiment_version": "1.5.0",
+  "arm": "H1",
+  "generated_at": "2026-09-15T14:22:41.613836+00:00"
+}

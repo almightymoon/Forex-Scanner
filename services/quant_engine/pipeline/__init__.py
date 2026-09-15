@@ -3,6 +3,9 @@ from services.quant_engine.pipeline.analyze import (
     AnalysisBundle,
     analyze_candle_window,
 )
+from services.quant_engine.pipeline.calibration_1_5_0 import (
+    EXPERIMENT_PIPELINE_VERSION,
+)
 from services.quant_engine.pipeline.htf_drift import (
     HtfDriftKind,
     compare_htf_context,
@@ -18,6 +21,7 @@ from services.quant_engine.pipeline.mtf_context import (
 
 __all__ = [
     "ANALYSIS_PIPELINE_VERSION",
+    "EXPERIMENT_PIPELINE_VERSION",
     "AnalysisBundle",
     "HtfDriftKind",
     "analyze_candle_window",

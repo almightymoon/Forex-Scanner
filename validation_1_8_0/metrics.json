@@ -1,0 +1,50 @@
+{
+  "BASE": {
+    "total_trades": 18,
+    "wins": 8,
+    "losses": 10,
+    "breakeven": 0,
+    "win_rate": 44.4,
+    "profit_factor": 1.288,
+    "expectancy": 0.037,
+    "avg_r": 0.037,
+    "max_drawdown_r": 5.333,
+    "max_drawdown_pips": 3092.36,
+    "avg_winner_pips": 1097.3,
+    "avg_loser_pips": -681.51,
+    "consecutive_wins_max": 5,
+    "consecutive_losses_max": 4,
+    "avg_score": 89.8,
+    "total_r": 0.6667
+  },
+  "success": {
+    "passed": true,
+    "checks": {
+      "positive_expectancy": true,
+      "profit_factor": true,
+      "total_r_not_worse_than_baseline_tolerance": true
+    },
+    "criteria": {
+      "require_positive_expectancy": true,
+      "require_pf_at_least": 1.0,
+      "max_total_r_worse_than_baseline": 5.0
+    },
+    "baseline_total_r": -22.434,
+    "total_r_floor": -27.434,
+    "observed": {
+      "expectancy": 0.037,
+      "profit_factor": 1.288,
+      "total_r": 0.6667,
+      "total_trades": 18,
+      "win_rate": 44.4
+    }
+  },
+  "baseline_1_4_0": {
+    "trades": 246,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "total_r": -22.434,
+    "max_drawdown_r": 30.329
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "dataset_id": "xauusd_h1_oos_v1_retrospective_2022_2024",
+  "sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "expected_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "hash_match": true,
+  "split": {
+    "train": [
+      "2022-01-02T22:00:00+00:00",
+      "2022-12-31T23:00:00+00:00"
+    ],
+    "validation": [
+      "2023-01-01T00:00:00+00:00",
+      "2023-12-31T23:00:00+00:00"
+    ],
+    "test": [
+      "2024-01-01T00:00:00+00:00",
+      "2024-07-11T04:00:00+00:00"
+    ]
+  },
+  "pipeline_baseline": "1.4.0",
+  "experiment_version": "1.7.0",
+  "arm": "H2"
+}

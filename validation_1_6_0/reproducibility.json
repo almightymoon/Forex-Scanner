@@ -1,0 +1,8 @@
+{
+  "dataset_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "selection_sha256": "6f37319f8af913d4637210b8150d237b23b69feb700369090c723b6777bbeed4",
+  "config_sha256": "a3fc68e4fb5e41ef60325eb78808560d7f96d24fcf637a4c8cc2f1bd58211223",
+  "baseline_trades_path": "validation/trades.jsonl",
+  "analysis_version_for_signals": "1.4.0",
+  "emit_version": "1.6.0"
+}

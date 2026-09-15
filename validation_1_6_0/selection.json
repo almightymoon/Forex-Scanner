@@ -1,0 +1,896 @@
+{
+  "locked_at": "2026-09-15T15:06:47.726685+00:00",
+  "experiment_version": "1.6.0",
+  "arm": "H3",
+  "baseline_analysis_version": "1.4.0",
+  "selection_criteria": {
+    "min_expectancy": 0.0,
+    "min_profit_factor": 1.0,
+    "min_trades": 20
+  },
+  "test_success_criteria": {
+    "require_positive_expectancy": true,
+    "require_pf_at_least": 1.0,
+    "max_total_r_worse_than_baseline": 5.0
+  },
+  "candidates": [
+    {
+      "name": "h3_baseline_all",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_buy_only",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_sell_only",
+      "allow_buy": false,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_block_structure_opposed",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_block_htf_opposed",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_structure_aligned_only",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_htf_aligned_only",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED"
+      ]
+    },
+    {
+      "name": "h3_buy_block_structure_opposed",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_buy_structure_aligned",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_dual_aligned",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED"
+      ]
+    },
+    {
+      "name": "h3_buy_dual_aligned",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED"
+      ]
+    }
+  ],
+  "train_metrics_by_policy": {
+    "h3_baseline_all": {
+      "total_trades": 485,
+      "wins": 223,
+      "losses": 262,
+      "breakeven": 0,
+      "win_rate": 46.0,
+      "profit_factor": 1.124,
+      "expectancy": 0.049,
+      "avg_r": 0.049,
+      "max_drawdown_r": 21.923,
+      "max_drawdown_pips": 22878.54,
+      "avg_winner_pips": 1180.08,
+      "avg_loser_pips": -893.75,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 92.8,
+      "total_r": 23.5759,
+      "gross_profit": 2631.587143,
+      "gross_loss": -2341.612143,
+      "ambiguous_trades": 22,
+      "win_rate_se_approx": 2.26,
+      "win_rate_ci95_approx": [
+        41.5,
+        50.4
+      ]
+    },
+    "h3_buy_only": {
+      "total_trades": 230,
+      "wins": 106,
+      "losses": 124,
+      "breakeven": 0,
+      "win_rate": 46.1,
+      "profit_factor": 1.101,
+      "expectancy": 0.061,
+      "avg_r": 0.061,
+      "max_drawdown_r": 19.61,
+      "max_drawdown_pips": 23098.21,
+      "avg_winner_pips": 1218.43,
+      "avg_loser_pips": -946.32,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.0,
+      "total_r": 13.9631,
+      "gross_profit": 1291.532857,
+      "gross_loss": -1173.436786,
+      "ambiguous_trades": 9,
+      "win_rate_se_approx": 3.29,
+      "win_rate_ci95_approx": [
+        39.6,
+        52.5
+      ]
+    },
+    "h3_sell_only": {
+      "total_trades": 255,
+      "wins": 117,
+      "losses": 138,
+      "breakeven": 0,
+      "win_rate": 45.9,
+      "profit_factor": 1.147,
+      "expectancy": 0.038,
+      "avg_r": 0.038,
+      "max_drawdown_r": 23.828,
+      "max_drawdown_pips": 19391.39,
+      "avg_winner_pips": 1145.35,
+      "avg_loser_pips": -846.5,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 16,
+      "avg_score": 92.6,
+      "total_r": 9.6128,
+      "gross_profit": 1340.054286,
+      "gross_loss": -1168.175357,
+      "ambiguous_trades": 13,
+      "win_rate_se_approx": 3.12,
+      "win_rate_ci95_approx": [
+        39.8,
+        52.0
+      ]
+    },
+    "h3_block_structure_opposed": {
+      "total_trades": 442,
+      "wins": 204,
+      "losses": 238,
+      "breakeven": 0,
+      "win_rate": 46.2,
+      "profit_factor": 1.14,
+      "expectancy": 0.051,
+      "avg_r": 0.051,
+      "max_drawdown_r": 23.907,
+      "max_drawdown_pips": 25818.96,
+      "avg_winner_pips": 1192.55,
+      "avg_loser_pips": -896.36,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 15,
+      "avg_score": 92.9,
+      "total_r": 22.6486,
+      "gross_profit": 2432.794286,
+      "gross_loss": -2133.341786,
+      "ambiguous_trades": 17,
+      "win_rate_se_approx": 2.37,
+      "win_rate_ci95_approx": [
+        41.5,
+        50.8
+      ]
+    },
+    "h3_block_htf_opposed": {
+      "total_trades": 429,
+      "wins": 191,
+      "losses": 238,
+      "breakeven": 0,
+      "win_rate": 44.5,
+      "profit_factor": 1.068,
+      "expectancy": 0.02,
+      "avg_r": 0.02,
+      "max_drawdown_r": 27.192,
+      "max_drawdown_pips": 28417.11,
+      "avg_winner_pips": 1203.65,
+      "avg_loser_pips": -904.31,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 13,
+      "avg_score": 94.1,
+      "total_r": 8.6157,
+      "gross_profit": 2298.962857,
+      "gross_loss": -2152.253929,
+      "ambiguous_trades": 19,
+      "win_rate_se_approx": 2.4,
+      "win_rate_ci95_approx": [
+        39.8,
+        49.2
+      ]
+    },
+    "h3_structure_aligned_only": {
+      "total_trades": 321,
+      "wins": 152,
+      "losses": 169,
+      "breakeven": 0,
+      "win_rate": 47.4,
+      "profit_factor": 1.165,
+      "expectancy": 0.074,
+      "avg_r": 0.074,
+      "max_drawdown_r": 17.929,
+      "max_drawdown_pips": 19529.0,
+      "avg_winner_pips": 1188.67,
+      "avg_loser_pips": -917.8,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 13,
+      "avg_score": 96.5,
+      "total_r": 23.8788,
+      "gross_profit": 1806.785714,
+      "gross_loss": -1551.076429,
+      "ambiguous_trades": 14,
+      "win_rate_se_approx": 2.79,
+      "win_rate_ci95_approx": [
+        41.9,
+        52.8
+      ]
+    },
+    "h3_htf_aligned_only": {
+      "total_trades": 419,
+      "wins": 184,
+      "losses": 235,
+      "breakeven": 0,
+      "win_rate": 43.9,
+      "profit_factor": 1.049,
+      "expectancy": 0.009,
+      "avg_r": 0.009,
+      "max_drawdown_r": 27.192,
+      "max_drawdown_pips": 28417.11,
+      "avg_winner_pips": 1215.83,
+      "avg_loser_pips": -907.51,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 13,
+      "avg_score": 94.4,
+      "total_r": 3.5652,
+      "gross_profit": 2237.131429,
+      "gross_loss": -2132.648929,
+      "ambiguous_trades": 19,
+      "win_rate_se_approx": 2.42,
+      "win_rate_ci95_approx": [
+        39.2,
+        48.7
+      ]
+    },
+    "h3_buy_block_structure_opposed": {
+      "total_trades": 216,
+      "wins": 100,
+      "losses": 116,
+      "breakeven": 0,
+      "win_rate": 46.3,
+      "profit_factor": 1.126,
+      "expectancy": 0.065,
+      "avg_r": 0.065,
+      "max_drawdown_r": 19.61,
+      "max_drawdown_pips": 21880.14,
+      "avg_winner_pips": 1232.84,
+      "avg_loser_pips": -944.28,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.1,
+      "total_r": 13.9631,
+      "gross_profit": 1232.838571,
+      "gross_loss": -1095.366071,
+      "ambiguous_trades": 8,
+      "win_rate_se_approx": 3.39,
+      "win_rate_ci95_approx": [
+        39.6,
+        52.9
+      ]
+    },
+    "h3_buy_structure_aligned": {
+      "total_trades": 162,
+      "wins": 71,
+      "losses": 91,
+      "breakeven": 0,
+      "win_rate": 43.8,
+      "profit_factor": 1.024,
+      "expectancy": 0.01,
+      "avg_r": 0.01,
+      "max_drawdown_r": 20.391,
+      "max_drawdown_pips": 22560.0,
+      "avg_winner_pips": 1247.16,
+      "avg_loser_pips": -950.09,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 9,
+      "avg_score": 96.6,
+      "total_r": 1.5537,
+      "gross_profit": 885.484286,
+      "gross_loss": -864.581429,
+      "ambiguous_trades": 6,
+      "win_rate_se_approx": 3.9,
+      "win_rate_ci95_approx": [
+        36.2,
+        51.5
+      ]
+    },
+    "h3_dual_aligned": {
+      "total_trades": 281,
+      "wins": 132,
+      "losses": 149,
+      "breakeven": 0,
+      "win_rate": 47.0,
+      "profit_factor": 1.167,
+      "expectancy": 0.07,
+      "avg_r": 0.07,
+      "max_drawdown_r": 13.262,
+      "max_drawdown_pips": 14276.68,
+      "avg_winner_pips": 1232.15,
+      "avg_loser_pips": -935.34,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 9,
+      "avg_score": 98.1,
+      "total_r": 19.7618,
+      "gross_profit": 1626.441429,
+      "gross_loss": -1393.662857,
+      "ambiguous_trades": 12,
+      "win_rate_se_approx": 2.98,
+      "win_rate_ci95_approx": [
+        41.1,
+        52.8
+      ]
+    },
+    "h3_buy_dual_aligned": {
+      "total_trades": 144,
+      "wins": 65,
+      "losses": 79,
+      "breakeven": 0,
+      "win_rate": 45.1,
+      "profit_factor": 1.08,
+      "expectancy": 0.039,
+      "avg_r": 0.039,
+      "max_drawdown_r": 13.352,
+      "max_drawdown_pips": 16042.79,
+      "avg_winner_pips": 1266.27,
+      "avg_loser_pips": -964.98,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 9,
+      "avg_score": 97.9,
+      "total_r": 5.5935,
+      "gross_profit": 823.078571,
+      "gross_loss": -762.333571,
+      "ambiguous_trades": 4,
+      "win_rate_se_approx": 4.15,
+      "win_rate_ci95_approx": [
+        37.0,
+        53.3
+      ]
+    }
+  },
+  "validation_metrics_by_policy": {
+    "h3_baseline_all": {
+      "total_trades": 473,
+      "wins": 191,
+      "losses": 282,
+      "breakeven": 0,
+      "win_rate": 40.4,
+      "profit_factor": 0.858,
+      "expectancy": -0.081,
+      "avg_r": -0.081,
+      "max_drawdown_r": 55.691,
+      "max_drawdown_pips": 44717.11,
+      "avg_winner_pips": 969.82,
+      "avg_loser_pips": -765.19,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.8,
+      "total_r": -38.1977,
+      "gross_profit": 1852.347143,
+      "gross_loss": -2157.822143,
+      "ambiguous_trades": 21,
+      "win_rate_se_approx": 2.26,
+      "win_rate_ci95_approx": [
+        36.0,
+        44.8
+      ]
+    },
+    "h3_buy_only": {
+      "total_trades": 269,
+      "wins": 104,
+      "losses": 165,
+      "breakeven": 0,
+      "win_rate": 38.7,
+      "profit_factor": 0.813,
+      "expectancy": -0.129,
+      "avg_r": -0.129,
+      "max_drawdown_r": 52.256,
+      "max_drawdown_pips": 38825.86,
+      "avg_winner_pips": 1035.61,
+      "avg_loser_pips": -802.56,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 10,
+      "avg_score": 94.3,
+      "total_r": -34.8113,
+      "gross_profit": 1077.035714,
+      "gross_loss": -1324.218214,
+      "ambiguous_trades": 12,
+      "win_rate_se_approx": 2.97,
+      "win_rate_ci95_approx": [
+        32.8,
+        44.5
+      ]
+    },
+    "h3_sell_only": {
+      "total_trades": 204,
+      "wins": 87,
+      "losses": 117,
+      "breakeven": 0,
+      "win_rate": 42.6,
+      "profit_factor": 0.93,
+      "expectancy": -0.017,
+      "avg_r": -0.017,
+      "max_drawdown_r": 14.817,
+      "max_drawdown_pips": 13822.64,
+      "avg_winner_pips": 891.16,
+      "avg_loser_pips": -712.48,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.2,
+      "total_r": -3.3864,
+      "gross_profit": 775.311429,
+      "gross_loss": -833.603929,
+      "ambiguous_trades": 9,
+      "win_rate_se_approx": 3.46,
+      "win_rate_ci95_approx": [
+        35.9,
+        49.4
+      ]
+    },
+    "h3_block_structure_opposed": {
+      "total_trades": 443,
+      "wins": 181,
+      "losses": 262,
+      "breakeven": 0,
+      "win_rate": 40.9,
+      "profit_factor": 0.877,
+      "expectancy": -0.071,
+      "avg_r": -0.071,
+      "max_drawdown_r": 48.494,
+      "max_drawdown_pips": 38610.07,
+      "avg_winner_pips": 976.05,
+      "avg_loser_pips": -768.62,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 13,
+      "avg_score": 93.9,
+      "total_r": -31.3346,
+      "gross_profit": 1766.65,
+      "gross_loss": -2013.774643,
+      "ambiguous_trades": 21,
+      "win_rate_se_approx": 2.34,
+      "win_rate_ci95_approx": [
+        36.3,
+        45.4
+      ]
+    },
+    "h3_block_htf_opposed": {
+      "total_trades": 433,
+      "wins": 178,
+      "losses": 255,
+      "breakeven": 0,
+      "win_rate": 41.1,
+      "profit_factor": 0.888,
+      "expectancy": -0.058,
+      "avg_r": -0.058,
+      "max_drawdown_r": 38.123,
+      "max_drawdown_pips": 33174.29,
+      "avg_winner_pips": 985.46,
+      "avg_loser_pips": -774.76,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 94.9,
+      "total_r": -24.9635,
+      "gross_profit": 1754.122857,
+      "gross_loss": -1975.643929,
+      "ambiguous_trades": 20,
+      "win_rate_se_approx": 2.36,
+      "win_rate_ci95_approx": [
+        36.5,
+        45.7
+      ]
+    },
+    "h3_structure_aligned_only": {
+      "total_trades": 312,
+      "wins": 130,
+      "losses": 182,
+      "breakeven": 0,
+      "win_rate": 41.7,
+      "profit_factor": 0.941,
+      "expectancy": -0.049,
+      "avg_r": -0.049,
+      "max_drawdown_r": 27.191,
+      "max_drawdown_pips": 19791.29,
+      "avg_winner_pips": 1025.64,
+      "avg_loser_pips": -778.75,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 10,
+      "avg_score": 97.4,
+      "total_r": -15.414,
+      "gross_profit": 1333.335714,
+      "gross_loss": -1417.325357,
+      "ambiguous_trades": 12,
+      "win_rate_se_approx": 2.79,
+      "win_rate_ci95_approx": [
+        36.2,
+        47.1
+      ]
+    },
+    "h3_htf_aligned_only": {
+      "total_trades": 433,
+      "wins": 178,
+      "losses": 255,
+      "breakeven": 0,
+      "win_rate": 41.1,
+      "profit_factor": 0.888,
+      "expectancy": -0.058,
+      "avg_r": -0.058,
+      "max_drawdown_r": 38.123,
+      "max_drawdown_pips": 33174.29,
+      "avg_winner_pips": 985.46,
+      "avg_loser_pips": -774.76,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 94.9,
+      "total_r": -24.9635,
+      "gross_profit": 1754.122857,
+      "gross_loss": -1975.643929,
+      "ambiguous_trades": 20,
+      "win_rate_se_approx": 2.36,
+      "win_rate_ci95_approx": [
+        36.5,
+        45.7
+      ]
+    },
+    "h3_buy_block_structure_opposed": {
+      "total_trades": 255,
+      "wins": 99,
+      "losses": 156,
+      "breakeven": 0,
+      "win_rate": 38.8,
+      "profit_factor": 0.824,
+      "expectancy": -0.123,
+      "avg_r": -0.123,
+      "max_drawdown_r": 48.589,
+      "max_drawdown_pips": 36063.39,
+      "avg_winner_pips": 1050.19,
+      "avg_loser_pips": -808.95,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 11,
+      "avg_score": 94.4,
+      "total_r": -31.4786,
+      "gross_profit": 1039.691429,
+      "gross_loss": -1261.969286,
+      "ambiguous_trades": 12,
+      "win_rate_se_approx": 3.05,
+      "win_rate_ci95_approx": [
+        32.8,
+        44.8
+      ]
+    },
+    "h3_buy_structure_aligned": {
+      "total_trades": 194,
+      "wins": 78,
+      "losses": 116,
+      "breakeven": 0,
+      "win_rate": 40.2,
+      "profit_factor": 0.903,
+      "expectancy": -0.083,
+      "avg_r": -0.083,
+      "max_drawdown_r": 29.909,
+      "max_drawdown_pips": 20259.07,
+      "avg_winner_pips": 1091.18,
+      "avg_loser_pips": -812.38,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 8,
+      "avg_score": 97.3,
+      "total_r": -16.1319,
+      "gross_profit": 851.124286,
+      "gross_loss": -942.361071,
+      "ambiguous_trades": 7,
+      "win_rate_se_approx": 3.52,
+      "win_rate_ci95_approx": [
+        33.3,
+        47.1
+      ]
+    },
+    "h3_dual_aligned": {
+      "total_trades": 297,
+      "wins": 125,
+      "losses": 172,
+      "breakeven": 0,
+      "win_rate": 42.1,
+      "profit_factor": 0.948,
+      "expectancy": -0.041,
+      "avg_r": -0.041,
+      "max_drawdown_r": 24.659,
+      "max_drawdown_pips": 18654.86,
+      "avg_winner_pips": 1027.72,
+      "avg_loser_pips": -787.73,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 9,
+      "avg_score": 98.1,
+      "total_r": -12.0806,
+      "gross_profit": 1284.655714,
+      "gross_loss": -1354.901786,
+      "ambiguous_trades": 12,
+      "win_rate_se_approx": 2.86,
+      "win_rate_ci95_approx": [
+        36.5,
+        47.7
+      ]
+    },
+    "h3_buy_dual_aligned": {
+      "total_trades": 184,
+      "wins": 74,
+      "losses": 110,
+      "breakeven": 0,
+      "win_rate": 40.2,
+      "profit_factor": 0.894,
+      "expectancy": -0.084,
+      "avg_r": -0.084,
+      "max_drawdown_r": 29.243,
+      "max_drawdown_pips": 20736.04,
+      "avg_winner_pips": 1094.57,
+      "avg_loser_pips": -823.62,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 8,
+      "avg_score": 98.0,
+      "total_r": -15.4652,
+      "gross_profit": 809.978571,
+      "gross_loss": -905.985,
+      "ambiguous_trades": 7,
+      "win_rate_se_approx": 3.61,
+      "win_rate_ci95_approx": [
+        33.1,
+        47.3
+      ]
+    }
+  },
+  "selection": {
+    "qualified": false,
+    "selected": {
+      "name": "h3_sell_only",
+      "allow_buy": false,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    "validation_metrics": {
+      "total_trades": 204,
+      "wins": 87,
+      "losses": 117,
+      "breakeven": 0,
+      "win_rate": 42.6,
+      "profit_factor": 0.93,
+      "expectancy": -0.017,
+      "avg_r": -0.017,
+      "max_drawdown_r": 14.817,
+      "max_drawdown_pips": 13822.64,
+      "avg_winner_pips": 891.16,
+      "avg_loser_pips": -712.48,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.2,
+      "total_r": -3.3864,
+      "gross_profit": 775.311429,
+      "gross_loss": -833.603929,
+      "ambiguous_trades": 9,
+      "win_rate_se_approx": 3.46,
+      "win_rate_ci95_approx": [
+        35.9,
+        49.4
+      ]
+    },
+    "reason": "no_policy_met_gates_diagnostic_best",
+    "criteria": {
+      "min_expectancy": 0.0,
+      "min_profit_factor": 1.0,
+      "min_trades": 20
+    },
+    "ranking": [
+      {
+        "name": "h3_sell_only",
+        "qualified": false,
+        "expectancy": -0.017,
+        "profit_factor": 0.93,
+        "total_trades": 204
+      },
+      {
+        "name": "h3_dual_aligned",
+        "qualified": false,
+        "expectancy": -0.041,
+        "profit_factor": 0.948,
+        "total_trades": 297
+      },
+      {
+        "name": "h3_structure_aligned_only",
+        "qualified": false,
+        "expectancy": -0.049,
+        "profit_factor": 0.941,
+        "total_trades": 312
+      },
+      {
+        "name": "h3_block_htf_opposed",
+        "qualified": false,
+        "expectancy": -0.058,
+        "profit_factor": 0.888,
+        "total_trades": 433
+      },
+      {
+        "name": "h3_htf_aligned_only",
+        "qualified": false,
+        "expectancy": -0.058,
+        "profit_factor": 0.888,
+        "total_trades": 433
+      },
+      {
+        "name": "h3_block_structure_opposed",
+        "qualified": false,
+        "expectancy": -0.071,
+        "profit_factor": 0.877,
+        "total_trades": 443
+      },
+      {
+        "name": "h3_baseline_all",
+        "qualified": false,
+        "expectancy": -0.081,
+        "profit_factor": 0.858,
+        "total_trades": 473
+      },
+      {
+        "name": "h3_buy_structure_aligned",
+        "qualified": false,
+        "expectancy": -0.083,
+        "profit_factor": 0.903,
+        "total_trades": 194
+      },
+      {
+        "name": "h3_buy_dual_aligned",
+        "qualified": false,
+        "expectancy": -0.084,
+        "profit_factor": 0.894,
+        "total_trades": 184
+      },
+      {
+        "name": "h3_buy_block_structure_opposed",
+        "qualified": false,
+        "expectancy": -0.123,
+        "profit_factor": 0.824,
+        "total_trades": 255
+      },
+      {
+        "name": "h3_buy_only",
+        "qualified": false,
+        "expectancy": -0.129,
+        "profit_factor": 0.813,
+        "total_trades": 269
+      }
+    ]
+  },
+  "test_not_evaluated_yet": false,
+  "notes": [
+    "Selection used VALIDATION metrics only.",
+    "TRAIN metrics logged for transparency; not used in selection key.",
+    "Alignment labels match forensics align_bias()."
+  ],
+  "selection_sha256": "6f37319f8af913d4637210b8150d237b23b69feb700369090c723b6777bbeed4",
+  "test_revealed_at": "2026-09-15T15:06:48.179865+00:00"
+}

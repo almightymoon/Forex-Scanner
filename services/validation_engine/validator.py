@@ -2,8 +2,12 @@
 
 from services.validation_engine.metrics import ValidationMetrics
 from services.validation_engine.report import ValidationReport
-from services.validation_engine.storage import OutcomeStore, TrackedSignal, new_signal_id
-from shared.types.models import Candle, ScannerSignal, SignalDirection
+from services.validation_engine.storage import (
+    TrackedSignal,
+    get_outcome_store,
+    new_signal_id,
+)
+from shared.types.models import Candle, ScannerSignal
 
 
 class SignalValidator:
@@ -12,8 +16,8 @@ class SignalValidator:
     Signal Generated → Trade Closed → Record Outcome → Update Statistics
     """
 
-    def __init__(self, store: OutcomeStore | None = None):
-        self.store = store or OutcomeStore()
+    def __init__(self, store=None):
+        self.store = store if store is not None else get_outcome_store()
 
     def register(self, signal: ScannerSignal) -> str:
         if not signal.entry_zone_low or not signal.stop_loss or not signal.take_profit_1:

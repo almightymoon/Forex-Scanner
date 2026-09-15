@@ -73,6 +73,29 @@ class PostgresDatabase:
                         data JSONB NOT NULL,
                         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     );
+
+                    CREATE TABLE IF NOT EXISTS validation_outcomes (
+                        id VARCHAR(64) PRIMARY KEY,
+                        symbol VARCHAR(16) NOT NULL,
+                        timeframe VARCHAR(8) NOT NULL,
+                        direction VARCHAR(16) NOT NULL,
+                        score INTEGER NOT NULL,
+                        confidence DOUBLE PRECISION NOT NULL,
+                        entry_price DECIMAL(18, 8) NOT NULL,
+                        stop_loss DECIMAL(18, 8) NOT NULL,
+                        take_profit DECIMAL(18, 8) NOT NULL,
+                        patterns JSONB NOT NULL DEFAULT '[]'::jsonb,
+                        outcome VARCHAR(32),
+                        pnl_pips DECIMAL(12, 4) NOT NULL DEFAULT 0,
+                        exit_price DECIMAL(18, 8),
+                        created_at TIMESTAMPTZ NOT NULL,
+                        closed_at TIMESTAMPTZ
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_pg_validation_outcomes_symbol
+                        ON validation_outcomes (symbol, created_at DESC);
+                    CREATE INDEX IF NOT EXISTS idx_pg_validation_outcomes_open
+                        ON validation_outcomes (symbol, created_at DESC)
+                        WHERE outcome IS NULL;
                 """)
             conn.commit()
 
@@ -236,3 +259,113 @@ class PostgresDatabase:
                 )
                 today = cur.fetchone()["c"]
         return {"total_scans": total, "elite_setups": elite, "scans_today": today, "backend": "postgresql"}
+
+    def upsert_validation_outcome(self, row: dict) -> str:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO validation_outcomes (
+                           id, symbol, timeframe, direction, score, confidence,
+                           entry_price, stop_loss, take_profit, patterns, outcome,
+                           pnl_pips, exit_price, created_at, closed_at
+                       ) VALUES (
+                           %s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s,%s
+                       )
+                       ON CONFLICT (id) DO UPDATE SET
+                           symbol = EXCLUDED.symbol,
+                           timeframe = EXCLUDED.timeframe,
+                           direction = EXCLUDED.direction,
+                           score = EXCLUDED.score,
+                           confidence = EXCLUDED.confidence,
+                           entry_price = EXCLUDED.entry_price,
+                           stop_loss = EXCLUDED.stop_loss,
+                           take_profit = EXCLUDED.take_profit,
+                           patterns = EXCLUDED.patterns,
+                           outcome = EXCLUDED.outcome,
+                           pnl_pips = EXCLUDED.pnl_pips,
+                           exit_price = EXCLUDED.exit_price,
+                           created_at = EXCLUDED.created_at,
+                           closed_at = EXCLUDED.closed_at
+                    """,
+                    (
+                        row["id"],
+                        row["symbol"],
+                        row["timeframe"],
+                        row["direction"],
+                        row["score"],
+                        row["confidence"],
+                        row["entry_price"],
+                        row["stop_loss"],
+                        row["take_profit"],
+                        json.dumps(row.get("patterns") or []),
+                        row.get("outcome"),
+                        row.get("pnl_pips") or 0.0,
+                        row.get("exit_price"),
+                        row["created_at"],
+                        row.get("closed_at"),
+                    ),
+                )
+            conn.commit()
+        return row["id"]
+
+    def get_validation_outcome(self, signal_id: str) -> Optional[dict]:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT * FROM validation_outcomes WHERE id = %s",
+                    (signal_id,),
+                )
+                row = cur.fetchone()
+        return self._validation_row_to_dict(row) if row else None
+
+    def list_validation_outcomes(
+        self,
+        symbol: Optional[str] = None,
+        closed_only: bool = False,
+        limit: int = 5000,
+    ) -> list[dict]:
+        query = "SELECT * FROM validation_outcomes WHERE 1=1"
+        params: list = []
+        if symbol:
+            query += " AND symbol = %s"
+            params.append(symbol.upper())
+        if closed_only:
+            query += " AND outcome IS NOT NULL"
+        query += " ORDER BY created_at DESC LIMIT %s"
+        params.append(limit)
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, params)
+                rows = cur.fetchall()
+        return [self._validation_row_to_dict(r) for r in rows]
+
+    @staticmethod
+    def _validation_row_to_dict(row) -> dict:
+        patterns = row["patterns"]
+        if isinstance(patterns, str):
+            patterns = json.loads(patterns or "[]")
+        elif patterns is None:
+            patterns = []
+        created_at = row["created_at"]
+        closed_at = row["closed_at"]
+        if hasattr(created_at, "isoformat"):
+            created_at = created_at.isoformat()
+        if hasattr(closed_at, "isoformat"):
+            closed_at = closed_at.isoformat()
+        return {
+            "id": row["id"],
+            "symbol": row["symbol"],
+            "timeframe": row["timeframe"],
+            "direction": row["direction"],
+            "score": int(row["score"]),
+            "confidence": float(row["confidence"]),
+            "entry_price": float(row["entry_price"]),
+            "stop_loss": float(row["stop_loss"]),
+            "take_profit": float(row["take_profit"]),
+            "patterns": list(patterns),
+            "outcome": row["outcome"],
+            "pnl_pips": float(row["pnl_pips"] or 0),
+            "exit_price": float(row["exit_price"]) if row["exit_price"] is not None else None,
+            "created_at": created_at,
+            "closed_at": closed_at,
+        }

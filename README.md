@@ -116,7 +116,12 @@ The freeze → OOS → forensics track is **closed**:
 - [Analytical Freeze](docs/ANALYTICAL_FREEZE.md) — change control
 - [OOS Validation Report](docs/OOS_VALIDATION_REPORT_1.4.0.md) — **FAILED OOS VALIDATION**
 - [OOS Failure Forensics](docs/OOS_FAILURE_FORENSICS_1.4.0.md) — diagnosis only
-- [Experiment Protocol 1.5.0](docs/EXPERIMENT_PROTOCOL_1.5.0.md) — charter only (not implemented)
+- [Experiment Protocol 1.5.0](docs/EXPERIMENT_PROTOCOL_1.5.0.md) — Arm H1 complete (**FAILED**)
+- [Experiment Report 1.5.0](docs/EXPERIMENT_REPORT_1.5.0.md) — H1 emit calibration results
+- [Experiment Protocol 1.6.0](docs/EXPERIMENT_PROTOCOL_1.6.0.md) — Arm H3 complete (**FAILED**)
+- [Experiment Report 1.6.0](docs/EXPERIMENT_REPORT_1.6.0.md) — H3 direction/alignment gating results
+- [Experiment Scoreboard](docs/EXPERIMENT_SCOREBOARD.md) — H1–H4 + H5 status
+- [Experiment Report 1.8.0](docs/EXPERIMENT_REPORT_1.8.0.md) — H4 **PASSED** (provisional; small TEST n)
 
 Do not silently retune 1.4.0 against OOS results.
 

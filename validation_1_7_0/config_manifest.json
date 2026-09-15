@@ -1,0 +1,60 @@
+{
+  "experiment_version": "1.7.0",
+  "arm": "H2",
+  "baseline_analysis_version": "1.4.0",
+  "forward_bars": 20,
+  "execution": {
+    "entry_mode": "signal_close",
+    "ambiguous_policy": "sl_first",
+    "spread_pips": 0.0,
+    "slippage_pips": 0.0,
+    "commission_pips": 0.0
+  },
+  "candidates": [
+    {
+      "name": "h2_baseline_rr_133",
+      "target_rr": null
+    },
+    {
+      "name": "h2_tp_rr_1_0",
+      "target_rr": 1.0
+    },
+    {
+      "name": "h2_tp_rr_1_5",
+      "target_rr": 1.5
+    },
+    {
+      "name": "h2_tp_rr_2_0",
+      "target_rr": 2.0
+    },
+    {
+      "name": "h2_tp_rr_2_5",
+      "target_rr": 2.5
+    },
+    {
+      "name": "h2_tp_rr_3_0",
+      "target_rr": 3.0
+    },
+    {
+      "name": "h2_tp_rr_0_75",
+      "target_rr": 0.75
+    }
+  ],
+  "selection_criteria": {
+    "min_expectancy": 0.0,
+    "min_profit_factor": 1.0,
+    "min_trades": 20
+  },
+  "test_success_criteria": {
+    "require_positive_expectancy": true,
+    "require_pf_at_least": 1.0,
+    "max_total_r_worse_than_baseline": 5.0
+  },
+  "selected_policy": {
+    "name": "h2_tp_rr_2_5",
+    "target_rr": 2.5
+  },
+  "parameter_fitting": "discrete_tp_rr_on_validation_only",
+  "mechanism": "keep original SL; remap TP to target_rr * risk (or baseline TP)",
+  "config_sha256": "8dacb6ca9a8ba7a0fdabe621cf06b82fb3f1949933a79896ca2f1b8b232222cb"
+}

@@ -1,0 +1,208 @@
+{
+  "experiment_version": "1.6.0",
+  "arm": "H3",
+  "baseline_analysis_version": "1.4.0",
+  "lookback_bars": 250,
+  "execution": {
+    "entry_mode": "signal_close",
+    "ambiguous_policy": "sl_first",
+    "spread_pips": 0.0,
+    "slippage_pips": 0.0,
+    "commission_pips": 0.0
+  },
+  "candidates": [
+    {
+      "name": "h3_baseline_all",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_buy_only",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_sell_only",
+      "allow_buy": false,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_block_structure_opposed",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_block_htf_opposed",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_structure_aligned_only",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_htf_aligned_only",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED"
+      ]
+    },
+    {
+      "name": "h3_buy_block_structure_opposed",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "UNDEFINED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_buy_structure_aligned",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED",
+        "NEUTRAL",
+        "OPPOSED",
+        "UNDEFINED"
+      ]
+    },
+    {
+      "name": "h3_dual_aligned",
+      "allow_buy": true,
+      "allow_sell": true,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED"
+      ]
+    },
+    {
+      "name": "h3_buy_dual_aligned",
+      "allow_buy": true,
+      "allow_sell": false,
+      "structure_allowed": [
+        "ALIGNED"
+      ],
+      "htf_allowed": [
+        "ALIGNED"
+      ]
+    }
+  ],
+  "selection_criteria": {
+    "min_expectancy": 0.0,
+    "min_profit_factor": 1.0,
+    "min_trades": 20
+  },
+  "test_success_criteria": {
+    "require_positive_expectancy": true,
+    "require_pf_at_least": 1.0,
+    "max_total_r_worse_than_baseline": 5.0
+  },
+  "selected_policy": {
+    "name": "h3_sell_only",
+    "allow_buy": false,
+    "allow_sell": true,
+    "structure_allowed": [
+      "ALIGNED",
+      "NEUTRAL",
+      "OPPOSED",
+      "UNDEFINED"
+    ],
+    "htf_allowed": [
+      "ALIGNED",
+      "NEUTRAL",
+      "OPPOSED",
+      "UNDEFINED"
+    ]
+  },
+  "parameter_fitting": "discrete_direction_alignment_gate_on_validation_only",
+  "fit_source": "validation_1_5_0 fit trades + 1.4.0 re-analysis enrichment",
+  "config_sha256": "a3fc68e4fb5e41ef60325eb78808560d7f96d24fcf637a4c8cc2f1bd58211223"
+}

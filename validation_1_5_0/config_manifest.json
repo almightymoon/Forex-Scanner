@@ -1,0 +1,94 @@
+{
+  "experiment_version": "1.5.0",
+  "arm": "H1",
+  "baseline_analysis_version": "1.4.0",
+  "min_score_baseline_emit": 70,
+  "lookback_bars": 250,
+  "signal_stride": 4,
+  "forward_bars": 20,
+  "cooldown_bars": 10,
+  "execution": {
+    "entry_mode": "signal_close",
+    "ambiguous_policy": "sl_first",
+    "spread_pips": 0.0,
+    "slippage_pips": 0.0,
+    "commission_pips": 0.0
+  },
+  "candidates": [
+    {
+      "name": "h1_baseline_min70",
+      "min_score": 70,
+      "max_score": 100,
+      "min_confidence": 0.0,
+      "max_confidence": 1.0
+    },
+    {
+      "name": "h1_score_cap_94",
+      "min_score": 70,
+      "max_score": 94,
+      "min_confidence": 0.0,
+      "max_confidence": 1.0
+    },
+    {
+      "name": "h1_score_cap_84",
+      "min_score": 70,
+      "max_score": 84,
+      "min_confidence": 0.0,
+      "max_confidence": 1.0
+    },
+    {
+      "name": "h1_score_band_71_84",
+      "min_score": 71,
+      "max_score": 84,
+      "min_confidence": 0.0,
+      "max_confidence": 1.0
+    },
+    {
+      "name": "h1_score_band_71_94",
+      "min_score": 71,
+      "max_score": 94,
+      "min_confidence": 0.0,
+      "max_confidence": 1.0
+    },
+    {
+      "name": "h1_excl_high_conf",
+      "min_score": 70,
+      "max_score": 100,
+      "min_confidence": 0.0,
+      "max_confidence": 0.84
+    },
+    {
+      "name": "h1_conf_lt_060",
+      "min_score": 70,
+      "max_score": 100,
+      "min_confidence": 0.0,
+      "max_confidence": 0.59
+    },
+    {
+      "name": "h1_score_cap_84_conf_cap_084",
+      "min_score": 70,
+      "max_score": 84,
+      "min_confidence": 0.0,
+      "max_confidence": 0.84
+    }
+  ],
+  "selection_criteria": {
+    "min_expectancy": 0.0,
+    "min_profit_factor": 1.0,
+    "min_trades": 20
+  },
+  "test_success_criteria": {
+    "require_positive_expectancy": true,
+    "require_pf_at_least": 1.0,
+    "max_total_r_worse_than_baseline": 5.0
+  },
+  "selected_policy": {
+    "name": "h1_baseline_min70",
+    "min_score": 70,
+    "max_score": 100,
+    "min_confidence": 0.0,
+    "max_confidence": 1.0
+  },
+  "parameter_fitting": "discrete_policy_selection_on_validation_only",
+  "config_sha256": "4418404076844882a3dc53789c74c8a9ab09a2b2fd8aa3cbccf91431381b281d"
+}

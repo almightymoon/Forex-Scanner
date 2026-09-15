@@ -1,0 +1,73 @@
+{
+  "evaluated_at": "2026-09-15T14:24:59.610787+00:00",
+  "experiment_version": "1.5.0",
+  "arm": "H1",
+  "emit_policy": {
+    "name": "h1_baseline_min70",
+    "min_score": 70,
+    "max_score": 100,
+    "min_confidence": 0.0,
+    "max_confidence": 1.0
+  },
+  "selection_qualified": false,
+  "baseline_test_trades": 246,
+  "filtered_test_trades": 246,
+  "metrics": {
+    "total_trades": 246,
+    "wins": 95,
+    "losses": 151,
+    "breakeven": 0,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "avg_r": -0.091,
+    "max_drawdown_r": 30.329,
+    "max_drawdown_pips": 35069.46,
+    "avg_winner_pips": 1006.75,
+    "avg_loser_pips": -831.97,
+    "consecutive_wins_max": 6,
+    "consecutive_losses_max": 17,
+    "avg_score": 93.0,
+    "total_r": -22.434,
+    "gross_profit": 956.414286,
+    "gross_loss": -1256.273571,
+    "ambiguous_trades": 4,
+    "win_rate_se_approx": 3.1,
+    "win_rate_ci95_approx": [
+      32.5,
+      44.7
+    ]
+  },
+  "success": {
+    "passed": false,
+    "checks": {
+      "positive_expectancy": false,
+      "profit_factor": false,
+      "total_r_not_worse_than_baseline_tolerance": true
+    },
+    "criteria": {
+      "require_positive_expectancy": true,
+      "require_pf_at_least": 1.0,
+      "max_total_r_worse_than_baseline": 5.0
+    },
+    "baseline_total_r": -22.434,
+    "total_r_floor": -27.434,
+    "observed": {
+      "expectancy": -0.091,
+      "profit_factor": 0.761,
+      "total_r": -22.434,
+      "total_trades": 246,
+      "win_rate": 38.6
+    }
+  },
+  "baseline_1_4_0": {
+    "trades": 246,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "total_r": -22.434,
+    "max_drawdown_r": 30.329
+  },
+  "source_trades": "validation/trades.jsonl",
+  "note": "TEST trades are the locked 1.4.0 OOS corpus filtered by the H1 emit policy; underlying analysis fingerprints unchanged."
+}

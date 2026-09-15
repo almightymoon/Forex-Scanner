@@ -51,3 +51,8 @@ debug/
 benchmarks/reports/
 benchmarks/history/
 benchmarks/live/
+validation_1_5_0_fit.log
+validation_1_6_0_enrich.log
+validation_1_8_0_enrich.log
+benchmarks/live/h4_paper_shadow_run.log
+benchmarks/live/h4_paper_shadow_2024test.log

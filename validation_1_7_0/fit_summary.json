@@ -1,0 +1,412 @@
+{
+  "built_at": "2026-09-15T15:28:20.571483+00:00",
+  "dataset_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "baseline_analysis_version": "1.4.0",
+  "experiment_version": "1.7.0",
+  "arm": "H2",
+  "forward_bars": 20,
+  "candidates": [
+    {
+      "name": "h2_baseline_rr_133",
+      "target_rr": null
+    },
+    {
+      "name": "h2_tp_rr_1_0",
+      "target_rr": 1.0
+    },
+    {
+      "name": "h2_tp_rr_1_5",
+      "target_rr": 1.5
+    },
+    {
+      "name": "h2_tp_rr_2_0",
+      "target_rr": 2.0
+    },
+    {
+      "name": "h2_tp_rr_2_5",
+      "target_rr": 2.5
+    },
+    {
+      "name": "h2_tp_rr_3_0",
+      "target_rr": 3.0
+    },
+    {
+      "name": "h2_tp_rr_0_75",
+      "target_rr": 0.75
+    }
+  ],
+  "train_signal_count": 485,
+  "validation_signal_count": 473,
+  "train_metrics_by_policy": {
+    "h2_baseline_rr_133": {
+      "total_trades": 485,
+      "wins": 223,
+      "losses": 262,
+      "breakeven": 0,
+      "win_rate": 46.0,
+      "profit_factor": 1.124,
+      "expectancy": 0.049,
+      "avg_r": 0.049,
+      "max_drawdown_r": 21.923,
+      "max_drawdown_pips": 22878.54,
+      "avg_winner_pips": 1180.08,
+      "avg_loser_pips": -893.75,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 92.8,
+      "total_r": 23.5759,
+      "gross_profit": 2631.587143,
+      "gross_loss": -2341.612143,
+      "ambiguous_trades": 22,
+      "win_rate_se_approx": 2.26,
+      "win_rate_ci95_approx": [
+        41.5,
+        50.4
+      ]
+    },
+    "h2_tp_rr_1_0": {
+      "total_trades": 485,
+      "wins": 240,
+      "losses": 245,
+      "breakeven": 0,
+      "win_rate": 49.5,
+      "profit_factor": 1.027,
+      "expectancy": -0.004,
+      "avg_r": -0.004,
+      "max_drawdown_r": 26.224,
+      "max_drawdown_pips": 23903.14,
+      "avg_winner_pips": 944.2,
+      "avg_loser_pips": -900.96,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 92.8,
+      "total_r": -2.0336,
+      "gross_profit": 2266.088214,
+      "gross_loss": -2207.354286,
+      "ambiguous_trades": 23,
+      "win_rate_se_approx": 2.27,
+      "win_rate_ci95_approx": [
+        45.0,
+        53.9
+      ]
+    },
+    "h2_tp_rr_1_5": {
+      "total_trades": 485,
+      "wins": 208,
+      "losses": 277,
+      "breakeven": 0,
+      "win_rate": 42.9,
+      "profit_factor": 1.11,
+      "expectancy": 0.029,
+      "avg_r": 0.029,
+      "max_drawdown_r": 25.193,
+      "max_drawdown_pips": 24392.16,
+      "avg_winner_pips": 1302.2,
+      "avg_loser_pips": -880.69,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 12,
+      "avg_score": 92.8,
+      "total_r": 13.8825,
+      "gross_profit": 2708.583036,
+      "gross_loss": -2439.504643,
+      "ambiguous_trades": 23,
+      "win_rate_se_approx": 2.25,
+      "win_rate_ci95_approx": [
+        38.5,
+        47.3
+      ]
+    },
+    "h2_tp_rr_2_0": {
+      "total_trades": 485,
+      "wins": 182,
+      "losses": 303,
+      "breakeven": 0,
+      "win_rate": 37.5,
+      "profit_factor": 1.075,
+      "expectancy": -0.005,
+      "avg_r": -0.005,
+      "max_drawdown_r": 34.133,
+      "max_drawdown_pips": 28532.43,
+      "avg_winner_pips": 1532.99,
+      "avg_loser_pips": -856.34,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 12,
+      "avg_score": 92.8,
+      "total_r": -2.2721,
+      "gross_profit": 2790.04,
+      "gross_loss": -2594.705357,
+      "ambiguous_trades": 19,
+      "win_rate_se_approx": 2.2,
+      "win_rate_ci95_approx": [
+        33.2,
+        41.8
+      ]
+    },
+    "h2_tp_rr_2_5": {
+      "total_trades": 485,
+      "wins": 174,
+      "losses": 311,
+      "breakeven": 0,
+      "win_rate": 35.9,
+      "profit_factor": 1.054,
+      "expectancy": -0.021,
+      "avg_r": -0.021,
+      "max_drawdown_r": 41.251,
+      "max_drawdown_pips": 34193.48,
+      "avg_winner_pips": 1601.1,
+      "avg_loser_pips": -849.63,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 18,
+      "avg_score": 92.8,
+      "total_r": -10.0916,
+      "gross_profit": 2785.910714,
+      "gross_loss": -2642.345357,
+      "ambiguous_trades": 13,
+      "win_rate_se_approx": 2.18,
+      "win_rate_ci95_approx": [
+        31.6,
+        40.1
+      ]
+    },
+    "h2_tp_rr_3_0": {
+      "total_trades": 485,
+      "wins": 171,
+      "losses": 314,
+      "breakeven": 0,
+      "win_rate": 35.3,
+      "profit_factor": 0.998,
+      "expectancy": -0.054,
+      "avg_r": -0.054,
+      "max_drawdown_r": 50.558,
+      "max_drawdown_pips": 44049.75,
+      "avg_winner_pips": 1555.14,
+      "avg_loser_pips": -848.91,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 25,
+      "avg_score": 92.8,
+      "total_r": -26.1658,
+      "gross_profit": 2659.287857,
+      "gross_loss": -2665.585714,
+      "ambiguous_trades": 11,
+      "win_rate_se_approx": 2.17,
+      "win_rate_ci95_approx": [
+        31.0,
+        39.5
+      ]
+    },
+    "h2_tp_rr_0_75": {
+      "total_trades": 485,
+      "wins": 274,
+      "losses": 211,
+      "breakeven": 0,
+      "win_rate": 56.5,
+      "profit_factor": 0.997,
+      "expectancy": -0.008,
+      "avg_r": -0.008,
+      "max_drawdown_r": 23.724,
+      "max_drawdown_pips": 22417.37,
+      "avg_winner_pips": 709.36,
+      "avg_loser_pips": -923.69,
+      "consecutive_wins_max": 9,
+      "consecutive_losses_max": 9,
+      "avg_score": 92.8,
+      "total_r": -3.7801,
+      "gross_profit": 1943.656875,
+      "gross_loss": -1948.992857,
+      "ambiguous_trades": 23,
+      "win_rate_se_approx": 2.25,
+      "win_rate_ci95_approx": [
+        52.1,
+        60.9
+      ]
+    }
+  },
+  "validation_metrics_by_policy": {
+    "h2_baseline_rr_133": {
+      "total_trades": 473,
+      "wins": 191,
+      "losses": 282,
+      "breakeven": 0,
+      "win_rate": 40.4,
+      "profit_factor": 0.858,
+      "expectancy": -0.081,
+      "avg_r": -0.081,
+      "max_drawdown_r": 55.691,
+      "max_drawdown_pips": 44717.11,
+      "avg_winner_pips": 969.82,
+      "avg_loser_pips": -765.19,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.8,
+      "total_r": -38.1977,
+      "gross_profit": 1852.347143,
+      "gross_loss": -2157.822143,
+      "ambiguous_trades": 21,
+      "win_rate_se_approx": 2.26,
+      "win_rate_ci95_approx": [
+        36.0,
+        44.8
+      ]
+    },
+    "h2_tp_rr_1_0": {
+      "total_trades": 473,
+      "wins": 214,
+      "losses": 259,
+      "breakeven": 0,
+      "win_rate": 45.2,
+      "profit_factor": 0.814,
+      "expectancy": -0.094,
+      "avg_r": -0.094,
+      "max_drawdown_r": 55.676,
+      "max_drawdown_pips": 46530.71,
+      "avg_winner_pips": 766.83,
+      "avg_loser_pips": -778.74,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 8,
+      "avg_score": 93.8,
+      "total_r": -44.5157,
+      "gross_profit": 1641.020357,
+      "gross_loss": -2016.931071,
+      "ambiguous_trades": 24,
+      "win_rate_se_approx": 2.29,
+      "win_rate_ci95_approx": [
+        40.8,
+        49.7
+      ]
+    },
+    "h2_tp_rr_1_5": {
+      "total_trades": 473,
+      "wins": 180,
+      "losses": 293,
+      "breakeven": 0,
+      "win_rate": 38.1,
+      "profit_factor": 0.864,
+      "expectancy": -0.082,
+      "avg_r": -0.082,
+      "max_drawdown_r": 59.775,
+      "max_drawdown_pips": 47428.79,
+      "avg_winner_pips": 1064.33,
+      "avg_loser_pips": -757.16,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.8,
+      "total_r": -38.6147,
+      "gross_profit": 1915.799286,
+      "gross_loss": -2218.4875,
+      "ambiguous_trades": 19,
+      "win_rate_se_approx": 2.23,
+      "win_rate_ci95_approx": [
+        33.7,
+        42.4
+      ]
+    },
+    "h2_tp_rr_2_0": {
+      "total_trades": 473,
+      "wins": 167,
+      "losses": 306,
+      "breakeven": 0,
+      "win_rate": 35.3,
+      "profit_factor": 0.92,
+      "expectancy": -0.047,
+      "avg_r": -0.047,
+      "max_drawdown_r": 40.605,
+      "max_drawdown_pips": 35387.93,
+      "avg_winner_pips": 1268.34,
+      "avg_loser_pips": -752.54,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 14,
+      "avg_score": 93.8,
+      "total_r": -22.4226,
+      "gross_profit": 2118.122143,
+      "gross_loss": -2302.77,
+      "ambiguous_trades": 12,
+      "win_rate_se_approx": 2.2,
+      "win_rate_ci95_approx": [
+        31.0,
+        39.6
+      ]
+    },
+    "h2_tp_rr_2_5": {
+      "total_trades": 473,
+      "wins": 162,
+      "losses": 311,
+      "breakeven": 0,
+      "win_rate": 34.2,
+      "profit_factor": 0.949,
+      "expectancy": -0.028,
+      "avg_r": -0.028,
+      "max_drawdown_r": 37.399,
+      "max_drawdown_pips": 31677.05,
+      "avg_winner_pips": 1364.61,
+      "avg_loser_pips": -749.04,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 24,
+      "avg_score": 93.8,
+      "total_r": -13.0506,
+      "gross_profit": 2210.671429,
+      "gross_loss": -2329.509286,
+      "ambiguous_trades": 9,
+      "win_rate_se_approx": 2.18,
+      "win_rate_ci95_approx": [
+        30.0,
+        38.5
+      ]
+    },
+    "h2_tp_rr_3_0": {
+      "total_trades": 473,
+      "wins": 159,
+      "losses": 314,
+      "breakeven": 0,
+      "win_rate": 33.6,
+      "profit_factor": 0.92,
+      "expectancy": -0.034,
+      "avg_r": -0.034,
+      "max_drawdown_r": 45.143,
+      "max_drawdown_pips": 37010.21,
+      "avg_winner_pips": 1356.23,
+      "avg_loser_pips": -746.47,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 24,
+      "avg_score": 93.8,
+      "total_r": -16.0574,
+      "gross_profit": 2156.405,
+      "gross_loss": -2343.916071,
+      "ambiguous_trades": 6,
+      "win_rate_se_approx": 2.17,
+      "win_rate_ci95_approx": [
+        29.4,
+        37.9
+      ]
+    },
+    "h2_tp_rr_0_75": {
+      "total_trades": 473,
+      "wins": 232,
+      "losses": 241,
+      "breakeven": 0,
+      "win_rate": 49.0,
+      "profit_factor": 0.711,
+      "expectancy": -0.134,
+      "avg_r": -0.134,
+      "max_drawdown_r": 68.748,
+      "max_drawdown_pips": 59388.85,
+      "avg_winner_pips": 581.83,
+      "avg_loser_pips": -787.87,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 6,
+      "avg_score": 93.8,
+      "total_r": -63.172,
+      "gross_profit": 1349.851875,
+      "gross_loss": -1898.774643,
+      "ambiguous_trades": 28,
+      "win_rate_se_approx": 2.3,
+      "win_rate_ci95_approx": [
+        44.5,
+        53.6
+      ]
+    }
+  },
+  "notes": [
+    "Signals reused from validation_1_5_0 fit chunks (1.4.0 analysis).",
+    "Only take-profit remapped; stop_loss fixed at original level."
+  ]
+}

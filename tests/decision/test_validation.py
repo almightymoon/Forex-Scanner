@@ -6,8 +6,10 @@ from pathlib import Path
 
 from services.scanner_service.structure_scoring import score_structure_event
 from services.setup_intelligence.historical_matcher import HistoricalEvidence, historical_confidence_multiplier
-from services.validation_engine import OutcomeStore, SignalValidator, TrackedSignal
-from shared.types.models import SMCPattern, SignalDirection, Timeframe
+from services.validation_engine import OutcomeStore, SignalValidator, TrackedSignal, get_outcome_store
+from services.validation_engine.storage import DbOutcomeStore
+from shared.database import Database
+from shared.types.models import SMCPattern, SignalDirection
 from tests.helpers import candles
 
 
@@ -73,6 +75,65 @@ class TestValidationEngine(unittest.TestCase):
             report = validator.report("EURUSD")
             self.assertEqual(report.metrics.wins, 1)
             self.assertEqual(report.metrics.win_rate, 100.0)
+
+    def test_file_store_atomic_roundtrip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = str(Path(tmp) / "outcomes.json")
+            store = OutcomeStore(path=path)
+            store.save(
+                TrackedSignal(
+                    id="abc123",
+                    symbol="XAUUSD",
+                    timeframe="H1",
+                    direction="sell",
+                    score=72,
+                    confidence=0.7,
+                    entry_price=2400.0,
+                    stop_loss=2405.0,
+                    take_profit=2390.0,
+                )
+            )
+            reloaded = OutcomeStore(path=path)
+            got = reloaded.get("abc123")
+            self.assertIsNotNone(got)
+            self.assertEqual(got.symbol, "XAUUSD")
+
+    def test_sqlite_outcome_store_idempotent_upsert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = Database(db_path=Path(tmp) / "test.db")
+            store = DbOutcomeStore(db)
+            sig = TrackedSignal(
+                id="idempotent1",
+                symbol="GBPUSD",
+                timeframe="H1",
+                direction="buy",
+                score=80,
+                confidence=0.8,
+                entry_price=1.25,
+                stop_loss=1.24,
+                take_profit=1.27,
+            )
+            store.save(sig)
+            sig.score = 88
+            store.update(sig)
+            rows = store.list_all(symbol="GBPUSD")
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0].score, 88)
+            self.assertEqual(store.get("idempotent1").score, 88)
+
+            validator = SignalValidator(store=store)
+            closed = validator.evaluate_open_signals(
+                "GBPUSD",
+                candles([1.251, 1.26, 1.275]),
+            )
+            self.assertEqual(len(closed), 1)
+            self.assertEqual(closed[0].outcome, "win")
+
+    def test_get_outcome_store_explicit_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = str(Path(tmp) / "explicit.json")
+            store = get_outcome_store(path=path)
+            self.assertIsInstance(store, OutcomeStore)
 
 
 if __name__ == "__main__":

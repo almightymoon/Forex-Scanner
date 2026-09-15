@@ -89,6 +89,29 @@ class Database:
                     data JSON NOT NULL,
                     created_at TEXT NOT NULL
                 );
+
+                CREATE TABLE IF NOT EXISTS validation_outcomes (
+                    id TEXT PRIMARY KEY,
+                    symbol TEXT NOT NULL,
+                    timeframe TEXT NOT NULL,
+                    direction TEXT NOT NULL,
+                    score INTEGER NOT NULL,
+                    confidence REAL NOT NULL,
+                    entry_price REAL NOT NULL,
+                    stop_loss REAL NOT NULL,
+                    take_profit REAL NOT NULL,
+                    patterns TEXT NOT NULL DEFAULT '[]',
+                    outcome TEXT,
+                    pnl_pips REAL NOT NULL DEFAULT 0,
+                    exit_price REAL,
+                    created_at TEXT NOT NULL,
+                    closed_at TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_validation_outcomes_symbol_created
+                    ON validation_outcomes(symbol, created_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_validation_outcomes_open
+                    ON validation_outcomes(symbol, created_at DESC)
+                    WHERE outcome IS NULL;
             """)
 
     def save_scanner_result(self, signal: ScannerSignal) -> int:
@@ -214,3 +237,97 @@ class Database:
                 (symbol.upper(), timeframe),
             ).fetchone()
         return json.loads(row["data"]) if row else None
+
+    def upsert_validation_outcome(self, row: dict) -> str:
+        with self._connect() as conn:
+            conn.execute(
+                """INSERT INTO validation_outcomes (
+                       id, symbol, timeframe, direction, score, confidence,
+                       entry_price, stop_loss, take_profit, patterns, outcome,
+                       pnl_pips, exit_price, created_at, closed_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(id) DO UPDATE SET
+                       symbol=excluded.symbol,
+                       timeframe=excluded.timeframe,
+                       direction=excluded.direction,
+                       score=excluded.score,
+                       confidence=excluded.confidence,
+                       entry_price=excluded.entry_price,
+                       stop_loss=excluded.stop_loss,
+                       take_profit=excluded.take_profit,
+                       patterns=excluded.patterns,
+                       outcome=excluded.outcome,
+                       pnl_pips=excluded.pnl_pips,
+                       exit_price=excluded.exit_price,
+                       created_at=excluded.created_at,
+                       closed_at=excluded.closed_at
+                """,
+                (
+                    row["id"],
+                    row["symbol"],
+                    row["timeframe"],
+                    row["direction"],
+                    row["score"],
+                    row["confidence"],
+                    row["entry_price"],
+                    row["stop_loss"],
+                    row["take_profit"],
+                    json.dumps(row.get("patterns") or []),
+                    row.get("outcome"),
+                    row.get("pnl_pips") or 0.0,
+                    row.get("exit_price"),
+                    row["created_at"],
+                    row.get("closed_at"),
+                ),
+            )
+        return row["id"]
+
+    def get_validation_outcome(self, signal_id: str) -> Optional[dict]:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM validation_outcomes WHERE id = ?",
+                (signal_id,),
+            ).fetchone()
+        return self._validation_row_to_dict(row) if row else None
+
+    def list_validation_outcomes(
+        self,
+        symbol: Optional[str] = None,
+        closed_only: bool = False,
+        limit: int = 5000,
+    ) -> list[dict]:
+        query = "SELECT * FROM validation_outcomes WHERE 1=1"
+        params: list = []
+        if symbol:
+            query += " AND symbol = ?"
+            params.append(symbol.upper())
+        if closed_only:
+            query += " AND outcome IS NOT NULL"
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+        return [self._validation_row_to_dict(r) for r in rows]
+
+    @staticmethod
+    def _validation_row_to_dict(row) -> dict:
+        patterns = row["patterns"]
+        if isinstance(patterns, str):
+            patterns = json.loads(patterns or "[]")
+        return {
+            "id": row["id"],
+            "symbol": row["symbol"],
+            "timeframe": row["timeframe"],
+            "direction": row["direction"],
+            "score": int(row["score"]),
+            "confidence": float(row["confidence"]),
+            "entry_price": float(row["entry_price"]),
+            "stop_loss": float(row["stop_loss"]),
+            "take_profit": float(row["take_profit"]),
+            "patterns": list(patterns or []),
+            "outcome": row["outcome"],
+            "pnl_pips": float(row["pnl_pips"] or 0),
+            "exit_price": float(row["exit_price"]) if row["exit_price"] is not None else None,
+            "created_at": row["created_at"],
+            "closed_at": row["closed_at"],
+        }

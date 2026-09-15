@@ -23,11 +23,17 @@ Updated after **project closure** of analytical pipeline **1.4.0** (OOS + forens
 - Closure: [PROJECT_CLOSURE_1.4.0.md](PROJECT_CLOSURE_1.4.0.md)
 - OOS report: [OOS_VALIDATION_REPORT_1.4.0.md](OOS_VALIDATION_REPORT_1.4.0.md) — **FAILED OOS VALIDATION**
 - Forensics: [OOS_FAILURE_FORENSICS_1.4.0.md](OOS_FAILURE_FORENSICS_1.4.0.md)
-- Next analytics (optional): [EXPERIMENT_PROTOCOL_1.5.0.md](EXPERIMENT_PROTOCOL_1.5.0.md) — charter only
+- Experiment 1.5.0 H1: [EXPERIMENT_REPORT_1.5.0.md](EXPERIMENT_REPORT_1.5.0.md) — **FAILED**
+- Experiment 1.6.0 H3: [EXPERIMENT_REPORT_1.6.0.md](EXPERIMENT_REPORT_1.6.0.md) — **FAILED**
+- Experiment 1.7.0 H2: [EXPERIMENT_REPORT_1.7.0.md](EXPERIMENT_REPORT_1.7.0.md) — **FAILED**
+- Experiment 1.8.0 H4: [EXPERIMENT_REPORT_1.8.0.md](EXPERIMENT_REPORT_1.8.0.md) — **PASSED** (provisional; TEST n=18)
+- H5 prospective: [EXPERIMENT_PROTOCOL_H5.md](EXPERIMENT_PROTOCOL_H5.md) — **BLOCKED** (accrual)
+- Scoreboard: [EXPERIMENT_SCOREBOARD.md](EXPERIMENT_SCOREBOARD.md)
 
 ## Remaining gaps (non-analytical / Phase 2)
 
-1. Validation JSON multi-host unsafe.
+1. ~~Validation JSON multi-host unsafe.~~ → DB-backed `validation_outcomes`.
 2. Provider vs rollup HTF divergence (observable).
 3. Live broker execution (Phase 2).
-4. Any edge recovery requires a **new** pipeline version under the 1.5.0 experiment protocol — do not patch 1.4.0.
+4. Optional: paper-shadow `h4_rank1_liquidity_none` — see [H4_PAPER_SHADOW.md](H4_PAPER_SHADOW.md) (`scripts/paper_shadow_h4.py`).
+5. H5 when post-2026H1 accrual completes.

@@ -1,0 +1,9 @@
+{
+  "dataset_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "selection_sha256": "7d0d58ac1273c0e593e76c16931ba3cbd7e5ec5024a6afac6fe11b3c272c6ec5",
+  "config_sha256": "8dacb6ca9a8ba7a0fdabe621cf06b82fb3f1949933a79896ca2f1b8b232222cb",
+  "source_fit_chunks": "validation_1_5_0/fit_chunks",
+  "source_test_signals": "validation/signals.jsonl",
+  "analysis_version": "1.4.0",
+  "emit_version": "1.7.0"
+}

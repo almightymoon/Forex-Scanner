@@ -214,7 +214,24 @@ async def health(market_data: MarketDataDep, pipeline: PipelineDep):
         "simulated": simulated,
         "providers": monitored,
         "stats": stats,
+        "pipeline_version": "1.4.0",
     }
+    try:
+        from services.validation_engine.storage import DbOutcomeStore, FileOutcomeStore, get_outcome_store
+
+        store = get_outcome_store()
+        if isinstance(store, DbOutcomeStore):
+            try:
+                db_backend = store._db.get_stats().get("backend", "db")
+            except Exception:
+                db_backend = "db"
+            payload["validation_store"] = {"backend": db_backend, "type": "DbOutcomeStore"}
+        elif isinstance(store, FileOutcomeStore):
+            payload["validation_store"] = {"backend": "file", "type": "FileOutcomeStore"}
+        else:
+            payload["validation_store"] = {"backend": "unknown"}
+    except Exception as exc:
+        payload["validation_store"] = {"backend": "unavailable", "error": str(exc)[:120]}
     if simulated:
         payload["warning"] = "Running with simulated market data"
     return payload
@@ -347,7 +364,9 @@ async def run_backtest(
 @app.get("/api/v1/validation")
 async def validation_report(symbol: str | None = Query(None)):
     from services.validation_engine import SignalValidator
-    return SignalValidator().report(symbol)
+
+    report = SignalValidator().report(symbol)
+    return report.to_dict() if hasattr(report, "to_dict") else report
 
 
 @app.get("/api/v1/scanner/{symbol}")

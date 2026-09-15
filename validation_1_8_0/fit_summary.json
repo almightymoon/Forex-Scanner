@@ -1,0 +1,8 @@
+{
+  "train_trades": 485,
+  "validation_trades": 473,
+  "dataset_sha256": "eac96d050a6bacfe879a0506143a053d4ce5ab7304b94cfbab91067211040d73",
+  "experiment_version": "1.8.0",
+  "arm": "H4",
+  "enriched_at": "2026-09-15T16:20:36.419751+00:00"
+}

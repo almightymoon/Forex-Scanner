@@ -1,27 +1,38 @@
-# Validation Persistence — Current Limitations (audit only)
+# Validation Persistence
 
-**Not migrated in this task.** Implementation: `services/validation_engine/storage.py` `OutcomeStore`.
+**Implementation:** `services/validation_engine/storage.py`
 
-## Current design
+## Backends
 
-- File-backed JSON: default `data/validation_outcomes.json`
-- In-memory dict + full-file rewrite on each `save` / `update`
-- Wired when live signals exceed `min_alert_score` (`SignalBuilder`)
+| Backend | When used | Notes |
+|---------|-----------|-------|
+| `DbOutcomeStore` | Default via `get_outcome_store()` | SQLite or PostgreSQL through `shared.db_factory.get_database()` |
+| `FileOutcomeStore` | Explicit `path=` (tests) or DB init failure | Atomic write (`tempfile` + `os.replace`) |
 
-## Limitations
+Idempotent upserts key on signal `id` (full UUID hex from `new_signal_id()`).
+SL/TP evaluation policy is unchanged (ambiguous bar → SL first).
 
-| Concern | Impact |
+## Schema
+
+- Migration: `database/migrations/004_validation_outcomes.sql`
+- Also created in adapter `_init_schema` for Postgres/SQLite auto-bootstrap
+- Table: `validation_outcomes`
+
+## Limitations (remaining)
+
+| Concern | Status |
 |---------|--------|
-| Concurrency | Two processes can interleave read/modify/write → lost updates |
-| Multi-host | Local filesystem is not shared across API replicas |
-| Multi-process | Same host, multiple workers → race on the JSON file |
-| Reproducibility | Outcomes depend on which host/process handled the scan |
-| Durability | No transaction / fsync guarantees beyond OS write |
+| Multi-host | **Resolved** when `USE_POSTGRES=true` / shared Postgres |
+| Multi-process (same host, SQLite) | Better than JSON; still prefer Postgres for replicas |
+| File fallback | Single-host only; atomic rewrite only |
+| Legacy JSON import | Not auto-migrated — re-register from live scans or ETL if needed |
 
-## Correctness note
+## Usage
 
-No silent outcome-corruption bug was found beyond these architectural limits. SL/TP evaluation uses the same **SL-first** ambiguous-bar policy as backtest execution.
+```python
+from services.validation_engine import SignalValidator, get_outcome_store
 
-## Follow-up recommendation
-
-Swap `OutcomeStore` for Postgres (schema already foreshadowed in comments) with idempotent signal IDs — without changing validation metrics formulas.
+validator = SignalValidator()  # DB-backed by default
+# tests:
+validator = SignalValidator(store=get_outcome_store(path="/tmp/outcomes.json"))
+```

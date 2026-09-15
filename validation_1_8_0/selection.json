@@ -1,0 +1,506 @@
+{
+  "locked_at": "2026-09-15T16:21:10.393701+00:00",
+  "experiment_version": "1.8.0",
+  "arm": "H4",
+  "baseline_analysis_version": "1.4.0",
+  "selection_criteria": {
+    "min_expectancy": 0.0,
+    "min_profit_factor": 1.0,
+    "min_trades": 20
+  },
+  "test_success_criteria": {
+    "require_positive_expectancy": true,
+    "require_pf_at_least": 1.0,
+    "max_total_r_worse_than_baseline": 5.0
+  },
+  "candidates": [
+    {
+      "name": "h4_baseline_all",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_rank1_only",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_rank_le_2",
+      "max_primary_rank": 2,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_exclude_associated_sweep",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": [
+        "ASSOCIATED_SWEEP"
+      ]
+    },
+    {
+      "name": "h4_liquidity_none_only",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_liquidity_near_or_none",
+      "max_primary_rank": null,
+      "require_primary_rank": false,
+      "liquidity_allowed": [
+        "NEAR_RELEVANT",
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    },
+    {
+      "name": "h4_rank1_exclude_sweep",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "ASSOCIATED_SWEEP",
+        "NEAR_RELEVANT",
+        "NONE",
+        "UNKNOWN"
+      ],
+      "exclude_liquidity": [
+        "ASSOCIATED_SWEEP"
+      ]
+    },
+    {
+      "name": "h4_rank1_liquidity_none",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    }
+  ],
+  "train_metrics_by_policy": {
+    "h4_baseline_all": {
+      "total_trades": 485,
+      "wins": 223,
+      "losses": 262,
+      "breakeven": 0,
+      "win_rate": 46.0,
+      "profit_factor": 1.124,
+      "expectancy": 0.049,
+      "avg_r": 0.049,
+      "max_drawdown_r": 21.923,
+      "max_drawdown_pips": 22878.54,
+      "avg_winner_pips": 1180.08,
+      "avg_loser_pips": -893.75,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 92.8,
+      "total_r": 23.5759
+    },
+    "h4_rank1_only": {
+      "total_trades": 415,
+      "wins": 189,
+      "losses": 226,
+      "breakeven": 0,
+      "win_rate": 45.5,
+      "profit_factor": 1.152,
+      "expectancy": 0.045,
+      "avg_r": 0.045,
+      "max_drawdown_r": 17.858,
+      "max_drawdown_pips": 18253.11,
+      "avg_winner_pips": 1233.57,
+      "avg_loser_pips": -895.58,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 8,
+      "avg_score": 93.8,
+      "total_r": 18.4956
+    },
+    "h4_rank_le_2": {
+      "total_trades": 452,
+      "wins": 206,
+      "losses": 246,
+      "breakeven": 0,
+      "win_rate": 45.6,
+      "profit_factor": 1.141,
+      "expectancy": 0.041,
+      "avg_r": 0.041,
+      "max_drawdown_r": 20.891,
+      "max_drawdown_pips": 19587.04,
+      "avg_winner_pips": 1208.42,
+      "avg_loser_pips": -886.52,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.1,
+      "total_r": 18.5274
+    },
+    "h4_exclude_associated_sweep": {
+      "total_trades": 116,
+      "wins": 44,
+      "losses": 72,
+      "breakeven": 0,
+      "win_rate": 37.9,
+      "profit_factor": 0.742,
+      "expectancy": -0.126,
+      "avg_r": -0.126,
+      "max_drawdown_r": 18.685,
+      "max_drawdown_pips": 21795.64,
+      "avg_winner_pips": 1103.34,
+      "avg_loser_pips": -908.7,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 10,
+      "avg_score": 91.8,
+      "total_r": -14.5661
+    },
+    "h4_liquidity_none_only": {
+      "total_trades": 60,
+      "wins": 28,
+      "losses": 32,
+      "breakeven": 0,
+      "win_rate": 46.7,
+      "profit_factor": 1.202,
+      "expectancy": 0.052,
+      "avg_r": 0.052,
+      "max_drawdown_r": 8.436,
+      "max_drawdown_pips": 5689.89,
+      "avg_winner_pips": 1012.69,
+      "avg_loser_pips": -737.13,
+      "consecutive_wins_max": 4,
+      "consecutive_losses_max": 5,
+      "avg_score": 89.9,
+      "total_r": 3.1338
+    },
+    "h4_liquidity_near_or_none": {
+      "total_trades": 115,
+      "wins": 44,
+      "losses": 71,
+      "breakeven": 0,
+      "win_rate": 38.3,
+      "profit_factor": 0.773,
+      "expectancy": -0.118,
+      "avg_r": -0.118,
+      "max_drawdown_r": 18.685,
+      "max_drawdown_pips": 21721.04,
+      "avg_winner_pips": 1103.34,
+      "avg_loser_pips": -884.69,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 10,
+      "avg_score": 91.8,
+      "total_r": -13.5661
+    },
+    "h4_rank1_exclude_sweep": {
+      "total_trades": 92,
+      "wins": 34,
+      "losses": 58,
+      "breakeven": 0,
+      "win_rate": 37.0,
+      "profit_factor": 0.732,
+      "expectancy": -0.145,
+      "avg_r": -0.145,
+      "max_drawdown_r": 16.883,
+      "max_drawdown_pips": 19359.61,
+      "avg_winner_pips": 1144.51,
+      "avg_loser_pips": -916.44,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 9,
+      "avg_score": 94.2,
+      "total_r": -13.3529
+    },
+    "h4_rank1_liquidity_none": {
+      "total_trades": 45,
+      "wins": 21,
+      "losses": 24,
+      "breakeven": 0,
+      "win_rate": 46.7,
+      "profit_factor": 1.239,
+      "expectancy": 0.069,
+      "avg_r": 0.069,
+      "max_drawdown_r": 7.77,
+      "max_drawdown_pips": 5594.29,
+      "avg_winner_pips": 1028.87,
+      "avg_loser_pips": -726.43,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 5,
+      "avg_score": 93.0,
+      "total_r": 3.0942
+    }
+  },
+  "validation_metrics_by_policy": {
+    "h4_baseline_all": {
+      "total_trades": 473,
+      "wins": 191,
+      "losses": 282,
+      "breakeven": 0,
+      "win_rate": 40.4,
+      "profit_factor": 0.858,
+      "expectancy": -0.081,
+      "avg_r": -0.081,
+      "max_drawdown_r": 55.691,
+      "max_drawdown_pips": 44717.11,
+      "avg_winner_pips": 969.82,
+      "avg_loser_pips": -765.19,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 11,
+      "avg_score": 93.8,
+      "total_r": -38.1977
+    },
+    "h4_rank1_only": {
+      "total_trades": 423,
+      "wins": 178,
+      "losses": 245,
+      "breakeven": 0,
+      "win_rate": 42.1,
+      "profit_factor": 0.921,
+      "expectancy": -0.04,
+      "avg_r": -0.04,
+      "max_drawdown_r": 35.336,
+      "max_drawdown_pips": 28842.46,
+      "avg_winner_pips": 981.34,
+      "avg_loser_pips": -774.23,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 9,
+      "avg_score": 94.5,
+      "total_r": -17.0499
+    },
+    "h4_rank_le_2": {
+      "total_trades": 447,
+      "wins": 184,
+      "losses": 263,
+      "breakeven": 0,
+      "win_rate": 41.2,
+      "profit_factor": 0.889,
+      "expectancy": -0.062,
+      "avg_r": -0.062,
+      "max_drawdown_r": 44.691,
+      "max_drawdown_pips": 36297.86,
+      "avg_winner_pips": 977.34,
+      "avg_loser_pips": -768.94,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 10,
+      "avg_score": 94.2,
+      "total_r": -27.5317
+    },
+    "h4_exclude_associated_sweep": {
+      "total_trades": 144,
+      "wins": 58,
+      "losses": 86,
+      "breakeven": 0,
+      "win_rate": 40.3,
+      "profit_factor": 0.848,
+      "expectancy": -0.085,
+      "avg_r": -0.085,
+      "max_drawdown_r": 22.39,
+      "max_drawdown_pips": 16804.14,
+      "avg_winner_pips": 1003.12,
+      "avg_loser_pips": -798.12,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 9,
+      "avg_score": 93.4,
+      "total_r": -12.31
+    },
+    "h4_liquidity_none_only": {
+      "total_trades": 71,
+      "wins": 29,
+      "losses": 42,
+      "breakeven": 0,
+      "win_rate": 40.8,
+      "profit_factor": 0.961,
+      "expectancy": -0.104,
+      "avg_r": -0.104,
+      "max_drawdown_r": 17.681,
+      "max_drawdown_pips": 12057.79,
+      "avg_winner_pips": 1027.09,
+      "avg_loser_pips": -738.0,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 5,
+      "avg_score": 91.1,
+      "total_r": -7.4047
+    },
+    "h4_liquidity_near_or_none": {
+      "total_trades": 142,
+      "wins": 58,
+      "losses": 84,
+      "breakeven": 0,
+      "win_rate": 40.8,
+      "profit_factor": 0.874,
+      "expectancy": -0.073,
+      "avg_r": -0.073,
+      "max_drawdown_r": 22.39,
+      "max_drawdown_pips": 16443.68,
+      "avg_winner_pips": 1003.12,
+      "avg_loser_pips": -792.78,
+      "consecutive_wins_max": 7,
+      "consecutive_losses_max": 9,
+      "avg_score": 93.5,
+      "total_r": -10.31
+    },
+    "h4_rank1_exclude_sweep": {
+      "total_trades": 120,
+      "wins": 54,
+      "losses": 66,
+      "breakeven": 0,
+      "win_rate": 45.0,
+      "profit_factor": 1.028,
+      "expectancy": 0.024,
+      "avg_r": 0.024,
+      "max_drawdown_r": 12.723,
+      "max_drawdown_pips": 9688.89,
+      "avg_winner_pips": 1026.52,
+      "avg_loser_pips": -816.86,
+      "consecutive_wins_max": 6,
+      "consecutive_losses_max": 7,
+      "avg_score": 95.3,
+      "total_r": 2.8384
+    },
+    "h4_rank1_liquidity_none": {
+      "total_trades": 56,
+      "wins": 26,
+      "losses": 30,
+      "breakeven": 0,
+      "win_rate": 46.4,
+      "profit_factor": 1.227,
+      "expectancy": 0.034,
+      "avg_r": 0.034,
+      "max_drawdown_r": 10.015,
+      "max_drawdown_pips": 7159.68,
+      "avg_winner_pips": 1069.16,
+      "avg_loser_pips": -755.41,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 5,
+      "avg_score": 94.3,
+      "total_r": 1.88
+    }
+  },
+  "selection": {
+    "qualified": true,
+    "selected": {
+      "name": "h4_rank1_liquidity_none",
+      "max_primary_rank": 1,
+      "require_primary_rank": true,
+      "liquidity_allowed": [
+        "NONE"
+      ],
+      "exclude_liquidity": []
+    },
+    "validation_metrics": {
+      "total_trades": 56,
+      "wins": 26,
+      "losses": 30,
+      "breakeven": 0,
+      "win_rate": 46.4,
+      "profit_factor": 1.227,
+      "expectancy": 0.034,
+      "avg_r": 0.034,
+      "max_drawdown_r": 10.015,
+      "max_drawdown_pips": 7159.68,
+      "avg_winner_pips": 1069.16,
+      "avg_loser_pips": -755.41,
+      "consecutive_wins_max": 5,
+      "consecutive_losses_max": 5,
+      "avg_score": 94.3,
+      "total_r": 1.88
+    },
+    "reason": "met_validation_gates",
+    "criteria": {
+      "min_expectancy": 0.0,
+      "min_profit_factor": 1.0,
+      "min_trades": 20
+    },
+    "ranking": [
+      {
+        "name": "h4_rank1_liquidity_none",
+        "qualified": true,
+        "expectancy": 0.034,
+        "profit_factor": 1.227,
+        "total_trades": 56,
+        "total_r": 1.88
+      },
+      {
+        "name": "h4_rank1_exclude_sweep",
+        "qualified": true,
+        "expectancy": 0.024,
+        "profit_factor": 1.028,
+        "total_trades": 120,
+        "total_r": 2.8384
+      },
+      {
+        "name": "h4_rank1_only",
+        "qualified": false,
+        "expectancy": -0.04,
+        "profit_factor": 0.921,
+        "total_trades": 423,
+        "total_r": -17.0499
+      },
+      {
+        "name": "h4_rank_le_2",
+        "qualified": false,
+        "expectancy": -0.062,
+        "profit_factor": 0.889,
+        "total_trades": 447,
+        "total_r": -27.5317
+      },
+      {
+        "name": "h4_liquidity_near_or_none",
+        "qualified": false,
+        "expectancy": -0.073,
+        "profit_factor": 0.874,
+        "total_trades": 142,
+        "total_r": -10.31
+      },
+      {
+        "name": "h4_baseline_all",
+        "qualified": false,
+        "expectancy": -0.081,
+        "profit_factor": 0.858,
+        "total_trades": 473,
+        "total_r": -38.1977
+      },
+      {
+        "name": "h4_exclude_associated_sweep",
+        "qualified": false,
+        "expectancy": -0.085,
+        "profit_factor": 0.848,
+        "total_trades": 144,
+        "total_r": -12.31
+      },
+      {
+        "name": "h4_liquidity_none_only",
+        "qualified": false,
+        "expectancy": -0.104,
+        "profit_factor": 0.961,
+        "total_trades": 71,
+        "total_r": -7.4047
+      }
+    ]
+  },
+  "test_not_evaluated_yet": false,
+  "selection_sha256": "71ac6ee46ffc57199d6b86698e060832370c72263c6eadee5858d819e19123f7"
+}

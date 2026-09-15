@@ -1,0 +1,96 @@
+{
+  "evaluated_at": "2026-09-15T15:28:23.445716+00:00",
+  "experiment_version": "1.7.0",
+  "arm": "H2",
+  "exit_policy": {
+    "name": "h2_tp_rr_2_5",
+    "target_rr": 2.5
+  },
+  "selection_qualified": false,
+  "baseline_test_signals": 246,
+  "filtered_test_trades": 246,
+  "metrics": {
+    "total_trades": 246,
+    "wins": 70,
+    "losses": 176,
+    "breakeven": 0,
+    "win_rate": 28.5,
+    "profit_factor": 0.764,
+    "expectancy": -0.143,
+    "avg_r": -0.143,
+    "max_drawdown_r": 44.285,
+    "max_drawdown_pips": 44789.66,
+    "avg_winner_pips": 1525.08,
+    "avg_loser_pips": -793.69,
+    "consecutive_wins_max": 6,
+    "consecutive_losses_max": 17,
+    "avg_score": 93.0,
+    "total_r": -35.2323,
+    "gross_profit": 1067.55375,
+    "gross_loss": -1396.898571,
+    "ambiguous_trades": 2,
+    "win_rate_se_approx": 2.88,
+    "win_rate_ci95_approx": [
+      22.8,
+      34.1
+    ]
+  },
+  "baseline_resim_metrics": {
+    "total_trades": 246,
+    "wins": 95,
+    "losses": 151,
+    "breakeven": 0,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "avg_r": -0.091,
+    "max_drawdown_r": 30.329,
+    "max_drawdown_pips": 35069.46,
+    "avg_winner_pips": 1006.75,
+    "avg_loser_pips": -831.97,
+    "consecutive_wins_max": 6,
+    "consecutive_losses_max": 17,
+    "avg_score": 93.0,
+    "total_r": -22.434,
+    "gross_profit": 956.414286,
+    "gross_loss": -1256.273571,
+    "ambiguous_trades": 4,
+    "win_rate_se_approx": 3.1,
+    "win_rate_ci95_approx": [
+      32.5,
+      44.7
+    ]
+  },
+  "success": {
+    "passed": false,
+    "checks": {
+      "positive_expectancy": false,
+      "profit_factor": false,
+      "total_r_not_worse_than_baseline_tolerance": false
+    },
+    "criteria": {
+      "require_positive_expectancy": true,
+      "require_pf_at_least": 1.0,
+      "max_total_r_worse_than_baseline": 5.0
+    },
+    "baseline_total_r": -22.434,
+    "total_r_floor": -27.434,
+    "observed": {
+      "expectancy": -0.143,
+      "profit_factor": 0.764,
+      "total_r": -35.2323,
+      "total_trades": 246,
+      "win_rate": 28.5
+    }
+  },
+  "baseline_1_4_0": {
+    "trades": 246,
+    "win_rate": 38.6,
+    "profit_factor": 0.761,
+    "expectancy": -0.091,
+    "total_r": -22.434,
+    "max_drawdown_r": 30.329
+  },
+  "source_signals": "validation/signals.jsonl",
+  "note": "TEST uses locked 1.4.0 OOS signals with remapped TP under selected ExitPolicy; analysis fingerprints unchanged."
+}

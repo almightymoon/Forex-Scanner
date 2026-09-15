@@ -24,6 +24,7 @@ experiment (`docs/EXPERIMENT_PROTOCOL_1.5.0.md`).
 | Session-aware trend | ✅ | `trend/session_context.py` |
 | Paper-scan / live-path smoke | ✅ | `scripts/smoke_structure_live_path.py` |
 | Decision engine (live) | ✅ structure + liquidity aware | `services/quant_engine/decision/` |
+| Validation outcome store | ✅ DB-backed (Postgres/SQLite) | `validation_engine/storage.py` |
 | Live broker execution | ⏳ Phase 2 | — |
 
 ---

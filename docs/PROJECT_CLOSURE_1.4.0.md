@@ -59,7 +59,7 @@ value of rank/alignment labels. Execution costs are **not** the primary cause
 | Item | Status |
 |------|--------|
 | Live broker execution | Phase 2 (roadmap) |
-| Multi-host validation persistence | Known gap (non-analytical) |
+| Multi-host validation persistence | Closed via DB `validation_outcomes` (see VALIDATION_PERSISTENCE.md) |
 | Prospective post-2026H1 OOS dataset | Not locked; not substituted |
 | Versioned optimization (1.5.0+) | Separate experiment — see `EXPERIMENT_PROTOCOL_1.5.0.md` |
 | Paper/live shadow of frozen 1.4.0 | Optional ops track; does not change analytics |

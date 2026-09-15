@@ -33,12 +33,19 @@ export default function Dashboard() {
   const [customPairs, setCustomPairs] = useState<string[]>(() => loadCustomPairs());
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [currencyFilter, setCurrencyFilter] = useState<string | null>(null);
+  const [directionFilter, setDirectionFilter] = useState<"all" | "buy" | "sell">("all");
+  const [timeframeFilter, setTimeframeFilter] = useState<string>("all");
 
-  const filteredSignals = currencyFilter
-    ? signals.filter(
-        (s) => s.symbol.startsWith(currencyFilter) || s.symbol.slice(3).startsWith(currencyFilter),
-      )
-    : signals;
+  const filteredSignals = signals.filter((s) => {
+    if (currencyFilter) {
+      const hit =
+        s.symbol.startsWith(currencyFilter) || s.symbol.slice(3).startsWith(currencyFilter);
+      if (!hit) return false;
+    }
+    if (directionFilter !== "all" && s.direction !== directionFilter) return false;
+    if (timeframeFilter !== "all" && String(s.timeframe) !== timeframeFilter) return false;
+    return true;
+  });
 
   const loadSignals = async () => {
     // Avoid stacking refreshes while a long scan is in flight.
@@ -134,6 +141,32 @@ export default function Dashboard() {
                 <option value={90}>90+ Elite</option>
               </select>
             </div>
+            <div className="filter-group">
+              <label htmlFor="direction-filter">Direction</label>
+              <select
+                id="direction-filter"
+                value={directionFilter}
+                onChange={(e) => setDirectionFilter(e.target.value as "all" | "buy" | "sell")}
+              >
+                <option value="all">All</option>
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <label htmlFor="tf-filter">Timeframe</label>
+              <select
+                id="tf-filter"
+                value={timeframeFilter}
+                onChange={(e) => setTimeframeFilter(e.target.value)}
+              >
+                <option value="all">All</option>
+                <option value="M15">M15</option>
+                <option value="H1">H1</option>
+                <option value="H4">H4</option>
+                <option value="D1">D1</option>
+              </select>
+            </div>
             <button type="button" className="btn-primary" onClick={loadSignals} disabled={loading}>
               {loading ? (
                 <><span className="btn-spinner" /> Scanning</>
@@ -219,12 +252,16 @@ export default function Dashboard() {
                   <p>
                     {currencyFilter
                       ? `No setups above ${minScore} for ${currencyFilter} pairs right now.`
-                      : `No setups above ${minScore} points right now.`}
+                      : directionFilter !== "all" || timeframeFilter !== "all"
+                        ? `No setups match the current filters (score ${minScore}+).`
+                        : `No setups above ${minScore} points right now.`}
                   </p>
                   <span>
                     {currencyFilter
                       ? "Clear the calendar filter or lower the minimum score."
-                      : "Try lowering the minimum score filter."}
+                      : directionFilter !== "all" || timeframeFilter !== "all"
+                        ? "Clear direction/timeframe filters or lower the minimum score."
+                        : "Try lowering the minimum score filter."}
                   </span>
                 </div>
               ) : (
