@@ -8,9 +8,17 @@ interface PairSearchProps {
   customPairs: string[];
   onAdd: (symbol: string) => void;
   onRemove: (symbol: string) => void;
+  alertSymbols?: string[];
+  onToggleAlert?: (symbol: string, enabled: boolean) => void;
 }
 
-export function PairSearch({ customPairs, onAdd, onRemove }: PairSearchProps) {
+export function PairSearch({
+  customPairs,
+  onAdd,
+  onRemove,
+  alertSymbols = [],
+  onToggleAlert,
+}: PairSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SymbolSearchResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -127,19 +135,33 @@ export function PairSearch({ customPairs, onAdd, onRemove }: PairSearchProps) {
 
       {customPairs.length > 0 && (
         <div className="custom-pairs-chips">
-          {customPairs.map((sym) => (
-            <span key={sym} className="pair-chip">
-              {sym}
-              <button
-                type="button"
-                className="pair-chip-remove"
-                onClick={() => onRemove(sym)}
-                aria-label={`Remove ${sym}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
+          {customPairs.map((sym) => {
+            const alerting = alertSymbols.includes(sym);
+            return (
+              <span key={sym} className={`pair-chip${alerting ? " is-alerting" : ""}`}>
+                {sym}
+                {onToggleAlert ? (
+                  <button
+                    type="button"
+                    className={`pair-chip-alert${alerting ? " is-on" : ""}`}
+                    onClick={() => onToggleAlert(sym, !alerting)}
+                    aria-label={alerting ? `Disable alerts for ${sym}` : `Enable alerts for ${sym}`}
+                    title={alerting ? "Alerts on" : "Alerts off"}
+                  >
+                    ✦
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="pair-chip-remove"
+                  onClick={() => onRemove(sym)}
+                  aria-label={`Remove ${sym}`}
+                >
+                  ×
+                </button>
+              </span>
+            );
+          })}
         </div>
       )}
     </div>

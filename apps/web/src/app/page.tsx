@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SignalCard } from "@/components/SignalCard";
 import { EconomicCalendar } from "@/components/EconomicCalendar";
 import { Heatmap } from "@/components/Heatmap";
-import type { ScannerSignal, BacktestResult } from "@/lib/api";
-import { fetchDashboard, fetchCandles, fetchBacktest } from "@/lib/api";
+import type { ScannerSignal, BacktestResult, ValidationReportPayload, HealthPayload } from "@/lib/api";
+import { fetchDashboard, fetchCandles, fetchBacktest, fetchValidation, fetchHealth } from "@/lib/api";
 import { DetailPanel } from "@/components/DetailPanel";
 import { PairSearch } from "@/components/PairSearch";
 import { loadCustomPairs, addCustomPair, removeCustomPair } from "@/lib/watchlist";
+import {
+  loadAlertPrefs,
+  setAlertSymbol,
+  pruneAlertSymbols,
+  type AlertPrefs,
+} from "@/lib/alertPrefs";
 import { useHeaderHeight } from "@/hooks/useHeaderHeight";
 
 interface Candle {
@@ -35,6 +41,11 @@ export default function Dashboard() {
   const [currencyFilter, setCurrencyFilter] = useState<string | null>(null);
   const [directionFilter, setDirectionFilter] = useState<"all" | "buy" | "sell">("all");
   const [timeframeFilter, setTimeframeFilter] = useState<string>("all");
+  const [validation, setValidation] = useState<ValidationReportPayload | null>(null);
+  const [health, setHealth] = useState<HealthPayload | null>(null);
+  const [alertPrefs, setAlertPrefs] = useState<AlertPrefs>(() => loadAlertPrefs());
+  const [alertHits, setAlertHits] = useState<ScannerSignal[]>([]);
+  const seenAlerts = useRef<Set<string>>(new Set());
 
   const filteredSignals = signals.filter((s) => {
     if (currencyFilter) {
@@ -62,6 +73,26 @@ export default function Dashboard() {
           ? new Date(dashboard.scanned_at).toLocaleTimeString()
           : new Date().toLocaleTimeString(),
       );
+
+      const prefs = loadAlertPrefs();
+      const hits = dashboard.signals.filter(
+        (s) =>
+          prefs.symbols.includes(s.symbol.toUpperCase()) &&
+          s.score >= prefs.minScore,
+      );
+      setAlertHits(hits);
+      for (const hit of hits) {
+        const key = `${hit.symbol}-${hit.timeframe}-${hit.direction}-${hit.score}`;
+        if (seenAlerts.current.has(key)) continue;
+        seenAlerts.current.add(key);
+        if (typeof window !== "undefined" && "Notification" in window) {
+          if (Notification.permission === "granted") {
+            new Notification(`${hit.symbol} ${hit.direction.toUpperCase()}`, {
+              body: `Score ${hit.score} · ${hit.timeframe} · ${hit.rating}`,
+            });
+          }
+        }
+      }
     } catch (err) {
       console.error("Scanner fetch failed:", err);
       setFetchError(err instanceof Error ? err.message : "Failed to load scanner data");
@@ -94,9 +125,55 @@ export default function Dashboard() {
   }, [minScore, customPairs]);
 
   useEffect(() => {
+    setAlertPrefs((prev) => pruneAlertSymbols(customPairs, prev));
+  }, [customPairs]);
+
+  useEffect(() => {
     if (!selected) { setCandles([]); setBacktest(null); return; }
     fetchCandles(selected.symbol, selected.timeframe).then(setCandles).catch(() => setCandles([]));
     fetchBacktest(selected.symbol, selected.timeframe).then(setBacktest).catch(() => setBacktest(null));
+  }, [selected]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchValidation()
+      .then((report) => {
+        if (!cancelled) setValidation(report);
+      })
+      .catch(() => {
+        if (!cancelled) setValidation(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lastScan]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadHealth = () => {
+      fetchHealth()
+        .then((payload) => {
+          if (!cancelled) setHealth(payload);
+        })
+        .catch(() => {
+          if (!cancelled) setHealth(null);
+        });
+    };
+    loadHealth();
+    const interval = setInterval(loadHealth, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [selected]);
 
   useEffect(() => {
@@ -109,6 +186,28 @@ export default function Dashboard() {
   const buyCount = filteredSignals.filter((s) => s.direction === "buy").length;
   const sellCount = filteredSignals.filter((s) => s.direction === "sell").length;
   const eliteCount = filteredSignals.filter((s) => s.rating === "elite").length;
+  const healthStatus = health?.status || (fetchError ? "down" : "unknown");
+  const healthLabel =
+    healthStatus === "healthy"
+      ? "Live"
+      : healthStatus === "warning"
+        ? "Simulated"
+        : healthStatus === "degraded"
+          ? "Degraded"
+          : healthStatus === "down"
+            ? "Offline"
+            : "Checking";
+  const healthTitle = [
+    health?.provider ? `Provider: ${health.provider}` : null,
+    health?.provider_status ? `Status: ${health.provider_status}` : null,
+    health?.pipeline_version ? `Pipeline: ${health.pipeline_version}` : null,
+    health?.validation_store?.backend
+      ? `Outcomes: ${health.validation_store.backend}`
+      : null,
+    health?.warning || null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="app-shell">
@@ -125,12 +224,27 @@ export default function Dashboard() {
           <PairSearch
             customPairs={customPairs}
             onAdd={(sym) => setCustomPairs((prev) => addCustomPair(sym, prev))}
-            onRemove={(sym) => setCustomPairs((prev) => removeCustomPair(sym, prev))}
+            onRemove={(sym) => {
+              setCustomPairs((prev) => removeCustomPair(sym, prev));
+              setAlertPrefs((prev) => setAlertSymbol(sym, false, prev));
+            }}
+            alertSymbols={alertPrefs.symbols}
+            onToggleAlert={(sym, enabled) => {
+              setAlertPrefs((prev) => setAlertSymbol(sym, enabled, prev));
+              if (enabled && typeof window !== "undefined" && "Notification" in window) {
+                if (Notification.permission === "default") {
+                  void Notification.requestPermission();
+                }
+              }
+            }}
           />
           <div className="header-controls">
-            <div className="live-pill">
+            <div
+              className={`live-pill live-pill-${healthStatus === "healthy" ? "ok" : healthStatus === "warning" ? "warn" : healthStatus === "degraded" || healthStatus === "down" ? "bad" : "pending"}`}
+              title={healthTitle || undefined}
+            >
               <span className="live-dot" />
-              Live
+              {healthLabel}
             </div>
             <div className="filter-group">
               <label htmlFor="min-score">Min score</label>
@@ -186,6 +300,33 @@ export default function Dashboard() {
             <span>Check API logs or try Refresh. If using Twelve Data free tier, enable Polygon fallback.</span>
           </div>
         )}
+
+        {alertHits.length > 0 && (
+          <div className="alert-banner" role="status">
+            <span className="alert-banner-label">Watch alerts</span>
+            <div className="alert-banner-list">
+              {alertHits.slice(0, 6).map((hit) => (
+                <button
+                  key={`${hit.symbol}-${hit.timeframe}-${hit.direction}`}
+                  type="button"
+                  className="alert-banner-chip"
+                  onClick={() => setSelected(hit)}
+                >
+                  {hit.symbol} {hit.direction.toUpperCase()} · {hit.score}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="alert-banner-dismiss"
+              onClick={() => setAlertHits([])}
+              aria-label="Dismiss alerts"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         <section className="stats-bar">
           <div className="stat-card">
             <span className="stat-value accent">{filteredSignals.length}</span>
@@ -210,6 +351,35 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+
+        {validation?.metrics && (validation.metrics.closed_signals ?? 0) > 0 && (
+          <section className="validation-strip" aria-label="Validation summary">
+            <div className="validation-strip-main">
+              <span className="validation-strip-label">Tracked outcomes</span>
+              <span className="validation-strip-metric">
+                <strong>
+                  {validation.metrics.win_rate != null
+                    ? `${validation.metrics.win_rate}%`
+                    : "—"}
+                </strong>{" "}
+                win rate
+              </span>
+              <span className="validation-strip-sep" aria-hidden>
+                ·
+              </span>
+              <span className="validation-strip-metric">
+                {validation.metrics.wins ?? 0}W / {validation.metrics.losses ?? 0}L
+                <span className="validation-strip-muted">
+                  {" "}
+                  ({validation.metrics.closed_signals} closed)
+                </span>
+              </span>
+            </div>
+            {validation.recommendations?.[0] ? (
+              <p className="validation-strip-note">{validation.recommendations[0]}</p>
+            ) : null}
+          </section>
+        )}
 
         {filteredSignals.length > 0 && (
           <section className="panel heatmap-section">
@@ -270,6 +440,7 @@ export default function Dashboard() {
                     key={`${signal.symbol}-${signal.timeframe}`}
                     signal={signal}
                     selected={selected?.symbol === signal.symbol}
+                    watched={customPairs.includes(signal.symbol.toUpperCase())}
                     onSelect={setSelected}
                   />
                 ))
@@ -301,6 +472,9 @@ export default function Dashboard() {
             backtest={backtest}
             onClose={() => setSelected(null)}
             onSignalChange={setSelected}
+            customPairs={customPairs}
+            onWatchlistAdd={(sym) => setCustomPairs((prev) => addCustomPair(sym, prev))}
+            onWatchlistRemove={(sym) => setCustomPairs((prev) => removeCustomPair(sym, prev))}
           />
         </div>
       )}

@@ -25,10 +25,11 @@ const BREAKDOWN_LABELS: Record<string, string> = {
 interface SignalCardProps {
   signal: ScannerSignal;
   selected?: boolean;
+  watched?: boolean;
   onSelect?: (signal: ScannerSignal) => void;
 }
 
-export function SignalCard({ signal, selected, onSelect }: SignalCardProps) {
+export function SignalCard({ signal, selected, watched, onSelect }: SignalCardProps) {
   const ratingColor = RATING_COLORS[signal.rating] || "#64748b";
   const info = getSymbol(signal.symbol);
   const isGold = signal.symbol === "XAUUSD";
@@ -42,6 +43,7 @@ export function SignalCard({ signal, selected, onSelect }: SignalCardProps) {
         "signal-card",
         isMetal ? "signal-card-gold" : "",
         selected ? "signal-card-selected" : "",
+        watched ? "signal-card-watched" : "",
       ].filter(Boolean).join(" ")}
       onClick={() => onSelect?.(signal)}
       role="button"

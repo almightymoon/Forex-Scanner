@@ -23,6 +23,9 @@ interface DetailPanelProps {
   onClose: () => void;
   /** Keep parent selection in sync when TF reload returns a new signal. */
   onSignalChange?: (signal: ScannerSignal) => void;
+  customPairs?: string[];
+  onWatchlistAdd?: (symbol: string) => void;
+  onWatchlistRemove?: (symbol: string) => void;
 }
 
 /** Interactive timeframes for detail analysis. */
@@ -52,6 +55,9 @@ export function DetailPanel({
   backtest: initialBacktest,
   onClose,
   onSignalChange,
+  customPairs = [],
+  onWatchlistAdd,
+  onWatchlistRemove,
 }: DetailPanelProps) {
   const alertTimeframe = useRef(initialSignal.timeframe);
   const requestId = useRef(0);
@@ -62,6 +68,7 @@ export function DetailPanel({
   const [timeframe, setTimeframe] = useState(initialSignal.timeframe);
   const [loadingTf, setLoadingTf] = useState(false);
   const [tfError, setTfError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // New symbol from scanner — reset local analysis state.
   useEffect(() => {
@@ -129,6 +136,27 @@ export function DetailPanel({
     signal.explainability?.confidence_pct
     ?? Math.round((signal.confidence ?? signal.score / 100) * 100);
   const alertTf = alertTimeframe.current;
+  const onWatchlist = customPairs.includes(signal.symbol.toUpperCase());
+
+  const copyLevels = useCallback(async () => {
+    const lines = [
+      `${signal.symbol} ${signal.direction.toUpperCase()} · ${signal.timeframe} · score ${signal.score}`,
+      signal.entry_zone_low != null
+        ? `Entry: ${formatPriceRange(signal.symbol, signal.entry_zone_low, signal.entry_zone_high ?? signal.entry_zone_low)}`
+        : null,
+      signal.stop_loss != null ? `SL: ${formatPrice(signal.symbol, signal.stop_loss)}` : null,
+      signal.take_profit_1 != null ? `TP1: ${formatPrice(signal.symbol, signal.take_profit_1)}` : null,
+      signal.take_profit_2 != null ? `TP2: ${formatPrice(signal.symbol, signal.take_profit_2)}` : null,
+      signal.risk_reward != null ? `R:R ${signal.risk_reward}:1` : null,
+    ].filter(Boolean);
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }, [signal]);
 
   return (
     <div className={`detail-panel detail-panel-full${loadingTf ? " is-tf-loading" : ""}`}>
@@ -150,12 +178,30 @@ export function DetailPanel({
           </p>
         </div>
 
-        <div className="detail-top-badges">
-          <span className={`detail-dir ${signal.direction}`}>{signal.direction.toUpperCase()}</span>
-          <span className="detail-score-chip" style={{ color: scoreColor }}>
-            {signal.score}<span>/100</span>
-          </span>
-          <span className={`rating-pill-inline ${signal.rating}`}>{signal.rating}</span>
+        <div className="detail-top-actions">
+          {onWatchlistAdd && onWatchlistRemove ? (
+            <button
+              type="button"
+              className={`detail-action-btn${onWatchlist ? " is-on" : ""}`}
+              onClick={() =>
+                onWatchlist
+                  ? onWatchlistRemove(signal.symbol)
+                  : onWatchlistAdd(signal.symbol)
+              }
+            >
+              {onWatchlist ? "Watching" : "Watch"}
+            </button>
+          ) : null}
+          <button type="button" className="detail-action-btn" onClick={copyLevels}>
+            {copied ? "Copied" : "Copy levels"}
+          </button>
+          <div className="detail-top-badges">
+            <span className={`detail-dir ${signal.direction}`}>{signal.direction.toUpperCase()}</span>
+            <span className="detail-score-chip" style={{ color: scoreColor }}>
+              {signal.score}<span>/100</span>
+            </span>
+            <span className={`rating-pill-inline ${signal.rating}`}>{signal.rating}</span>
+          </div>
         </div>
       </header>
 

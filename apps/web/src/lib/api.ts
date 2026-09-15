@@ -327,6 +327,23 @@ export async function fetchStats(): Promise<{ total_scans: number; elite_setups:
   return data.stats || { total_scans: 0, elite_setups: 0, scans_today: 0 };
 }
 
+export interface HealthPayload {
+  status: string;
+  provider?: string;
+  provider_status?: string;
+  latency_ms?: number | null;
+  simulated?: boolean;
+  pipeline_version?: string;
+  validation_store?: { backend?: string; type?: string; error?: string };
+  warning?: string;
+}
+
+export async function fetchHealth(): Promise<HealthPayload | null> {
+  const res = await apiFetch(`/health`, { cache: "no-store" });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function fetchCandles(symbol: string, timeframe = "H1"): Promise<Array<{ timestamp: string; open: number; high: number; low: number; close: number }>> {
   const res = await apiFetch(`/api/v1/market/${symbol}/candles?timeframe=${timeframe}&count=100`);
   if (!res.ok) return [];
@@ -368,6 +385,34 @@ export interface Plan {
 
 export async function fetchBacktest(symbol: string, timeframe = "H1"): Promise<BacktestResult | null> {
   const res = await apiFetch(`/api/v1/backtest/${symbol}?timeframe=${timeframe}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export interface ValidationReportPayload {
+  scope: string;
+  metrics: {
+    total_signals?: number;
+    closed_signals?: number;
+    wins?: number;
+    losses?: number;
+    win_rate?: number;
+    avg_score_winners?: number;
+    avg_score_losers?: number;
+  };
+  recent_outcomes?: Array<{
+    symbol: string;
+    direction: string;
+    score: number;
+    outcome: string | null;
+    pnl_pips: number;
+  }>;
+  recommendations?: string[];
+}
+
+export async function fetchValidation(symbol?: string): Promise<ValidationReportPayload | null> {
+  const q = symbol ? `?symbol=${encodeURIComponent(symbol)}` : "";
+  const res = await apiFetch(`/api/v1/validation${q}`);
   if (!res.ok) return null;
   return res.json();
 }
