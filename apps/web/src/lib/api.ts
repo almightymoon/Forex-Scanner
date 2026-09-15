@@ -336,6 +336,26 @@ export interface HealthPayload {
   pipeline_version?: string;
   validation_store?: { backend?: string; type?: string; error?: string };
   warning?: string;
+  paper_broker?: {
+    enabled?: boolean;
+    open?: number;
+    closed?: number;
+    cancelled?: number;
+    metrics?: {
+      win_rate?: number;
+      expectancy?: number;
+      total_trades?: number;
+      wins?: number;
+      losses?: number;
+    };
+    error?: string;
+  };
+  broker_venue?: {
+    venue?: string;
+    ready?: boolean;
+    orders_armed?: boolean;
+    selected?: string;
+  };
 }
 
 export async function fetchHealth(): Promise<HealthPayload | null> {

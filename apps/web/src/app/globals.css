@@ -38,6 +38,7 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -50,11 +51,12 @@ body {
 
 /* Ambient background */
 .app-shell {
+  --scroll-shift: 0px;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(52, 211, 153, 0.06), transparent),
-    radial-gradient(ellipse 50% 30% at 0% 100%, rgba(251, 191, 36, 0.04), transparent),
+    radial-gradient(ellipse 80% 50% at 50% calc(-20% + var(--scroll-shift)), rgba(99, 102, 241, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 100% calc(0% + var(--scroll-shift)), rgba(52, 211, 153, 0.06), transparent),
+    radial-gradient(ellipse 50% 30% at 0% calc(100% - var(--scroll-shift)), rgba(251, 191, 36, 0.04), transparent),
     var(--bg-base);
 }
 
@@ -71,6 +73,19 @@ body {
   backdrop-filter: blur(16px) saturate(1.4);
   border-bottom: 1px solid var(--border-subtle);
   overflow: visible;
+  transition:
+    padding 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.header.is-scrolled {
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  background: rgba(7, 8, 12, 0.88);
+  border-bottom-color: var(--border-strong);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .header-brand {
@@ -551,6 +566,51 @@ button {
   padding: 1.25rem 1.75rem 2.5rem;
 }
 
+/* Scroll reveal — section + card entrance */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sticky panels: opacity-only so transform doesn't kill position:sticky */
+.scroll-reveal.scroll-reveal-fade {
+  transform: none;
+}
+
+.scroll-reveal-card {
+  transition-duration: 0.45s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .header,
+  .header.is-scrolled {
+    transition: none;
+  }
+
+  .app-shell {
+    --scroll-shift: 0px;
+  }
+}
+
 .panel {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -749,6 +809,15 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 0.875rem;
+}
+
+.signals-grid > .scroll-reveal {
+  min-width: 0;
+  height: 100%;
+}
+
+.signals-grid > .scroll-reveal > .signal-card {
+  height: 100%;
 }
 
 /* ─── Signal cards ─── */
@@ -1314,6 +1383,15 @@ button {
   font-size: 0.8125rem;
   color: var(--text-muted);
   max-width: 36rem;
+}
+
+.paper-strip {
+  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.paper-strip .validation-strip-label {
+  color: #93c5fd;
 }
 
 .detail-score-chip {

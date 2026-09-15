@@ -233,9 +233,20 @@ async def health(market_data: MarketDataDep, pipeline: PipelineDep):
     except Exception as exc:
         payload["validation_store"] = {"backend": "unavailable", "error": str(exc)[:120]}
     try:
-        from services.broker_service import paper_broker_enabled, venue_status
+        from services.broker_service import get_paper_broker, paper_broker_enabled, venue_status
 
-        payload["paper_broker"] = {"enabled": paper_broker_enabled()}
+        book = {}
+        try:
+            book = get_paper_broker().summary()
+        except Exception as book_exc:
+            book = {"error": str(book_exc)[:120]}
+        payload["paper_broker"] = {
+            "enabled": paper_broker_enabled(),
+            "open": book.get("open"),
+            "closed": book.get("closed"),
+            "cancelled": book.get("cancelled"),
+            "metrics": book.get("metrics"),
+        }
         payload["broker_venue"] = venue_status()
     except Exception as exc:
         payload["paper_broker"] = {"enabled": False, "error": str(exc)[:120]}

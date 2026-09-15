@@ -18,6 +18,8 @@ Source: `scripts/status_xauusd_h1_post_2026h1_accrual.py`
 
 Helper: `PYTHONPATH=. python scripts/ingest_and_check_h5.py` — discovers MT5-scripts exports, attempts ingest, prints H5 gate.
 
+Export runbook: [MT5-scripts/README.md](../MT5-scripts/README.md) + `tools/mt5/ExportXAUUSDH1Post2026H1.mq5`.
+
 ## Commands
 
 ```bash

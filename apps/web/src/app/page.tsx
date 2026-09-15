@@ -8,6 +8,7 @@ import type { ScannerSignal, BacktestResult, ValidationReportPayload, HealthPayl
 import { fetchDashboard, fetchCandles, fetchBacktest, fetchValidation, fetchHealth } from "@/lib/api";
 import { DetailPanel } from "@/components/DetailPanel";
 import { PairSearch } from "@/components/PairSearch";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { loadCustomPairs, addCustomPair, removeCustomPair } from "@/lib/watchlist";
 import {
   loadAlertPrefs,
@@ -16,6 +17,7 @@ import {
   type AlertPrefs,
 } from "@/lib/alertPrefs";
 import { useHeaderHeight } from "@/hooks/useHeaderHeight";
+import { useScrollEffects } from "@/hooks/useScrollEffects";
 
 interface Candle {
   timestamp: string;
@@ -27,6 +29,7 @@ interface Candle {
 
 export default function Dashboard() {
   useHeaderHeight();
+  const { scrolled } = useScrollEffects();
   const [signals, setSignals] = useState<ScannerSignal[]>([]);
   const [selected, setSelected] = useState<ScannerSignal | null>(null);
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -204,14 +207,23 @@ export default function Dashboard() {
     health?.validation_store?.backend
       ? `Outcomes: ${health.validation_store.backend}`
       : null,
+    health?.paper_broker?.enabled
+      ? `Paper: ${health.paper_broker.open ?? 0} open / ${health.paper_broker.closed ?? 0} closed`
+      : null,
+    health?.broker_venue
+      ? `Venue: ${health.broker_venue.selected || health.broker_venue.venue}${health.broker_venue.orders_armed ? " (armed)" : ""}`
+      : null,
     health?.warning || null,
   ]
     .filter(Boolean)
     .join(" · ");
 
+  const paper = health?.paper_broker;
+  const paperClosed = paper?.closed ?? 0;
+
   return (
     <div className="app-shell">
-      <header className="header">
+      <header className={`header${scrolled ? " is-scrolled" : ""}`}>
         <div className="header-brand">
           <div className="logo-mark" aria-hidden>FX</div>
           <div>
@@ -302,32 +314,34 @@ export default function Dashboard() {
         )}
 
         {alertHits.length > 0 && (
-          <div className="alert-banner" role="status">
-            <span className="alert-banner-label">Watch alerts</span>
-            <div className="alert-banner-list">
-              {alertHits.slice(0, 6).map((hit) => (
-                <button
-                  key={`${hit.symbol}-${hit.timeframe}-${hit.direction}`}
-                  type="button"
-                  className="alert-banner-chip"
-                  onClick={() => setSelected(hit)}
-                >
-                  {hit.symbol} {hit.direction.toUpperCase()} · {hit.score}
-                </button>
-              ))}
+          <ScrollReveal delayMs={40}>
+            <div className="alert-banner" role="status">
+              <span className="alert-banner-label">Watch alerts</span>
+              <div className="alert-banner-list">
+                {alertHits.slice(0, 6).map((hit) => (
+                  <button
+                    key={`${hit.symbol}-${hit.timeframe}-${hit.direction}`}
+                    type="button"
+                    className="alert-banner-chip"
+                    onClick={() => setSelected(hit)}
+                  >
+                    {hit.symbol} {hit.direction.toUpperCase()} · {hit.score}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="alert-banner-dismiss"
+                onClick={() => setAlertHits([])}
+                aria-label="Dismiss alerts"
+              >
+                Dismiss
+              </button>
             </div>
-            <button
-              type="button"
-              className="alert-banner-dismiss"
-              onClick={() => setAlertHits([])}
-              aria-label="Dismiss alerts"
-            >
-              Dismiss
-            </button>
-          </div>
+          </ScrollReveal>
         )}
 
-        <section className="stats-bar">
+        <ScrollReveal as="section" className="stats-bar" delayMs={60}>
           <div className="stat-card">
             <span className="stat-value accent">{filteredSignals.length}</span>
             <span className="stat-label">Active signals</span>
@@ -350,10 +364,10 @@ export default function Dashboard() {
               <span className="stat-label">Elite</span>
             </div>
           )}
-        </section>
+        </ScrollReveal>
 
         {validation?.metrics && (validation.metrics.closed_signals ?? 0) > 0 && (
-          <section className="validation-strip" aria-label="Validation summary">
+          <ScrollReveal as="section" className="validation-strip" delayMs={100} aria-label="Validation summary">
             <div className="validation-strip-main">
               <span className="validation-strip-label">Tracked outcomes</span>
               <span className="validation-strip-metric">
@@ -378,11 +392,45 @@ export default function Dashboard() {
             {validation.recommendations?.[0] ? (
               <p className="validation-strip-note">{validation.recommendations[0]}</p>
             ) : null}
-          </section>
+          </ScrollReveal>
+        )}
+
+        {paper?.enabled && paperClosed > 0 && (
+          <ScrollReveal as="section" className="validation-strip paper-strip" delayMs={110} aria-label="Paper broker summary">
+            <div className="validation-strip-main">
+              <span className="validation-strip-label">Paper book</span>
+              <span className="validation-strip-metric">
+                <strong>
+                  {paper.metrics?.expectancy != null
+                    ? `${paper.metrics.expectancy >= 0 ? "+" : ""}${paper.metrics.expectancy}`
+                    : "—"}
+                </strong>{" "}
+                E[R]
+              </span>
+              <span className="validation-strip-sep" aria-hidden>
+                ·
+              </span>
+              <span className="validation-strip-metric">
+                {paper.metrics?.wins ?? 0}W / {paper.metrics?.losses ?? 0}L
+                <span className="validation-strip-muted">
+                  {" "}
+                  ({paperClosed} closed · {paper.open ?? 0} open)
+                </span>
+              </span>
+              {paper.metrics?.win_rate != null ? (
+                <>
+                  <span className="validation-strip-sep" aria-hidden>
+                    ·
+                  </span>
+                  <span className="validation-strip-metric">{paper.metrics.win_rate}% win</span>
+                </>
+              ) : null}
+            </div>
+          </ScrollReveal>
         )}
 
         {filteredSignals.length > 0 && (
-          <section className="panel heatmap-section">
+          <ScrollReveal as="section" className="panel heatmap-section" delayMs={120}>
             <div className="panel-header">
               <h2>Market heatmap</h2>
               <span className="panel-hint">{filteredSignals.length} pairs · click to inspect</span>
@@ -392,7 +440,7 @@ export default function Dashboard() {
               selectedSymbol={selected?.symbol}
               onSelect={setSelected}
             />
-          </section>
+          </ScrollReveal>
         )}
 
         {currencyFilter && (
@@ -405,7 +453,7 @@ export default function Dashboard() {
         )}
 
         <div className="main-content">
-          <section className="signals-section">
+          <ScrollReveal as="section" className="signals-section" delayMs={140}>
             <div className="panel-header">
               <h2>Scanner feed</h2>
               <span className="panel-hint">Sorted by confidence score</span>
@@ -435,20 +483,25 @@ export default function Dashboard() {
                   </span>
                 </div>
               ) : (
-                filteredSignals.map((signal) => (
-                  <SignalCard
+                filteredSignals.map((signal, index) => (
+                  <ScrollReveal
                     key={`${signal.symbol}-${signal.timeframe}`}
-                    signal={signal}
-                    selected={selected?.symbol === signal.symbol}
-                    watched={customPairs.includes(signal.symbol.toUpperCase())}
-                    onSelect={setSelected}
-                  />
+                    className="scroll-reveal-card"
+                    delayMs={Math.min(index * 45, 360)}
+                  >
+                    <SignalCard
+                      signal={signal}
+                      selected={selected?.symbol === signal.symbol}
+                      watched={customPairs.includes(signal.symbol.toUpperCase())}
+                      onSelect={setSelected}
+                    />
+                  </ScrollReveal>
                 ))
               )}
             </div>
-          </section>
+          </ScrollReveal>
 
-          <aside className="side-panel">
+          <ScrollReveal as="aside" className="side-panel scroll-reveal-fade" delayMs={180}>
             <div className="calendar-panel panel">
               <div className="panel-header">
                 <h2>Economic calendar</h2>
@@ -460,7 +513,7 @@ export default function Dashboard() {
                 onFilterCurrency={setCurrencyFilter}
               />
             </div>
-          </aside>
+          </ScrollReveal>
         </div>
       </main>
 
