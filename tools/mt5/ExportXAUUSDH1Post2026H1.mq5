@@ -3,14 +3,17 @@
 //| Acquisition only: no labels, predictions, or engine evaluation.  |
 //+------------------------------------------------------------------+
 #property copyright "FX Navigators"
-#property version   "1.00"
+#property version   "1.01"
 #property script_show_inputs
 
-input string          InpSymbol       = "";  // empty = use chart symbol
+// Defaults match the proven exporter. Leave InpSymbol as XAUUSD.vx if that is
+// your broker symbol; otherwise set it to the exact Market Watch name, or "" to
+// use the chart symbol.
+input string          InpSymbol       = "XAUUSD.vx";
 input ENUM_TIMEFRAMES InpTimeframe    = PERIOD_H1;
 input datetime        InpStart        = D'2026.07.01 00:00:00';
 input string          InpFilePrefix   = "FXNavigators_XAUUSD_H1_post_2026H1_raw";
-input bool            InpCommonFolder = false;  // false → easier: MQL5/Files under this terminal
+input bool            InpCommonFolder = true;  // true -> Terminal\Common\Files\
 
 const datetime LOCKED_START = D'2026.07.01 00:00:00';
 
@@ -43,18 +46,14 @@ int OutputFlags()
 }
 
 
-bool FindLastClosedBarFor(const string symbol, datetime &last_closed)
+bool FindLastClosedBar(const string symbol, datetime &last_closed)
 {
    last_closed = 0;
 
    for(int attempt = 0; attempt < 20; attempt++)
    {
       ResetLastError();
-      last_closed = iTime(
-         symbol,
-         InpTimeframe,
-         1
-      );
+      last_closed = iTime(symbol, InpTimeframe, 1);
 
       if(last_closed > 0)
          return true;
@@ -79,11 +78,7 @@ void WriteMetadata(
 {
    ResetLastError();
 
-   int handle = FileOpen(
-      metadata_file,
-      OutputFlags(),
-      ','
-   );
+   int handle = FileOpen(metadata_file, OutputFlags(), ',');
 
    if(handle == INVALID_HANDLE)
    {
@@ -126,8 +121,6 @@ void WriteMetadata(
 void OnStart()
 {
    string symbol = InpSymbol;
-   StringTrimLeft(symbol);
-   StringTrimRight(symbol);
    if(StringLen(symbol) == 0)
       symbol = _Symbol;
 
@@ -143,7 +136,6 @@ void OnStart()
    if(InpTimeframe != PERIOD_H1)
    {
       Print("Export refused: this acquisition script permits only PERIOD_H1.");
-      Alert("Export failed: timeframe must be H1");
       return;
    }
 
@@ -154,35 +146,27 @@ void OnStart()
          TimeToString(InpStart, TIME_DATE | TIME_SECONDS),
          TimeToString(LOCKED_START, TIME_DATE | TIME_SECONDS)
       );
-      Alert("Export failed: start date too early");
       return;
    }
 
    if(!SymbolSelect(symbol, true))
    {
       PrintFormat(
-         "Export failed: could not select symbol %s. Error=%d. "
-         "Open the XAUUSD chart first, leave InpSymbol empty, or set InpSymbol to the exact Market Watch name.",
+         "Export failed: could not select symbol %s. Error=%d",
          symbol,
          GetLastError()
       );
-      Alert("Export failed: bad symbol — see Experts log");
       return;
    }
 
-   // Rebind script inputs that use InpSymbol further below via local `symbol`.
-   // CopyRates / iTime need the resolved name.
    datetime last_closed = 0;
 
-   if(!FindLastClosedBarFor(symbol, last_closed))
+   if(!FindLastClosedBar(symbol, last_closed))
    {
       PrintFormat(
-         "Export failed: could not resolve the latest closed H1 bar for %s. Error=%d. "
-         "Scroll the H1 chart to load history, then re-run.",
-         symbol,
+         "Export failed: could not resolve the latest closed H1 bar. Error=%d",
          GetLastError()
       );
-      Alert("Export failed: no H1 history — scroll chart left, re-run");
       return;
    }
 
@@ -193,7 +177,6 @@ void OnStart()
          TimeToString(InpStart, TIME_DATE | TIME_SECONDS),
          TimeToString(last_closed, TIME_DATE | TIME_SECONDS)
       );
-      Alert("Export failed: no bars after 2026.07.01");
       return;
    }
 
@@ -215,7 +198,6 @@ void OnStart()
          "Export refused: timestamped output already exists for %s.",
          stamp
       );
-      Alert("Export refused: file already exists for this second — wait 1s and re-run");
       return;
    }
 
@@ -245,21 +227,14 @@ void OnStart()
    if(copied <= 0)
    {
       PrintFormat(
-         "Export failed: CopyRates returned %d for %s. Error=%d. "
-         "Tools → Options → Charts → Max bars in chart = Unlimited, then scroll H1 history.",
+         "Export failed: CopyRates returned %d. Error=%d",
          copied,
-         symbol,
          GetLastError()
       );
-      Alert("Export failed: CopyRates empty — load more H1 history");
       return;
    }
 
-   int handle = FileOpen(
-      output_file,
-      OutputFlags(),
-      ','
-   );
+   int handle = FileOpen(output_file, OutputFlags(), ',');
 
    if(handle == INVALID_HANDLE)
    {
@@ -268,19 +243,11 @@ void OnStart()
          output_file,
          GetLastError()
       );
-      Alert("Export failed: could not open output file");
       return;
    }
 
-   int digits = (int)SymbolInfoInteger(
-      symbol,
-      SYMBOL_DIGITS
-   );
-
-   double point = SymbolInfoDouble(
-      symbol,
-      SYMBOL_POINT
-   );
+   int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
 
    FileWrite(
       handle,
@@ -299,16 +266,11 @@ void OnStart()
 
    for(int index = 0; index < copied; index++)
    {
-      double spread_price = (
-         (double)rates[index].spread * point
-      );
+      double spread_price = ((double)rates[index].spread * point);
 
       FileWrite(
          handle,
-         TimeToString(
-            rates[index].time,
-            TIME_DATE | TIME_SECONDS
-         ),
+         TimeToString(rates[index].time, TIME_DATE | TIME_SECONDS),
          (long)rates[index].time,
          DoubleToString(rates[index].open, digits),
          DoubleToString(rates[index].high, digits),
@@ -353,13 +315,11 @@ void OnStart()
       metadata_file
    );
 
-   // Also print a Finder/Explorer hint.
    PrintFormat("OPEN THIS FOLDER: %s", base_path);
 
    Alert(
       "FX Navigators post-2026H1 acquisition complete: ",
       copied,
-      " closed bars → ",
-      base_path
+      " closed bars"
    );
 }
