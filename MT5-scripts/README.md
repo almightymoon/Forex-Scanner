@@ -10,31 +10,23 @@ PYTHONPATH=. python scripts/run_h5_prospective_1_4_0.py --run
 
 ## How to export (Windows + MetaTrader 5)
 
-1. Copy updated `tools/mt5/ExportXAUUSDH1Post2026H1.mq5` into MT5 `MQL5/Scripts/`
-2. Compile in MetaEditor
-3. Open your **gold H1** chart (whatever the broker calls it)
-4. Drag the script onto that chart
-5. Inputs:
-   - `InpSymbol` = **leave empty** (uses chart symbol)
-   - `InpCommonFolder` = **false** (writes under this terminal’s `MQL5/Files`)
-6. Click OK — watch **Toolbox → Experts** for `Acquisition complete` or an error line
-7. Open the folder printed as `OPEN THIS FOLDER:`  
-   (usually `…\Terminal\<ID>\MQL5\Files\`)
-8. Copy both `*.csv` + `*.meta.csv` into repo `MT5-scripts/`
+Use the **repo** script `tools/mt5/ExportXAUUSDH1Post2026H1.mq5` (v1.01).
 
-### If nothing appears
+1. Copy it into MT5 `MQL5/Scripts/` (overwrite the old one)
+2. Open in MetaEditor → **Compile** (must say 0 errors)
+3. In Navigator → Scripts, right-click → **Refresh**
+4. Open `XAUUSD.vx` H1 chart (or your gold symbol)
+5. Drag script onto chart — keep defaults:
+   - `InpSymbol` = `XAUUSD.vx`
+   - `InpCommonFolder` = `true`
+6. Files land in:  
+   `C:\Users\<you>\AppData\Roaming\MetaQuotes\Terminal\Common\Files\`
+7. Copy **both** `*.csv` and `*.meta.csv` into repo `MT5-scripts/`
 
-| Experts log says | Fix |
-|------------------|-----|
-| `could not select symbol` | Wrong name — leave `InpSymbol` empty on the gold chart |
-| `CopyRates returned 0` / no H1 history | Tools → Options → Charts → Max bars = Unlimited; scroll chart left to load history; re-run |
-| `file already exists` | Wait 1 second, run again |
-| Silent / no print | Script didn’t compile or wasn’t dropped on a chart — check Navigator → Scripts |
-
-Do **not** look only in `Common\Files` unless `InpCommonFolder=true`.
+If MetaEditor shows compile errors, you still have the broken intermediate copy — replace from the repo again.
 
 ## Current state
 
-- Quarantine tip: `20260721T111152Z` (332 unique bars)
-- Existing `..._20260720T020551Z` re-ingest is correctly **refused** (immutable)
-- Do **not** use `chart_csv/FXNavigators_XAUUSD_H1_first_half_2026.csv` (ends Apr 2026 — wrong window)
+- Quarantine tip: `20260916T130616Z` (**1275** unique bars, latest **2026-09-16**)
+- Still need **125** more unique bars + coverage through **2026-09-30**
+- Older `..._20260720...` re-ingest is correctly refused (immutable)

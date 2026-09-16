@@ -2,23 +2,19 @@
 
 **Status:** BLOCKED — accrual gate not met  
 **Pipeline:** frozen `1.4.0` (no analytical change)  
-**Checked:** 2026-09-15 (re-checked same day after paper/venue work)  
+**Checked:** 2026-09-16  
 **Runner:** `scripts/run_h5_prospective_1_4_0.py`
 
 ## Gate (from post-2026H1 protocol)
 
 | Requirement | Status |
 |-------------|--------|
-| ≥ 1,400 unique normalized H1 bars | **Fail** (332) |
-| Coverage through 2026-09-30T20:00Z | **Fail** (latest 2026-07-21) |
+| ≥ 1,400 unique normalized H1 bars | **Fail** (1275 — need 125 more) |
+| Coverage through 2026-09-30T20:00Z | **Fail** (latest 2026-09-16T12:00Z) |
 
 Source: `scripts/status_xauusd_h1_post_2026h1_accrual.py`
 
-**Ops note (2026-09-15):** No newer MT5 post-2026H1 export is available locally beyond quarantine tranche `20260721T111152Z`. Existing `MT5-scripts/..._20260720...` re-ingest is correctly refused (immutable snapshot). `chart_csv/FXNavigators_XAUUSD_H1_first_half_2026.csv` ends 2026-04-23 (pre-gate window) and must not be force-ingested as post-2026H1.
-
-Helper: `PYTHONPATH=. python scripts/ingest_and_check_h5.py` — discovers MT5-scripts exports, attempts ingest, prints H5 gate.
-
-Export runbook: [MT5-scripts/README.md](../MT5-scripts/README.md) + `tools/mt5/ExportXAUUSDH1Post2026H1.mq5`.
+**Ops note (2026-09-16):** Ingested tranche `20260916T130616Z` (+943 new bars). Quarantine tip advanced to **2026-09-16**. Still short of 1400 bars and the Sep 30 date gate. Re-export after ~Sep 30 (or whenever ≥1400 unique bars exist).
 
 ## Commands
 
