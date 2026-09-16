@@ -45,6 +45,13 @@ Daemon scans must not reopen the same pair every cycle:
 
 Entry for live journals uses signal-bar close (OOS parity).
 
+For **real market OHLC** (not sim): set `ENABLE_SIMULATED_DATA=false` in `.env` and restart the API.
+After leaving sim mode, archive the old book:
+
+```bash
+PYTHONPATH=. python scripts/paper_broker_reset.py
+```
+
 
 ## Offline smoke
 
