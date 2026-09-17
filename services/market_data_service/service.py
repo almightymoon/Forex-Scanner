@@ -38,6 +38,9 @@ class MarketDataService(MarketDataProvider):
 
     @property
     def underlying_provider(self) -> str:
+        inner = self.provider
+        if hasattr(inner, "underlying_provider"):
+            return str(getattr(inner, "underlying_provider")).replace("service:", "")
         return self.provider.name
 
     def health_snapshot(self) -> dict:
@@ -48,6 +51,8 @@ class MarketDataService(MarketDataProvider):
     def monitored_providers_health(self) -> dict[str, dict]:
         if hasattr(self.provider, "monitored_health"):
             return self.provider.monitored_health()
+        if hasattr(self.provider, "monitored_providers_health"):
+            return self.provider.monitored_providers_health()
 
         import os
 

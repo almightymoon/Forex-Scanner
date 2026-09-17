@@ -193,8 +193,25 @@ async def health(market_data: MarketDataDep, pipeline: PipelineDep):
 
     provider_status = health_info.get("provider_status", "unknown")
     status_label = "healthy"
-    if provider_status not in (None, "healthy"):
+    # Free-tier throttle is expected ops state (warning), not an outage.
+    if provider_status == "rate_limited":
+        status_label = "warning"
+    elif provider_status in ("degraded", "unavailable", "timeout", "network_error"):
         status_label = "degraded"
+    elif provider_status not in (None, "healthy", "unknown"):
+        status_label = "degraded"
+    # Collector-first cache miss must not mark the whole API unhealthy when
+    # fallback providers are serving candles.
+    if (
+        str(provider_name).endswith("collector_db")
+        or health_info.get("collector_cache") == "optional"
+    ):
+        fb_status = health_info.get("provider_status")
+        if fb_status in (None, "healthy", "unknown"):
+            status_label = "healthy"
+            provider_status = fb_status or "healthy"
+        elif fb_status == "rate_limited":
+            status_label = "warning"
     if simulated:
         status_label = "warning"
 
@@ -203,12 +220,21 @@ async def health(market_data: MarketDataDep, pipeline: PipelineDep):
         if hasattr(market_data, "monitored_providers_health")
         else {}
     )
+    # Prefer showing the live OHLC provider, not the empty collector cache label.
+    raw_fallback = health_info.get("fallback_provider")
+    fallback_clean = (
+        str(raw_fallback).replace("service:", "") if raw_fallback else None
+    )
+    display_provider = fallback_clean or provider_name
+    if str(provider_name).endswith("collector_db") and fallback_clean:
+        display_provider = f"collector_db->{fallback_clean}"
+
 
     payload = {
         "status": status_label,
         "service": "fx-navigators-api",
         "version": "1.0.0",
-        "provider": provider_name,
+        "provider": display_provider,
         "provider_status": provider_status,
         "latency_ms": health_info.get("latency_ms"),
         "simulated": simulated,

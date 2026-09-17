@@ -194,7 +194,11 @@ export default function Dashboard() {
     healthStatus === "healthy"
       ? "Live"
       : healthStatus === "warning"
-        ? "Simulated"
+        ? health?.simulated
+          ? "Simulated"
+          : health?.provider_status === "rate_limited"
+            ? "Rate limited"
+            : "Warning"
         : healthStatus === "degraded"
           ? "Degraded"
           : healthStatus === "down"

@@ -1,29 +1,30 @@
 # Live Broker Venues (Phase 2)
 
 **Status:** stubs only — **orders refused by default**  
-**Separate from** market data (Twelve Data / Polygon) and from [PAPER_BROKER.md](PAPER_BROKER.md)
+**OANDA is optional** — leave `BROKER_VENUE=none` if you have no account.  
+Paper trading uses [PAPER_BROKER.md](PAPER_BROKER.md) + market-data OHLC only.
 
 ```
 Scanner signals
-    ├── PaperBroker          ← PAPER_BROKER_ENABLED (simulated fills)
-    └── BrokerVenue (stub)   ← BROKER_VENUE + BROKER_VENUE_ORDERS_ENABLED
-            ├── oanda
-            └── mt5
+    ├── PaperBroker          ← PAPER_BROKER_ENABLED (simulated fills; no venue)
+    └── BrokerVenue (stub)   ← optional; BROKER_VENUE + BROKER_VENUE_ORDERS_ENABLED
+            ├── none (default)
+            ├── oanda (optional)
+            └── mt5 (optional)
 ```
 
 ## Safety switches
 
 | Env | Default | Meaning |
 |-----|---------|---------|
-| `BROKER_VENUE` | `none` | Which stub to load (`oanda` / `mt5` / `none`) |
+| `BROKER_VENUE` | `none` | Which stub to load (`none` / `oanda` / `mt5`) |
 | `BROKER_VENUE_ORDERS_ENABLED` | off | Second switch — must be on to even attempt a venue order |
-| `OANDA_API_KEY` / `OANDA_ACCOUNT_ID` | empty | Credentials for OANDA practice/live |
+| `OANDA_API_KEY` / `OANDA_ACCOUNT_ID` | empty | Only if using OANDA |
 | `OANDA_ENV` | `practice` | `practice` or `live` host |
 | `MT5_ENABLED` | false | Local MT5 bridge flag (Windows) |
 
-Even when both switches are on, OANDA will POST a MARKET order to the practice
-(or live) host. Keep `BROKER_VENUE_ORDERS_ENABLED=false` until practice keys are
-configured and you intentionally want fills.
+Skip the OANDA arming steps entirely when `BROKER_VENUE=none`. Paper settle:
+`PYTHONPATH=. python scripts/paper_broker_settle.py`.
 
 ## Code
 

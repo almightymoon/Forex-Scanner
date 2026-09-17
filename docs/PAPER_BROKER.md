@@ -27,10 +27,12 @@ PAPER_BROKER_ENABLED=true
 
 On each alert-score signal the scanner journals an open paper order and settles against subsequent candles.
 
-Status:
+Status / settle (no venue required):
 
 ```bash
 PYTHONPATH=. python scripts/paper_broker_status.py
+# Settle opens against live OHLC without opening new trades:
+PYTHONPATH=. python scripts/paper_broker_settle.py
 # One live scanner→paper pass (loads .env):
 PYTHONPATH=. python scripts/run_live_paper_pass.py
 ```

@@ -15,8 +15,8 @@ class Settings:
   JWT_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
 
   # Scanner defaults
-  MIN_ALERT_SCORE: int = 80
-  SCAN_INTERVAL_SECONDS: int = 60
+  MIN_ALERT_SCORE: int = int(os.getenv("MIN_ALERT_SCORE", "80"))
+  SCAN_INTERVAL_SECONDS: int = int(os.getenv("SCAN_INTERVAL_SECONDS", "180"))
   DEFAULT_TIMEFRAMES: list[str] = ["M15", "H1", "H4"]
 
   # Market data (Phase 1 — OHLC only; brokers are Phase 2)

@@ -66,6 +66,55 @@ class CollectorFirstProvider(MarketDataProvider):
                 yield tick
         return
 
+    def health_snapshot(self) -> dict:
+        """Collector is a cache layer — report fallback provider health as primary signal."""
+        fb = {}
+        if hasattr(self.fallback, "health_snapshot"):
+            fb = self.fallback.health_snapshot() or {}
+        elif hasattr(self.fallback, "provider") and hasattr(self.fallback.provider, "health_snapshot"):
+            fb = self.fallback.provider.health_snapshot() or {}
+
+        status = fb.get("provider_status", "unknown")
+        fallback_name = (
+            getattr(self.fallback, "underlying_provider", None)
+            or getattr(self.fallback, "name", "unknown")
+        )
+        # Empty collector DB is normal when COLLECTOR_DAEMON is off — not an outage.
+        return {
+            "provider_name": self.name,
+            "provider_status": status if status not in (None, "") else "healthy",
+            "latency_ms": fb.get("latency_ms"),
+            "last_success": fb.get("last_success"),
+            "last_failure": fb.get("last_failure"),
+            "last_error": fb.get("last_error"),
+            "fallback_used": True,
+            "fallback_provider": str(fallback_name).replace("service:", ""),
+            "collector_cache": "optional",
+        }
+
+    def monitored_providers_health(self) -> dict:
+        if hasattr(self.fallback, "monitored_providers_health"):
+            return self.fallback.monitored_providers_health()
+        if hasattr(self.fallback, "monitored_health"):
+            return self.fallback.monitored_health()
+        return {}
+
+    # Alias used by MarketDataService
+    def monitored_health(self) -> dict:
+        return self.monitored_providers_health()
+
+    def is_simulated(self) -> bool:
+        if hasattr(self.fallback, "is_simulated"):
+            return bool(self.fallback.is_simulated())
+        return False
+
+    @property
+    def underlying_provider(self) -> str:
+        name = getattr(self.fallback, "underlying_provider", None) or getattr(
+            self.fallback, "name", "unknown"
+        )
+        return str(name).replace("service:", "")
+
     @staticmethod
     def _to_candle(row: dict) -> Candle:
         ts = row["timestamp"]
